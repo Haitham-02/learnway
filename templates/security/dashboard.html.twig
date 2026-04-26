@@ -1,0 +1,76 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block body %}
+<div style="max-width:960px;margin:2rem auto;padding:0 1rem;font-family:sans-serif;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;">
+        <h1 style="margin:0;">Welcome, {{ app.user.firstName }} {{ app.user.lastName }}</h1>
+        <a href="{{ path('app_logout') }}"
+           style="padding:.5rem 1rem;background:#dc2626;color:#fff;border-radius:6px;text-decoration:none;font-size:.9rem;">
+            Sign Out
+        </a>
+    </div>
+
+    <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));">
+
+        {% if is_granted('ROLE_ADMIN') %}
+        <a href="{{ path('admin_users_index') }}"
+           style="display:block;padding:1.5rem;background:#2563eb;color:#fff;border-radius:8px;text-decoration:none;">
+            <div style="font-size:1.5rem;margin-bottom:.5rem;">👥</div>
+            <div style="font-weight:600;">Manage Users</div>
+            <div style="font-size:.85rem;opacity:.8;margin-top:.25rem;">Add users &amp; assign roles</div>
+        </a>
+        <a href="{{ path('admin_classes_index') }}"
+           style="display:block;padding:1.5rem;background:#0891b2;color:#fff;border-radius:8px;text-decoration:none;">
+            <div style="font-size:1.5rem;margin-bottom:.5rem;">🏫</div>
+            <div style="font-weight:600;">Manage Classes</div>
+            <div style="font-size:.85rem;opacity:.8;margin-top:.25rem;">Create, edit, and delete classes</div>
+        </a>
+        <a href="{{ path('admin_student_enrollments_index') }}"
+           style="display:block;padding:1.5rem;background:#7c3aed;color:#fff;border-radius:8px;text-decoration:none;">
+            <div style="font-size:1.5rem;margin-bottom:.5rem;">🧾</div>
+            <div style="font-weight:600;">Student Enrollments</div>
+            <div style="font-size:.85rem;opacity:.8;margin-top:.25rem;">Manage student-class enrollments</div>
+        </a>
+         <a href="{{ path('admin_subject_sections_index') }}"
+            style="display:block;padding:1.5rem;background:#0f766e;color:#fff;border-radius:8px;text-decoration:none;">
+             <div style="font-size:1.5rem;margin-bottom:.5rem;">📚</div>
+             <div style="font-weight:600;">Subject Sections</div>
+             <div style="font-size:.85rem;opacity:.8;margin-top:.25rem;">Assign subjects by class and term</div>
+         </a>
+         <a href="{{ path('admin_chapters_index') }}"
+            style="display:block;padding:1.5rem;background:#9333ea;color:#fff;border-radius:8px;text-decoration:none;">
+             <div style="font-size:1.5rem;margin-bottom:.5rem;">📘</div>
+             <div style="font-weight:600;">Manage Chapters</div>
+             <div style="font-size:.85rem;opacity:.8;margin-top:.25rem;">Create, edit, and delete chapters</div>
+         </a>
+         <a href="{{ path('admin_subjects_index') }}"
+            style="display:block;padding:1.5rem;background:#4338ca;color:#fff;border-radius:8px;text-decoration:none;">
+             <div style="font-size:1.5rem;margin-bottom:.5rem;">📖</div>
+             <div style="font-weight:600;">Manage Subjects</div>
+             <div style="font-size:.85rem;opacity:.8;margin-top:.25rem;">Create, edit, and delete subjects</div>
+        </a>
+        <a href="{{ path('admin_terms_index') }}"
+           style="display:block;padding:1.5rem;background:#0e7490;color:#fff;border-radius:8px;text-decoration:none;">
+            <div style="font-size:1.5rem;margin-bottom:.5rem;">🗓️</div>
+            <div style="font-weight:600;">Manage Terms</div>
+            <div style="font-size:.85rem;opacity:.8;margin-top:.25rem;">Create, edit, and delete terms</div>
+        </a>
+        <a href="{{ path('admin_forum_posts_index') }}"
+           style="display:block;padding:1.5rem;background:#be123c;color:#fff;border-radius:8px;text-decoration:none;">
+            <div style="font-size:1.5rem;margin-bottom:.5rem;">💬</div>
+            <div style="font-weight:600;">Forum Posts</div>
+            <div style="font-size:.85rem;opacity:.8;margin-top:.25rem;">Manage class discussion posts</div>
+        </a>
+        <a href="{{ path('admin_academic_years_index') }}"
+           style="display:block;padding:1.5rem;background:#be123c;color:#fff;border-radius:8px;text-decoration:none;">
+            <div style="font-size:1.5rem;margin-bottom:.5rem;">💬</div>
+            <div style="font-weight:600;">Manage Academic Years</div>
+            <div style="font-size:.85rem;opacity:.8;margin-top:.25rem;">Create, edit, and delete academic years</div>
+        </a>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

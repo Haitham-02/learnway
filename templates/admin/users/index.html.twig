@@ -1,0 +1,98 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Users — Admin{% endblock %}
+
+{% block body %}
+<div style="max-width:960px;margin:2rem auto;padding:0 1rem;font-family:sans-serif;">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+        <h1 style="margin:0;font-size:1.5rem;">User Management</h1>
+        <div style="display:flex;gap:.75rem;">
+            <a href="{{ path('app_dashboard') }}"
+               style="padding:.5rem 1rem;background:#6b7280;color:#fff;border-radius:6px;text-decoration:none;font-size:.9rem;">
+                ← Dashboard
+            </a>
+            <a href="{{ path('admin_users_new') }}"
+               style="padding:.5rem 1rem;background:#2563eb;color:#fff;border-radius:6px;text-decoration:none;font-size:.9rem;">
+                + Add User
+            </a>
+        </div>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div style="background:#d1fae5;color:#065f46;padding:.75rem 1rem;border-radius:6px;margin-bottom:1rem;">
+            {{ message }}
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div style="background:#fee2e2;color:#b91c1c;padding:.75rem 1rem;border-radius:6px;margin-bottom:1rem;">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <div style="background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1);overflow:hidden;">
+        <table style="width:100%;border-collapse:collapse;font-size:.9rem;">
+            <thead style="background:#f9fafb;">
+                <tr>
+                    <th style="padding:.75rem 1rem;text-align:left;border-bottom:1px solid #e5e7eb;">#</th>
+                    <th style="padding:.75rem 1rem;text-align:left;border-bottom:1px solid #e5e7eb;">Name</th>
+                    <th style="padding:.75rem 1rem;text-align:left;border-bottom:1px solid #e5e7eb;">Email</th>
+                    <th style="padding:.75rem 1rem;text-align:left;border-bottom:1px solid #e5e7eb;">Role</th>
+                    <th style="padding:.75rem 1rem;text-align:left;border-bottom:1px solid #e5e7eb;">Status</th>
+                    <th style="padding:.75rem 1rem;text-align:left;border-bottom:1px solid #e5e7eb;">Created</th>
+                    <th style="padding:.75rem 1rem;text-align:left;border-bottom:1px solid #e5e7eb;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr style="border-bottom:1px solid #f3f4f6;">
+                    <td style="padding:.75rem 1rem;color:#6b7280;">{{ user.id }}</td>
+                    <td style="padding:.75rem 1rem;font-weight:600;">{{ user.firstName }} {{ user.lastName }}</td>
+                    <td style="padding:.75rem 1rem;">{{ user.email }}</td>
+                    <td style="padding:.75rem 1rem;">
+                        <span style="padding:.2rem .6rem;border-radius:4px;font-size:.8rem;font-weight:600;
+                            background:{% if user.role and user.role.name == 'ADMIN' %}#fee2e2;color:#b91c1c
+                            {% elseif user.role and user.role.name == 'TEACHER' %}#dbeafe;color:#1d4ed8
+                            {% else %}#d1fae5;color:#065f46{% endif %};">
+                            {{ user.role ? user.role.name : '—' }}
+                        </span>
+                    </td>
+                    <td style="padding:.75rem 1rem;">
+                        {% if user.isActive %}
+                            <span style="color:#16a34a;">● Active</span>
+                        {% else %}
+                            <span style="color:#dc2626;">● Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding:.75rem 1rem;color:#6b7280;">
+                        {{ user.createdAt ? user.createdAt|date('Y-m-d') : '—' }}
+                    </td>
+                    <td style="padding:.75rem 1rem;">
+                        <div style="display:flex;gap:.5rem;">
+                            <a href="{{ path('admin_users_edit', {id: user.id}) }}"
+                               style="padding:.3rem .7rem;background:#2563eb;color:#fff;border-radius:5px;text-decoration:none;font-size:.82rem;">
+                                Edit
+                            </a>
+                            {% if user.id != app.user.id %}
+                            <form method="post" action="{{ path('admin_users_delete', {id: user.id}) }}"
+                                  onsubmit="return confirm('Delete {{ user.firstName }} {{ user.lastName }}?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.id) }}">
+                                <button type="submit"
+                                        style="padding:.3rem .7rem;background:#dc2626;color:#fff;border:none;border-radius:5px;font-size:.82rem;cursor:pointer;">
+                                    Delete
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" style="padding:2rem;text-align:center;color:#9ca3af;">No users found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

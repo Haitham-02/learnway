@@ -1,0 +1,101 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Subject Section — Admin{% endblock %}
+
+{% block body %}
+<div style="max-width:640px;margin:2rem auto;padding:0 1rem;font-family:sans-serif;">
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;">
+        <a href="{{ path('admin_subject_sections_index') }}" style="color:#6b7280;text-decoration:none;font-size:.9rem;">← Back to Sections</a>
+        <h1 style="margin:0;font-size:1.5rem;">Edit Subject Section #{{ section.id }}</h1>
+    </div>
+
+    {% if errors is not empty %}
+        <div style="background:#fee2e2;color:#b91c1c;padding:.75rem 1rem;border-radius:6px;margin-bottom:1.25rem;">
+            <ul style="margin:0;padding-left:1.25rem;">{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>
+        </div>
+    {% endif %}
+
+    {% set selectedClass = app.request.isMethod('POST') ? app.request.request.get('class_id') : (section.classe ? section.classe.id : '') %}
+    {% set selectedSubject = app.request.isMethod('POST') ? app.request.request.get('subject_id') : (section.subject ? section.subject.id : '') %}
+    {% set selectedTerm = app.request.isMethod('POST') ? app.request.request.get('term_id') : (section.term ? section.term.id : '') %}
+    {% set selectedTeacher = app.request.isMethod('POST') ? app.request.request.get('teacher_id') : (section.user ? section.user.id : '') %}
+    {% set selectedStatus = app.request.isMethod('POST') ? app.request.request.get('status', 'PLANNED') : (section.status ?: 'PLANNED') %}
+    {% set roomNumber = app.request.isMethod('POST') ? app.request.request.get('room_number') : (section.roomNumber ?: '') %}
+    {% set assignedAt = app.request.isMethod('POST') ? app.request.request.get('assigned_at') : (section.assignedAt ? section.assignedAt|date('Y-m-d') : '') %}
+    {% set endedAt = app.request.isMethod('POST') ? app.request.request.get('ended_at') : (section.endedAt ? section.endedAt|date('Y-m-d') : '') %}
+
+    <div style="background:#fff;padding:2rem;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1);">
+        <form method="post" novalidate>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                <div>
+                    <label style="display:block;margin-bottom:.4rem;font-size:.9rem;font-weight:600;">Class</label>
+                    <select name="class_id" required style="width:100%;padding:.6rem .8rem;border:1px solid #d1d5db;border-radius:6px;background:#fff;">
+                        <option value="">— Select class —</option>
+                        {% for class in classes %}
+                            <option value="{{ class.id }}" {% if selectedClass == class.id %}selected{% endif %}>{{ class.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;margin-bottom:.4rem;font-size:.9rem;font-weight:600;">Subject</label>
+                    <select name="subject_id" required style="width:100%;padding:.6rem .8rem;border:1px solid #d1d5db;border-radius:6px;background:#fff;">
+                        <option value="">— Select subject —</option>
+                        {% for subject in subjects %}
+                            <option value="{{ subject.id }}" {% if selectedSubject == subject.id %}selected{% endif %}>{{ subject.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                <div>
+                    <label style="display:block;margin-bottom:.4rem;font-size:.9rem;font-weight:600;">Term</label>
+                    <select name="term_id" required style="width:100%;padding:.6rem .8rem;border:1px solid #d1d5db;border-radius:6px;background:#fff;">
+                        <option value="">— Select term —</option>
+                        {% for term in terms %}
+                            <option value="{{ term.id }}" {% if selectedTerm == term.id %}selected{% endif %}>{{ term.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;margin-bottom:.4rem;font-size:.9rem;font-weight:600;">Teacher (optional)</label>
+                    <select name="teacher_id" style="width:100%;padding:.6rem .8rem;border:1px solid #d1d5db;border-radius:6px;background:#fff;">
+                        <option value="">— None —</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}" {% if selectedTeacher == user.id %}selected{% endif %}>{{ user.firstName }} {{ user.lastName }} — {{ user.email }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                <div>
+                    <label style="display:block;margin-bottom:.4rem;font-size:.9rem;font-weight:600;">Room Number</label>
+                    <input type="text" name="room_number" value="{{ roomNumber }}" style="width:100%;padding:.6rem .8rem;border:1px solid #d1d5db;border-radius:6px;box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="display:block;margin-bottom:.4rem;font-size:.9rem;font-weight:600;">Status</label>
+                    <select name="status" style="width:100%;padding:.6rem .8rem;border:1px solid #d1d5db;border-radius:6px;background:#fff;">
+                        {% for value in statuses %}
+                            <option value="{{ value }}" {% if selectedStatus == value %}selected{% endif %}>{{ value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
+                <div>
+                    <label style="display:block;margin-bottom:.4rem;font-size:.9rem;font-weight:600;">Assigned At (optional)</label>
+                    <input type="date" name="assigned_at" value="{{ assignedAt }}" style="width:100%;padding:.6rem .8rem;border:1px solid #d1d5db;border-radius:6px;box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="display:block;margin-bottom:.4rem;font-size:.9rem;font-weight:600;">Ended At (optional)</label>
+                    <input type="date" name="ended_at" value="{{ endedAt }}" style="width:100%;padding:.6rem .8rem;border:1px solid #d1d5db;border-radius:6px;box-sizing:border-box;">
+                </div>
+            </div>
+
+            <button type="submit" style="width:100%;padding:.75rem;background:#2563eb;color:#fff;border:none;border-radius:6px;font-size:1rem;font-weight:600;cursor:pointer;">Save Changes</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
