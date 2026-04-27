@@ -4,8 +4,6 @@ namespace App\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 
 use App\Repository\TermRepository;
 
@@ -100,39 +98,6 @@ class Term
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: SubjectSection::class, mappedBy: 'term')]
-    private Collection $subjectSections;
-
-    public function __construct()
-    {
-        $this->subjectSections = new ArrayCollection();
-    }
-
-    /**
-     * @return Collection<int, SubjectSection>
-     */
-    public function getSubjectSections(): Collection
-    {
-        if (!$this->subjectSections instanceof Collection) {
-            $this->subjectSections = new ArrayCollection();
-        }
-        return $this->subjectSections;
-    }
-
-    public function addSubjectSection(SubjectSection $subjectSection): self
-    {
-        if (!$this->getSubjectSections()->contains($subjectSection)) {
-            $this->getSubjectSections()->add($subjectSection);
-        }
-        return $this;
-    }
-
-    public function removeSubjectSection(SubjectSection $subjectSection): self
-    {
-        $this->getSubjectSections()->removeElement($subjectSection);
-        return $this;
-    }
-
     public function getStartDate(): ?\DateTime
     {
         return $this->start_date;
@@ -167,6 +132,12 @@ class Term
         $this->is_current = $is_current;
 
         return $this;
+    }
+
+    public function getDisplayName(): string
+    {
+        $yearName = $this->academicYear ? $this->academicYear->getName() : 'No Year';
+        return sprintf('%s (%s)', $this->name, $yearName);
     }
 
 }

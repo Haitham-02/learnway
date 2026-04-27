@@ -2,10 +2,7 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 
 use App\Repository\SubjectRepository;
 
@@ -57,6 +54,21 @@ class Subject
         return $this;
     }
 
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $grade_level = null;
+
+    public function getGradeLevel(): ?string
+    {
+        return $this->grade_level;
+    }
+
+    public function setGradeLevel(?string $grade_level): static
+    {
+        $this->grade_level = $grade_level;
+
+        return $this;
+    }
+
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
@@ -85,39 +97,6 @@ class Subject
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: SubjectSection::class, mappedBy: 'subject')]
-    private Collection $subjectSections;
-
-    public function __construct()
-    {
-        $this->subjectSections = new ArrayCollection();
-    }
-
-    /**
-     * @return Collection<int, SubjectSection>
-     */
-    public function getSubjectSections(): Collection
-    {
-        if (!$this->subjectSections instanceof Collection) {
-            $this->subjectSections = new ArrayCollection();
-        }
-        return $this->subjectSections;
-    }
-
-    public function addSubjectSection(SubjectSection $subjectSection): self
-    {
-        if (!$this->getSubjectSections()->contains($subjectSection)) {
-            $this->getSubjectSections()->add($subjectSection);
-        }
-        return $this;
-    }
-
-    public function removeSubjectSection(SubjectSection $subjectSection): self
-    {
-        $this->getSubjectSections()->removeElement($subjectSection);
-        return $this;
-    }
-
     public function getSubjectCode(): ?string
     {
         return $this->subject_code;
@@ -139,6 +118,21 @@ class Subject
     {
         $this->is_active = $is_active;
 
+        return $this;
+    }
+
+    #[ORM\ManyToOne(targetEntity: Term::class)]
+    #[ORM\JoinColumn(name: 'term_id', referencedColumnName: 'id', nullable: true)]
+    private ?Term $term = null;
+
+    public function getTerm(): ?Term
+    {
+        return $this->term;
+    }
+
+    public function setTerm(?Term $term): self
+    {
+        $this->term = $term;
         return $this;
     }
 

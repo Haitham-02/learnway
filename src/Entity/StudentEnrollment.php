@@ -11,6 +11,7 @@ use App\Repository\StudentEnrollmentRepository;
 
 #[ORM\Entity(repositoryClass: StudentEnrollmentRepository::class)]
 #[ORM\Table(name: 'student_enrollments')]
+#[ORM\UniqueConstraint(name: 'uniq_user_academic_year', columns: ['user_id', 'academic_year_id'])]
 class StudentEnrollment
 {
     #[ORM\Id]
@@ -29,8 +30,8 @@ class StudentEnrollment
         return $this;
     }
 
-    #[ORM\OneToOne(targetEntity: Classe::class, inversedBy: 'studentEnrollment')]
-    #[ORM\JoinColumn(name: 'class_id', referencedColumnName: 'id', unique: true, onDelete: 'CASCADE')]
+    #[ORM\ManyToOne(targetEntity: Classe::class, inversedBy: 'studentEnrollments')]
+    #[ORM\JoinColumn(name: 'class_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private ?Classe $classe = null;
 
     public function getClasse(): ?Classe
@@ -44,8 +45,8 @@ class StudentEnrollment
         return $this;
     }
 
-    #[ORM\OneToOne(targetEntity: User::class, inversedBy: 'studentEnrollment')]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', unique: true, onDelete: 'CASCADE')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'studentEnrollments')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private ?User $user = null;
 
     public function getUser(): ?User
@@ -59,55 +60,18 @@ class StudentEnrollment
         return $this;
     }
 
-    #[ORM\Column(type: 'date', nullable: false)]
-    private ?\DateTimeInterface $enrolled_at = null;
+    #[ORM\ManyToOne(targetEntity: AcademicYear::class, inversedBy: 'studentEnrollments')]
+    #[ORM\JoinColumn(name: 'academic_year_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    private ?AcademicYear $academicYear = null;
 
-    public function getEnrolled_at(): ?\DateTimeInterface
+    public function getAcademicYear(): ?AcademicYear
     {
-        return $this->enrolled_at;
+        return $this->academicYear;
     }
 
-    public function setEnrolled_at(\DateTimeInterface $enrolled_at): self
+    public function setAcademicYear(?AcademicYear $academicYear): self
     {
-        $this->enrolled_at = $enrolled_at;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'date', nullable: true)]
-    private ?\DateTimeInterface $left_at = null;
-
-    public function getLeft_at(): ?\DateTimeInterface
-    {
-        return $this->left_at;
-    }
-
-    public function setLeft_at(?\DateTimeInterface $left_at): self
-    {
-        $this->left_at = $left_at;
-        return $this;
-    }
-
-    public function getEnrolledAt(): ?\DateTime
-    {
-        return $this->enrolled_at;
-    }
-
-    public function setEnrolledAt(\DateTime $enrolled_at): static
-    {
-        $this->enrolled_at = $enrolled_at;
-
-        return $this;
-    }
-
-    public function getLeftAt(): ?\DateTime
-    {
-        return $this->left_at;
-    }
-
-    public function setLeftAt(?\DateTime $left_at): static
-    {
-        $this->left_at = $left_at;
-
+        $this->academicYear = $academicYear;
         return $this;
     }
 

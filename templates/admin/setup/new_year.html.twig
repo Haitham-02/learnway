@@ -1,0 +1,361 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Setup Wizard — Admin{% endblock %}
+
+{% block body %}
+<div style="max-width: 1000px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;">
+        <h1 style="margin: 0; font-size: 2.25rem; font-weight: 300; color: var(--m3-on-surface);">Academic Setup Wizard</h1>
+        <div style="display: flex; gap: 12px;">
+            <button type="button" onclick="loadSampleData()" class="m3-button m3-button-tonal">
+                <span>🪄</span> Load Sample Data
+            </button>
+            <a href="{{ path('app_dashboard') }}" class="m3-button m3-button-text">
+                <span>←</span> Exit to Dashboard
+            </a>
+        </div>
+    </div>
+
+    {# Progress Bar #}
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 40px; background: var(--m3-surface-container); padding: 12px; border-radius: 100px;">
+        {% for step in ['Year & Terms', 'Classes', 'Subjects', 'Review'] %}
+            <div id="step-nav-{{ loop.index }}" class="wizard-step-pill" style="flex: 1; text-align: center; padding: 10px; border-radius: 100px; font-weight: 500; font-size: 0.875rem; transition: all 0.3s ease;">
+                {{ loop.index }}. {{ step }}
+            </div>
+        {% endfor %}
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div style="background-color: var(--m3-primary-container); color: var(--m3-on-primary-container); padding: 20px 24px; border-radius: var(--m3-radius-large); margin-bottom: 32px; display: flex; align-items: center; gap: 16px;">
+            <span style="font-size: 24px;">✅</span>
+            <div>
+                <h3 style="margin: 0; font-size: 1.1rem;">Success!</h3>
+                <p style="margin: 4px 0 0; opacity: 0.9;">{{ message }}</p>
+            </div>
+        </div>
+    {% endfor %}
+
+    {% if errors is not empty %}
+        <div style="background-color: var(--m3-error-container); color: var(--m3-on-error-container); padding: 20px 24px; border-radius: var(--m3-radius-large); margin-bottom: 32px;">
+            <h3 style="margin: 0 0 12px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                <span>⚠️</span> Configuration Errors
+            </h3>
+            <ul style="margin: 0; padding-left: 24px; line-height: 1.6;">
+                {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form id="wizard-form" method="post" novalidate>
+        {# STEP 1: YEAR & TERMS #}
+        <div id="step-content-1" class="wizard-content">
+            <div class="m3-card m3-card-outlined" style="padding: 40px;">
+                <h2 style="margin: 0 0 32px; font-size: 1.5rem; font-weight: 400; color: var(--m3-primary);">1. Academic Year & Terms</h2>
+                
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                    <div>
+                        <label class="m3-label">ACADEMIC YEAR NAME</label>
+                        <input type="text" name="year_name" id="year_name" required class="m3-text-field" placeholder="e.g. 2026-2027" value="{{ app.request.request.get('year_name','') }}">
+                    </div>
+                    <div>
+                        <label class="m3-label">START DATE</label>
+                        <input type="date" name="year_start_date" id="year_start_date" required class="m3-text-field" value="{{ app.request.request.get('year_start_date','') }}">
+                    </div>
+                    <div>
+                        <label class="m3-label">END DATE</label>
+                        <input type="date" name="year_end_date" id="year_end_date" required class="m3-text-field" value="{{ app.request.request.get('year_end_date','') }}">
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 40px;">
+                    <input type="checkbox" name="year_is_current" id="year_is_current" value="1" {% if app.request.request.get('year_is_current') %}checked{% endif %} class="m3-checkbox">
+                    <label for="year_is_current" style="font-size: 1rem; color: var(--m3-on-surface); cursor: pointer;">Set as current active year</label>
+                </div>
+
+                <div style="margin-top: 32px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <label class="m3-label" style="margin: 0;">ACADEMIC TERMS</label>
+                        <span id="term-count-badge" class="badge-pill">0 terms defined</span>
+                    </div>
+                    <p style="margin: 0 0 16px; color: var(--m3-on-surface-variant); font-size: 0.875rem; line-height: 1.5;">
+                        Enter each term on a new line. Format: <code>Name | StartDate | EndDate | IsCurrent(1/0)</code><br>
+                        Example: <code>First Semester | 2026-09-01 | 2026-12-15 | 1</code>
+                    </p>
+                    <textarea name="terms_lines" id="terms_lines" rows="6" required class="m3-text-field" style="height: auto; font-family: 'JetBrains Mono', 'Fira Code', monospace; padding: 16px; line-height: 1.6;">{{ app.request.request.get('terms_lines',"Term 1 | 2026-09-01 | 2026-12-20 | 1\nTerm 2 | 2027-01-10 | 2027-05-20 | 0") }}</textarea>
+                </div>
+
+                <div style="margin-top: 40px; display: flex; justify-content: flex-end;">
+                    <button type="button" onclick="goToStep(2)" class="m3-button m3-button-filled" style="padding: 0 32px;">Next: Classes →</button>
+                </div>
+            </div>
+        </div>
+
+        {# STEP 2: CLASSES #}
+        <div id="step-content-2" class="wizard-content" style="display: none;">
+            <div class="m3-card m3-card-outlined" style="padding: 40px;">
+                <h2 style="margin: 0 0 32px; font-size: 1.5rem; font-weight: 400; color: var(--m3-primary);">2. School Classes</h2>
+                
+                <p style="margin: 0 0 24px; color: var(--m3-on-surface-variant); line-height: 1.6;">
+                    Define the classes available for this academic year. Classes are linked to grade levels.
+                    Format: <code>Class Name | Grade Level | Optional Section</code>
+                </p>
+
+                <div style="margin-bottom: 12px; display: flex; justify-content: space-between;">
+                    <label class="m3-label" style="margin: 0;">CLASS DEFINITIONS</label>
+                    <span id="class-count-badge" class="badge-pill">0 classes defined</span>
+                </div>
+                <textarea name="classes_lines" id="classes_lines" rows="10" required class="m3-text-field" style="height: auto; font-family: monospace; padding: 16px; line-height: 1.6;">{{ app.request.request.get('classes_lines',"7A | Grade 7 | A\n7B | Grade 7 | B\n8A | Grade 8 | A") }}</textarea>
+
+                <div style="margin-top: 40px; display: flex; justify-content: space-between;">
+                    <button type="button" onclick="goToStep(1)" class="m3-button m3-button-outlined">← Back</button>
+                    <button type="button" onclick="goToStep(3)" class="m3-button m3-button-filled" style="padding: 0 32px;">Next: Subjects →</button>
+                </div>
+            </div>
+        </div>
+
+        {# STEP 3: SUBJECTS #}
+        <div id="step-content-3" class="wizard-content" style="display: none;">
+            <div class="m3-card m3-card-outlined" style="padding: 40px;">
+                <h2 style="margin: 0 0 32px; font-size: 1.5rem; font-weight: 400; color: var(--m3-primary);">3. Curriculum Subjects</h2>
+                
+                <p style="margin: 0 0 24px; color: var(--m3-on-surface-variant); line-height: 1.6;">
+                    Define the subjects taught. These will be automatically duplicated across all terms defined in Step 1.
+                    Format: <code>Code | Name | Grade Level | Optional Description</code>
+                </p>
+
+                <div style="margin-bottom: 12px; display: flex; justify-content: space-between;">
+                    <label class="m3-label" style="margin: 0;">SUBJECT DEFINITIONS</label>
+                    <span id="subject-count-badge" class="badge-pill">0 subjects defined</span>
+                </div>
+                <textarea name="subjects_lines" id="subjects_lines" rows="10" required class="m3-text-field" style="height: auto; font-family: monospace; padding: 16px; line-height: 1.6;">{{ app.request.request.get('subjects_lines',"MATH7 | Mathematics | Grade 7 | Essential Math\nSCI7 | Science | Grade 7 | Natural Sciences\nMATH8 | Mathematics | Grade 8 | Advanced Algebra") }}</textarea>
+
+                <div style="margin-top: 40px; display: flex; justify-content: space-between;">
+                    <button type="button" onclick="goToStep(2)" class="m3-button m3-button-outlined">← Back</button>
+                    <button type="button" onclick="updateReviewAndGo()" class="m3-button m3-button-filled" style="padding: 0 32px; background: var(--m3-tertiary); color: var(--m3-on-tertiary);">Review Setup →</button>
+                </div>
+            </div>
+        </div>
+
+        {# STEP 4: REVIEW #}
+        <div id="step-content-4" class="wizard-content" style="display: none;">
+            <div class="m3-card m3-card-outlined" style="padding: 40px;">
+                <h2 style="margin: 0 0 32px; font-size: 1.5rem; font-weight: 400; color: var(--m3-primary);">4. Review & Confirm</h2>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+                    <div>
+                        <h3 style="font-size: 1rem; margin: 0 0 16px; color: var(--m3-on-surface-variant); text-transform: uppercase; letter-spacing: 1px;">Academic Period</h3>
+                        <div class="review-item">
+                            <strong>Year:</strong> <span id="review-year-name">—</span>
+                        </div>
+                        <div class="review-item">
+                            <strong>Duration:</strong> <span id="review-year-dates">—</span>
+                        </div>
+                        <div id="review-terms-list" style="margin-top: 16px; display: flex; flex-direction: column; gap: 8px;">
+                            {# Injected via JS #}
+                        </div>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1rem; margin: 0 0 16px; color: var(--m3-on-surface-variant); text-transform: uppercase; letter-spacing: 1px;">Inventory Summary</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="m3-card m3-card-tonal" style="padding: 16px; text-align: center;">
+                                <div id="review-class-count" style="font-size: 2rem; font-weight: 300;">0</div>
+                                <div style="font-size: 0.75rem; opacity: 0.7;">CLASSES</div>
+                            </div>
+                            <div class="m3-card m3-card-tonal" style="padding: 16px; text-align: center;">
+                                <div id="review-subject-count" style="font-size: 2rem; font-weight: 300;">0</div>
+                                <div style="font-size: 0.75rem; opacity: 0.7;">UNIQUE SUBJECTS</div>
+                            </div>
+                        </div>
+                        <div class="m3-card m3-card-outlined" style="margin-top: 16px; padding: 16px; background: var(--m3-surface-container-highest);">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-weight: 500;">Total Entities to Create:</span>
+                                <span id="review-total-entities" style="font-size: 1.25rem; color: var(--m3-primary);">0</span>
+                            </div>
+                            <p style="margin: 8px 0 0; font-size: 0.75rem; color: var(--m3-on-surface-variant);">
+                                Subjects will be duplicated for each term (Total <span id="review-total-subjects">0</span> subject records).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 48px; padding: 24px; background: var(--m3-secondary-container); color: var(--m3-on-secondary-container); border-radius: var(--m3-radius-large);">
+                    <p style="margin: 0; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+                        <span>💡</span> Ready to initialize?
+                    </p>
+                    <p style="margin: 8px 0 0; font-size: 0.875rem; opacity: 0.9;">
+                        Running this setup will persist all these entities to the database. Existing classes or subjects with matching names/codes will be reused if found.
+                    </p>
+                </div>
+
+                <div style="margin-top: 40px; display: flex; justify-content: space-between;">
+                    <button type="button" onclick="goToStep(3)" class="m3-button m3-button-outlined">← Change Details</button>
+                    <button type="submit" class="m3-button m3-button-filled" style="padding: 0 48px; height: 56px; font-size: 1.1rem;">
+                        Initialize System
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    :root {
+        --m3-radius-large: 24px;
+        --m3-surface-container: #f0f3f8;
+        --m3-surface-container-highest: #e1e2e8;
+        --m3-tertiary: #4f5b92;
+        --m3-on-tertiary: #ffffff;
+    }
+
+    .wizard-step-pill {
+        color: var(--m3-on-surface-variant);
+        opacity: 0.6;
+    }
+
+    .wizard-step-pill.active {
+        background: var(--m3-primary);
+        color: var(--m3-on-primary);
+        opacity: 1;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .badge-pill {
+        background: var(--m3-surface-container-high);
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--m3-primary);
+    }
+
+    .review-item {
+        padding: 12px 0;
+        border-bottom: 1px solid var(--m3-outline-variant);
+        font-size: 1rem;
+    }
+
+    .review-item strong {
+        color: var(--m3-on-surface-variant);
+        width: 100px;
+        display: inline-block;
+    }
+
+    .term-review-card {
+        background: var(--m3-surface-container-low);
+        padding: 12px 16px;
+        border-radius: 12px;
+        border-left: 4px solid var(--m3-primary);
+        font-size: 0.875rem;
+    }
+</style>
+
+<script>
+    function loadSampleData() {
+        if (!confirm('This will overwrite current inputs with sample data. Continue?')) return;
+        
+        document.getElementById('year_name').value = '2026/2027 Academic Session';
+        document.getElementById('year_start_date').value = '2026-08-20';
+        document.getElementById('year_end_date').value = '2027-06-30';
+        document.getElementById('year_is_current').checked = true;
+
+        document.getElementById('terms_lines').value = 
+            'Autumn Term | 2026-08-20 | 2026-12-18 | 1\n' +
+            'Spring Term | 2027-01-05 | 2027-03-26 | 0\n' +
+            'Summer Term | 2027-04-12 | 2027-06-30 | 0';
+
+        document.getElementById('classes_lines').value = 
+            'Grade 10A | Grade 10 | A\n' +
+            'Grade 10B | Grade 10 | B\n' +
+            'Grade 11A | Grade 11 | A\n' +
+            'Grade 12A | Grade 12 | A';
+
+        document.getElementById('subjects_lines').value = 
+            'PHY10 | Physics | Grade 10 | Mechanics & Heat\n' +
+            'CHEM10 | Chemistry | Grade 10 | Basic Inorganic\n' +
+            'MATH11 | Mathematics | Grade 11 | Calculus I\n' +
+            'ENG12 | English Literature | Grade 12 | Shakespearean Drama';
+
+        updateCounts();
+        goToStep(1);
+    }
+
+    function goToStep(step) {
+        // Hide all steps
+        document.querySelectorAll('.wizard-content').forEach(el => el.style.display = 'none');
+        // Show target step
+        document.getElementById('step-content-' + step).style.display = 'block';
+        
+        // Update nav
+        document.querySelectorAll('.wizard-step-pill').forEach((el, index) => {
+            el.classList.toggle('active', (index + 1) === step);
+        });
+
+        // Scroll to top of wizard
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function parseLines(text) {
+        if (!text) return [];
+        return text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    }
+
+    function updateCounts() {
+        const terms = parseLines(document.getElementById('terms_lines').value);
+        const classes = parseLines(document.getElementById('classes_lines').value);
+        const subjects = parseLines(document.getElementById('subjects_lines').value);
+
+        document.getElementById('term-count-badge').textContent = terms.length + ' terms defined';
+        document.getElementById('class-count-badge').textContent = classes.length + ' classes defined';
+        document.getElementById('subject-count-badge').textContent = subjects.length + ' subjects defined';
+    }
+
+    function updateReviewAndGo() {
+        // Update Summary Data
+        const yearName = document.getElementById('year_name').value || 'Unnamed Year';
+        const start = document.getElementById('year_start_date').value || '—';
+        const end = document.getElementById('year_end_date').value || '—';
+        
+        document.getElementById('review-year-name').textContent = yearName;
+        document.getElementById('review-year-dates').textContent = start + ' to ' + end;
+
+        const termLines = parseLines(document.getElementById('terms_lines').value);
+        const classLines = parseLines(document.getElementById('classes_lines').value);
+        const subjectLines = parseLines(document.getElementById('subjects_lines').value);
+
+        // Render terms
+        const termList = document.getElementById('review-terms-list');
+        termList.innerHTML = '';
+        termLines.forEach(line => {
+            const parts = line.split('|').map(p => p.trim());
+            const div = document.createElement('div');
+            div.className = 'term-review-card';
+            div.innerHTML = `<strong>${parts[0] || 'Unknown'}</strong><br><span style="opacity:0.7">${parts[1] || '?'} - ${parts[2] || '?'}</span>`;
+            if (parts[3] === '1') div.style.borderColor = 'var(--m3-tertiary)';
+            termList.appendChild(div);
+        });
+
+        const numTerms = termLines.length;
+        const numClasses = classLines.length;
+        const numSubjects = subjectLines.length;
+        const totalSubjects = numSubjects * numTerms;
+
+        document.getElementById('review-class-count').textContent = numClasses;
+        document.getElementById('review-subject-count').textContent = numSubjects;
+        document.getElementById('review-total-subjects').textContent = totalSubjects;
+        document.getElementById('review-total-entities').textContent = 1 + numTerms + numClasses + totalSubjects;
+
+        goToStep(4);
+    }
+
+    // Event listeners
+    document.getElementById('terms_lines').addEventListener('input', updateCounts);
+    document.getElementById('classes_lines').addEventListener('input', updateCounts);
+    document.getElementById('subjects_lines').addEventListener('input', updateCounts);
+
+    // Init
+    window.onload = () => {
+        updateCounts();
+        goToStep(1);
+    };
+</script>
+{% endblock %}

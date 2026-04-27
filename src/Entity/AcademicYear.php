@@ -113,31 +113,37 @@ class AcademicYear
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: Classe::class, mappedBy: 'academicYear')]
-    private Collection $classes;
+    #[ORM\OneToMany(targetEntity: StudentEnrollment::class, mappedBy: 'academicYear')]
+    private Collection $studentEnrollments;
 
     /**
-     * @return Collection<int, Classe>
+     * @return Collection<int, StudentEnrollment>
      */
-    public function getClasses(): Collection
+    public function getStudentEnrollments(): Collection
     {
-        if (!$this->classes instanceof Collection) {
-            $this->classes = new ArrayCollection();
+        if (!$this->studentEnrollments instanceof Collection) {
+            $this->studentEnrollments = new ArrayCollection();
         }
-        return $this->classes;
+        return $this->studentEnrollments;
     }
 
-    public function addClasse(Classe $classe): self
+    public function addStudentEnrollment(StudentEnrollment $studentEnrollment): self
     {
-        if (!$this->getClasses()->contains($classe)) {
-            $this->getClasses()->add($classe);
+        if (!$this->getStudentEnrollments()->contains($studentEnrollment)) {
+            $this->getStudentEnrollments()->add($studentEnrollment);
+            $studentEnrollment->setAcademicYear($this);
         }
         return $this;
     }
 
-    public function removeClasse(Classe $classe): self
+    public function removeStudentEnrollment(StudentEnrollment $studentEnrollment): self
     {
-        $this->getClasses()->removeElement($classe);
+        if ($this->getStudentEnrollments()->removeElement($studentEnrollment)) {
+            // set the owning side to null (unless already changed)
+            if ($studentEnrollment->getAcademicYear() === $this) {
+                $studentEnrollment->setAcademicYear(null);
+            }
+        }
         return $this;
     }
 
@@ -146,7 +152,7 @@ class AcademicYear
 
     public function __construct()
     {
-        $this->classes = new ArrayCollection();
+        $this->studentEnrollments = new ArrayCollection();
         $this->terms = new ArrayCollection();
     }
 
@@ -223,26 +229,6 @@ class AcademicYear
         return $this;
     }
 
-    public function addClass(Classe $class): static
-    {
-        if (!$this->classes->contains($class)) {
-            $this->classes->add($class);
-            $class->setAcademicYear($this);
-        }
 
-        return $this;
-    }
-
-    public function removeClass(Classe $class): static
-    {
-        if ($this->classes->removeElement($class)) {
-            // set the owning side to null (unless already changed)
-            if ($class->getAcademicYear() === $this) {
-                $class->setAcademicYear(null);
-            }
-        }
-
-        return $this;
-    }
 
 }

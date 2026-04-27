@@ -3,8 +3,11 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Subject;
+use App\Repository\AcademicYearRepository;
+use App\Repository\ChapterRepository;
+use App\Repository\ClasseRepository;
 use App\Repository\SubjectRepository;
-use App\Repository\SubjectSectionRepository;
+use App\Repository\TermRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,10 +20,58 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class AdminSubjectController extends AbstractController
 {
     #[Route('/subjects', name: 'subjects_index')]
-    public function subjectsIndex(SubjectRepository $subjectRepository): Response
-    {
+    public function subjectsIndex(
+        Request $request,
+        SubjectRepository $subjectRepository,
+        TermRepository $termRepository,
+        AcademicYearRepository $academicYearRepository,
+        ClasseRepository $classeRepository,
+        EntityManagerInterface $em
+    ): Response {
+        $termId = $request->query->get('term_id');
+        $academicYearId = $request->query->get('academic_year_id');
+        $classId = $request->query->get('class_id');
+        $search = trim($request->query->get('search', ''));
+
+        $qb = $em->createQueryBuilder()
+            ->select('s')
+            ->from(Subject::class, 's')
+            ->leftJoin('s.term', 't')
+            ->orderBy('s.id', 'DESC');
+
+        if ($termId) {
+            $qb->andWhere('s.term = :termId')->setParameter('termId', $termId);
+        }
+
+        if ($academicYearId) {
+            $qb->andWhere('t.academicYear = :ayId')->setParameter('ayId', $academicYearId);
+        }
+
+        if ($classId) {
+            $qb->andWhere('s.id IN (SELECT IDENTITY(ta.subject) FROM App\Entity\TeacherAssignment ta WHERE ta.classe = :classId)')
+               ->setParameter('classId', $classId);
+        }
+
+        if ($search !== '') {
+            $qb->andWhere('s.name LIKE :search OR s.subject_code LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+
+        // Filter terms dropdown by academic year if one is selected
+        $termsCriteria = [];
+        if ($academicYearId) {
+            $termsCriteria['academicYear'] = $academicYearId;
+        }
+
         return $this->render('admin/subjects/index.html.twig', [
-            'subjects' => $subjectRepository->findBy([], ['id' => 'DESC']),
+            'subjects' => $qb->getQuery()->getResult(),
+            'terms' => $termRepository->findBy($termsCriteria, ['id' => 'DESC']),
+            'academic_years' => $academicYearRepository->findBy([], ['id' => 'DESC']),
+            'classes' => $classeRepository->findBy([], ['name' => 'ASC']),
+            'current_term' => $termId,
+            'current_academic_year' => $academicYearId,
+            'current_class' => $classId,
+            'current_search' => $search,
         ]);
     }
 
@@ -28,6 +79,7 @@ class AdminSubjectController extends AbstractController
     public function subjectsNew(
         Request $request,
         SubjectRepository $subjectRepository,
+        TermRepository $termRepository,
         EntityManagerInterface $em,
     ): Response {
         $errors = [];
@@ -35,7 +87,9 @@ class AdminSubjectController extends AbstractController
         if ($request->isMethod('POST')) {
             $subjectCode = strtoupper(trim($request->request->get('subject_code', '')));
             $name = trim($request->request->get('name', ''));
+            $gradeLevel = trim($request->request->get('grade_level', ''));
             $description = trim($request->request->get('description', ''));
+            $termId = $request->request->get('term_id');
             $isActive = (bool) $request->request->get('is_active', false);
 
             if ($subjectCode === '') {
@@ -51,19 +105,29 @@ class AdminSubjectController extends AbstractController
                 $subject = new Subject();
                 $subject->setSubjectCode($subjectCode);
                 $subject->setName($name);
+                $subject->setGradeLevel($gradeLevel !== '' ? $gradeLevel : null);
                 $subject->setDescription($description !== '' ? $description : null);
+                if ($termId) {
+                    $subject->setTerm($termRepository->find($termId));
+                }
                 $subject->setIsActive($isActive);
 
                 $em->persist($subject);
                 $em->flush();
 
                 $this->addFlash('success', "Subject «{$name}» created successfully.");
+                $returnTo = trim((string) $request->request->get('return_to', $request->query->get('return_to', '')));
+                if (str_starts_with($returnTo, '/admin/')) {
+                    return $this->redirect($this->appendQueryParams($returnTo, ['subject_id' => $subject->getId()]));
+                }
+
                 return $this->redirectToRoute('admin_subjects_index');
             }
         }
 
         return $this->render('admin/subjects/new.html.twig', [
             'errors' => $errors,
+            'terms' => $termRepository->findAll(),
         ]);
     }
 
@@ -72,6 +136,7 @@ class AdminSubjectController extends AbstractController
         int $id,
         Request $request,
         SubjectRepository $subjectRepository,
+        TermRepository $termRepository,
         EntityManagerInterface $em,
     ): Response {
         $subject = $subjectRepository->find($id);
@@ -84,7 +149,9 @@ class AdminSubjectController extends AbstractController
         if ($request->isMethod('POST')) {
             $subjectCode = strtoupper(trim($request->request->get('subject_code', '')));
             $name = trim($request->request->get('name', ''));
+            $gradeLevel = trim($request->request->get('grade_level', ''));
             $description = trim($request->request->get('description', ''));
+            $termId = $request->request->get('term_id');
             $isActive = (bool) $request->request->get('is_active', false);
 
             if ($subjectCode === '') {
@@ -102,7 +169,9 @@ class AdminSubjectController extends AbstractController
             if (empty($errors)) {
                 $subject->setSubjectCode($subjectCode);
                 $subject->setName($name);
+                $subject->setGradeLevel($gradeLevel !== '' ? $gradeLevel : null);
                 $subject->setDescription($description !== '' ? $description : null);
+                $subject->setTerm($termId ? $termRepository->find($termId) : null);
                 $subject->setIsActive($isActive);
 
                 $em->flush();
@@ -115,6 +184,7 @@ class AdminSubjectController extends AbstractController
         return $this->render('admin/subjects/edit.html.twig', [
             'subject' => $subject,
             'errors' => $errors,
+            'terms' => $termRepository->findAll(),
         ]);
     }
 
@@ -123,7 +193,7 @@ class AdminSubjectController extends AbstractController
         int $id,
         Request $request,
         SubjectRepository $subjectRepository,
-        SubjectSectionRepository $subjectSectionRepository,
+        ChapterRepository $chapterRepository,
         EntityManagerInterface $em,
     ): Response {
         $subject = $subjectRepository->find($id);
@@ -132,9 +202,9 @@ class AdminSubjectController extends AbstractController
         }
 
         if ($this->isCsrfTokenValid('delete_subject_' . $id, $request->request->get('_token'))) {
-            $inUse = $subjectSectionRepository->findOneBy(['subject' => $subject]) !== null;
+            $inUse = $chapterRepository->findOneBy(['subject' => $subject]) !== null;
             if ($inUse) {
-                $this->addFlash('error', "Subject «{$subject->getName()}» is used in subject sections and cannot be deleted.");
+                $this->addFlash('error', "Subject «{$subject->getName()}» is used in chapters and cannot be deleted.");
                 return $this->redirectToRoute('admin_subjects_index');
             }
 
@@ -145,5 +215,31 @@ class AdminSubjectController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_subjects_index');
+    }
+
+    /**
+     * @param array<string, int|string|null> $params
+     */
+    private function appendQueryParams(string $path, array $params): string
+    {
+        $parts = parse_url($path);
+        if (!is_array($parts)) {
+            return $path;
+        }
+
+        $query = [];
+        if (isset($parts['query'])) {
+            parse_str($parts['query'], $query);
+        }
+        foreach ($params as $key => $value) {
+            if ($value !== null && $value !== '') {
+                $query[$key] = $value;
+            }
+        }
+
+        $basePath = $parts['path'] ?? $path;
+        $queryString = http_build_query($query);
+
+        return $queryString === '' ? $basePath : $basePath . '?' . $queryString;
     }
 }

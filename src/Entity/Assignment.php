@@ -15,7 +15,7 @@ class Assignment
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'bigint')]
     private ?int $id = null;
 
     public function getId(): ?int
@@ -170,17 +170,36 @@ class Assignment
         return $this;
     }
 
-    #[ORM\OneToOne(targetEntity: Submission::class, mappedBy: 'assignment')]
-    private ?Submission $submission = null;
+    #[ORM\OneToMany(targetEntity: Submission::class, mappedBy: 'assignment')]
+    private Collection $submissions;
 
-    public function getSubmission(): ?Submission
+    /**
+     * @return Collection<int, Submission>
+     */
+    public function getSubmissions(): Collection
     {
-        return $this->submission;
+        if (!$this->submissions instanceof Collection) {
+            $this->submissions = new ArrayCollection();
+        }
+        return $this->submissions;
     }
 
-    public function setSubmission(?Submission $submission): self
+    public function addSubmission(Submission $submission): self
     {
-        $this->submission = $submission;
+        if (!$this->getSubmissions()->contains($submission)) {
+            $this->getSubmissions()->add($submission);
+            $submission->setAssignment($this);
+        }
+        return $this;
+    }
+
+    public function removeSubmission(Submission $submission): self
+    {
+        if ($this->getSubmissions()->removeElement($submission)) {
+            if ($submission->getAssignment() === $this) {
+                $submission->setAssignment(null);
+            }
+        }
         return $this;
     }
 

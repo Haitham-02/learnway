@@ -1,0 +1,86 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Student Dashboard — LearnWay{% endblock %}
+
+{% block body %}
+<div style="max-width: 1200px; margin: 0 auto; padding-bottom: 64px;">
+    
+    {# ── WELCOME HERO ── #}
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; background: linear-gradient(135deg, #122c34, #224870); padding: 48px; border-radius: var(--m3-radius-large); color: white; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <h1 style="margin: 0; font-size: 2.5rem; font-weight: 300;">Hello, <span style="font-weight: 600;">{{ app.user.firstName }}</span>!</h1>
+            <p style="margin: 0; opacity: 0.9; font-size: 1.125rem;">
+                {% if classe %}
+                    You are currently in <span style="font-weight: 600;">{{ classe.name }}</span>
+                {% else %}
+                    You are not currently enrolled in any class.
+                {% endif %}
+            </p>
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <div style="background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: var(--m3-radius-full); font-size: 0.875rem; backdrop-filter: blur(8px);">
+                    {{ "now"|date("l, F jS") }}
+                </div>
+            </div>
+        </div>
+        <div style="font-size: 5rem; opacity: 0.2; transform: rotate(-10deg);">📖</div>
+    </div>
+
+    {# ── MAIN CONTENT ── #}
+    <div style="display: grid; grid-template-columns: 1fr 320px; gap: 40px; align-items: flex-start;">
+        
+        {# LEFT: SUBJECTS #}
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+            <h2 style="margin: 0; font-size: 1.5rem; font-weight: 500; color: var(--m3-on-surface);">My Subjects</h2>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
+                {% for ta in assignments %}
+                    <div class="m3-card m3-card-elevated" style="padding: 24px; display: flex; flex-direction: column; gap: 16px; border: 1px solid var(--m3-outline-variant);">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div style="width: 48px; height: 48px; background: var(--m3-primary-container); color: var(--m3-on-primary-container); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                📚
+                            </div>
+                            <div>
+                                <h3 style="margin: 0; font-size: 1.125rem; font-weight: 500;">{{ ta.subject.name }}</h3>
+                                <p style="margin: 0; font-size: 0.8125rem; color: var(--m3-on-surface-variant);">Instructor: {{ ta.teacher.firstName }} {{ ta.teacher.lastName }}</p>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--m3-outline-variant); display: flex; gap: 8px;">
+                            <a href="{{ path('student_subject_chapters', {subjectId: ta.subject.id}) }}" class="m3-button m3-button-filled" style="flex: 1;">
+                                View Content
+                            </a>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="m3-card m3-card-outlined" style="grid-column: 1/-1; text-align: center; padding: 64px;">
+                        <div style="font-size: 4rem; margin-bottom: 16px; opacity: 0.5;">📭</div>
+                        <h3 style="margin: 0 0 8px; font-weight: 500;">No subjects found</h3>
+                        <p style="margin: 0; color: var(--m3-on-surface-variant);">You don't have any subjects assigned to your class yet.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# RIGHT: SIDEBAR #}
+        <aside style="display: flex; flex-direction: column; gap: 24px;">
+            <div class="m3-card m3-card-filled" style="padding: 24px; background: var(--m3-surface-container-high);">
+                <h3 style="margin: 0 0 16px 0; font-size: 1.125rem; font-weight: 500;">Upcoming</h3>
+                <p style="font-size: 0.875rem; color: var(--m3-on-surface-variant); margin: 0;">No upcoming assignments or exams.</p>
+            </div>
+
+            <div class="m3-card m3-card-outlined" style="padding: 24px;">
+                <h3 style="margin: 0 0 16px 0; font-size: 1.125rem; font-weight: 500;">Quick Links</h3>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <a href="#" class="m3-button m3-button-text" style="justify-content: flex-start; padding: 0; height: 32px; font-size: 0.9375rem;">
+                        <span style="margin-right: 8px;">📊</span> My Grades
+                    </a>
+                    <a href="#" class="m3-button m3-button-text" style="justify-content: flex-start; padding: 0; height: 32px; font-size: 0.9375rem;">
+                        <span style="margin-right: 8px;">📅</span> Schedule
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+</div>
+{% endblock %}

@@ -16,6 +16,19 @@ class ClasseRepository extends ServiceEntityRepository
         parent::__construct($registry, Classe::class);
     }
 
+    /**
+     * @return Classe[]
+     */
+    public function findForSelector(): array
+    {
+        return $this->createQueryBuilder('c')
+            ->orderBy('c.is_active', 'DESC')
+            ->addOrderBy('c.name', 'ASC')
+            ->addOrderBy('c.grade_level', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return Classe[] Returns an array of Classe objects
     //     */

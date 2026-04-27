@@ -17,7 +17,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer")]
+    #[ORM\Column(type: "bigint")]
     private ?int $id = null;
 
     public function getId(): ?int
@@ -326,17 +326,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    #[ORM\OneToOne(targetEntity: StudentEnrollment::class, mappedBy: "user")]
-    private ?StudentEnrollment $studentEnrollment = null;
+    #[ORM\OneToMany(targetEntity: StudentEnrollment::class, mappedBy: "user")]
+    private Collection $studentEnrollments;
 
-    public function getStudentEnrollment(): ?StudentEnrollment
+    /**
+     * @return Collection<int, StudentEnrollment>
+     */
+    public function getStudentEnrollments(): Collection
     {
-        return $this->studentEnrollment;
+        if (!$this->studentEnrollments instanceof Collection) {
+            $this->studentEnrollments = new ArrayCollection();
+        }
+        return $this->studentEnrollments;
     }
 
-    public function setStudentEnrollment(?StudentEnrollment $studentEnrollment): self
+    public function addStudentEnrollment(StudentEnrollment $studentEnrollment): self
     {
-        $this->studentEnrollment = $studentEnrollment;
+        if (!$this->getStudentEnrollments()->contains($studentEnrollment)) {
+            $this->getStudentEnrollments()->add($studentEnrollment);
+        }
+        return $this;
+    }
+
+    public function removeStudentEnrollment(StudentEnrollment $studentEnrollment): self
+    {
+        $this->getStudentEnrollments()->removeElement($studentEnrollment);
         return $this;
     }
 
@@ -481,34 +495,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: SubjectSection::class, mappedBy: "user")]
-    private Collection $subjectSections;
-
-    /**
-     * @return Collection<int, SubjectSection>
-     */
-    public function getSubjectSections(): Collection
-    {
-        if (!$this->subjectSections instanceof Collection) {
-            $this->subjectSections = new ArrayCollection();
-        }
-        return $this->subjectSections;
-    }
-
-    public function addSubjectSection(SubjectSection $subjectSection): self
-    {
-        if (!$this->getSubjectSections()->contains($subjectSection)) {
-            $this->getSubjectSections()->add($subjectSection);
-        }
-        return $this;
-    }
-
-    public function removeSubjectSection(SubjectSection $subjectSection): self
-    {
-        $this->getSubjectSections()->removeElement($subjectSection);
-        return $this;
-    }
-
     #[ORM\OneToMany(targetEntity: SubmissionFile::class, mappedBy: "user")]
     private Collection $submissionFiles;
 
@@ -591,10 +577,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->forumComments = new ArrayCollection();
         $this->forumPosts = new ArrayCollection();
         $this->messages = new ArrayCollection();
-        $this->subjectSections = new ArrayCollection();
         $this->submissionFiles = new ArrayCollection();
         $this->submissions = new ArrayCollection();
         $this->readMessages = new ArrayCollection();
+        $this->studentEnrollments = new ArrayCollection();
     }
 
     /**

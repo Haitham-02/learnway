@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ subject.name }} Chapters — LearnWay{% endblock %}
+
+{% block body %}
+<div style="max-width: 1000px; margin: 0 auto;">
+    
+    <div style="margin-bottom: 32px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <a href="{{ path('app_dashboard') }}" class="m3-button m3-button-text" style="padding: 0; height: 32px; font-size: 0.875rem;">
+                ← Back to Dashboard
+            </a>
+        </div>
+        <h1 style="margin: 0; font-size: 2.5rem; font-weight: 400; color: var(--m3-on-surface);">{{ subject.name }}</h1>
+        <p style="margin: 4px 0 0; color: var(--m3-on-surface-variant); font-size: 1.125rem;">Curriculum Overview & Chapters</p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+        {% for chapter in chapters %}
+            <div class="m3-card m3-card-outlined" style="padding: 0; overflow: hidden; border-radius: 20px; transition: transform 0.2s;" onmouseover="this.style.transform='translateX(8px)'" onmouseout="this.style.transform='translateX(0)'">
+                <div style="display: flex; align-items: stretch;">
+                    <div style="width: 80px; background: var(--m3-primary-container); color: var(--m3-on-primary-container); display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 700; border-right: 1px solid var(--m3-outline-variant);">
+                        <span style="font-size: 0.75rem; opacity: 0.7;">CH</span>
+                        <span style="font-size: 1.5rem;">{{ loop.index }}</span>
+                    </div>
+                    <div style="flex: 1; padding: 24px; display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <h3 style="margin: 0; font-size: 1.25rem; font-weight: 500;">{{ chapter.title }}</h3>
+                            <p style="margin: 4px 0 0; color: var(--m3-on-surface-variant); font-size: 0.875rem;">{{ chapter.description|default('Explore this chapter\'s learning materials.') }}</p>
+                        </div>
+                        <a href="{{ path('student_chapter_show', {chapterId: chapter.id}) }}" class="m3-button m3-button-filled" style="border-radius: 12px; height: 48px;">
+                            Study Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="m3-card m3-card-filled" style="text-align: center; padding: 48px;">
+                <p style="color: var(--m3-on-surface-variant); margin: 0;">No chapters have been published for this subject yet.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

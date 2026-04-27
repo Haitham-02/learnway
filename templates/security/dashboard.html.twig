@@ -3,74 +3,54 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block body %}
-<div style="max-width:960px;margin:2rem auto;padding:0 1rem;font-family:sans-serif;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;">
-        <h1 style="margin:0;">Welcome, {{ app.user.firstName }} {{ app.user.lastName }}</h1>
-        <a href="{{ path('app_logout') }}"
-           style="padding:.5rem 1rem;background:#dc2626;color:#fff;border-radius:6px;text-decoration:none;font-size:.9rem;">
-            Sign Out
-        </a>
+<div style="max-width: 1200px; margin: 0 auto;">
+    <div style="margin-bottom: 40px;">
+        <h1 style="margin: 0; font-size: 2.5rem; font-weight: 300; color: var(--m3-on-surface);">Welcome, {{ app.user.firstName }}!</h1>
+        <p style="margin: 8px 0 0; color: var(--m3-on-surface-variant); font-size: 1.1rem;">Here's what's happening across the platform.</p>
     </div>
 
-    <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));">
+    {% if is_granted('ROLE_ADMIN') and stats is defined %}
+    <div style="margin-bottom: 24px; font-size: 1.25rem; font-weight: 500; color: var(--m3-primary); letter-spacing: 0.1px;">Platform Overview</div>
+    
+    <div style="display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-bottom: 48px;">
+        
+        {# Users Card #}
+        <div class="m3-card m3-card-elevated" style="padding: 24px; border-left: 4px solid var(--m3-primary);">
+            <div style="font-size: 0.875rem; font-weight: 500; color: var(--m3-on-surface-variant); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Total Users</div>
+            <div style="font-size: 3rem; font-weight: 300; color: var(--m3-primary);">{{ stats.users }}</div>
+            <div style="margin-top: 16px;">
+                <a href="{{ path('admin_users_index') }}" class="m3-button m3-button-tonal" style="height: 32px; padding: 0 16px;">Manage</a>
+            </div>
+        </div>
 
-        {% if is_granted('ROLE_ADMIN') %}
-        <a href="{{ path('admin_users_index') }}"
-           style="display:block;padding:1.5rem;background:#2563eb;color:#fff;border-radius:8px;text-decoration:none;">
-            <div style="font-size:1.5rem;margin-bottom:.5rem;">👥</div>
-            <div style="font-weight:600;">Manage Users</div>
-            <div style="font-size:.85rem;opacity:.8;margin-top:.25rem;">Add users &amp; assign roles</div>
-        </a>
-        <a href="{{ path('admin_classes_index') }}"
-           style="display:block;padding:1.5rem;background:#0891b2;color:#fff;border-radius:8px;text-decoration:none;">
-            <div style="font-size:1.5rem;margin-bottom:.5rem;">🏫</div>
-            <div style="font-weight:600;">Manage Classes</div>
-            <div style="font-size:.85rem;opacity:.8;margin-top:.25rem;">Create, edit, and delete classes</div>
-        </a>
-        <a href="{{ path('admin_student_enrollments_index') }}"
-           style="display:block;padding:1.5rem;background:#7c3aed;color:#fff;border-radius:8px;text-decoration:none;">
-            <div style="font-size:1.5rem;margin-bottom:.5rem;">🧾</div>
-            <div style="font-weight:600;">Student Enrollments</div>
-            <div style="font-size:.85rem;opacity:.8;margin-top:.25rem;">Manage student-class enrollments</div>
-        </a>
-         <a href="{{ path('admin_subject_sections_index') }}"
-            style="display:block;padding:1.5rem;background:#0f766e;color:#fff;border-radius:8px;text-decoration:none;">
-             <div style="font-size:1.5rem;margin-bottom:.5rem;">📚</div>
-             <div style="font-weight:600;">Subject Sections</div>
-             <div style="font-size:.85rem;opacity:.8;margin-top:.25rem;">Assign subjects by class and term</div>
-         </a>
-         <a href="{{ path('admin_chapters_index') }}"
-            style="display:block;padding:1.5rem;background:#9333ea;color:#fff;border-radius:8px;text-decoration:none;">
-             <div style="font-size:1.5rem;margin-bottom:.5rem;">📘</div>
-             <div style="font-weight:600;">Manage Chapters</div>
-             <div style="font-size:.85rem;opacity:.8;margin-top:.25rem;">Create, edit, and delete chapters</div>
-         </a>
-         <a href="{{ path('admin_subjects_index') }}"
-            style="display:block;padding:1.5rem;background:#4338ca;color:#fff;border-radius:8px;text-decoration:none;">
-             <div style="font-size:1.5rem;margin-bottom:.5rem;">📖</div>
-             <div style="font-weight:600;">Manage Subjects</div>
-             <div style="font-size:.85rem;opacity:.8;margin-top:.25rem;">Create, edit, and delete subjects</div>
-        </a>
-        <a href="{{ path('admin_terms_index') }}"
-           style="display:block;padding:1.5rem;background:#0e7490;color:#fff;border-radius:8px;text-decoration:none;">
-            <div style="font-size:1.5rem;margin-bottom:.5rem;">🗓️</div>
-            <div style="font-weight:600;">Manage Terms</div>
-            <div style="font-size:.85rem;opacity:.8;margin-top:.25rem;">Create, edit, and delete terms</div>
-        </a>
-        <a href="{{ path('admin_forum_posts_index') }}"
-           style="display:block;padding:1.5rem;background:#be123c;color:#fff;border-radius:8px;text-decoration:none;">
-            <div style="font-size:1.5rem;margin-bottom:.5rem;">💬</div>
-            <div style="font-weight:600;">Forum Posts</div>
-            <div style="font-size:.85rem;opacity:.8;margin-top:.25rem;">Manage class discussion posts</div>
-        </a>
-        <a href="{{ path('admin_academic_years_index') }}"
-           style="display:block;padding:1.5rem;background:#be123c;color:#fff;border-radius:8px;text-decoration:none;">
-            <div style="font-size:1.5rem;margin-bottom:.5rem;">💬</div>
-            <div style="font-weight:600;">Manage Academic Years</div>
-            <div style="font-size:.85rem;opacity:.8;margin-top:.25rem;">Create, edit, and delete academic years</div>
-        </a>
-        {% endif %}
+        {# Classes Card #}
+        <div class="m3-card m3-card-elevated" style="padding: 24px; border-left: 4px solid var(--m3-secondary);">
+            <div style="font-size: 0.875rem; font-weight: 500; color: var(--m3-on-surface-variant); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Classes</div>
+            <div style="font-size: 3rem; font-weight: 300; color: var(--m3-secondary);">{{ stats.classes }}</div>
+            <div style="margin-top: 16px;">
+                <a href="{{ path('admin_classes_index') }}" class="m3-button m3-button-tonal" style="height: 32px; padding: 0 16px;">View</a>
+            </div>
+        </div>
+
+        {# Subjects Card #}
+        <div class="m3-card m3-card-elevated" style="padding: 24px; border-left: 4px solid var(--m3-primary-container);">
+            <div style="font-size: 0.875rem; font-weight: 500; color: var(--m3-on-surface-variant); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Subjects</div>
+            <div style="font-size: 3rem; font-weight: 300; color: var(--m3-primary-container);">{{ stats.subjects }}</div>
+            <div style="margin-top: 16px;">
+                <a href="{{ path('admin_subjects_index') }}" class="m3-button m3-button-tonal" style="height: 32px; padding: 0 16px;">Explore</a>
+            </div>
+        </div>
+
+        {# Enrollments Card #}
+        <div class="m3-card m3-card-elevated" style="padding: 24px; border-left: 4px solid var(--m3-secondary-container);">
+            <div style="font-size: 0.875rem; font-weight: 500; color: var(--m3-on-surface-variant); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Enrollments</div>
+            <div style="font-size: 3rem; font-weight: 300; color: var(--m3-secondary-container);">{{ stats.enrollments }}</div>
+            <div style="margin-top: 16px;">
+                <a href="{{ path('admin_student_enrollments_index') }}" class="m3-button m3-button-tonal" style="height: 32px; padding: 0 16px;">Review</a>
+            </div>
+        </div>
 
     </div>
+    {% endif %}
 </div>
 {% endblock %}

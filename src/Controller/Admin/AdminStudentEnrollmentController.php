@@ -18,34 +18,89 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class AdminStudentEnrollmentController extends AbstractController
 {
     #[Route('/student-enrollments', name: 'student_enrollments_index')]
-    public function studentEnrollmentsIndex(StudentEnrollmentRepository $studentEnrollmentRepository): Response
+    public function studentEnrollmentsIndex(
+        Request $request,
+        StudentEnrollmentRepository $studentEnrollmentRepository,
+        ClasseRepository $classeRepository,
+    ): Response
     {
+        $query = trim((string) $request->query->get('q', ''));
+        $classId = (int) $request->query->get('class_id', 0);
+        $active = trim((string) $request->query->get('active', ''));
+        $sort = trim((string) $request->query->get('sort', 'newest'));
+
         return $this->render('admin/student_enrollments/index.html.twig', [
-            'enrollments' => $studentEnrollmentRepository->findBy([], ['id' => 'DESC']),
+            'enrollments' => $studentEnrollmentRepository->findForAdminList(
+                $query !== '' ? $query : null,
+                $classId ?: null,
+                $active !== '' ? $active : null,
+                $sort,
+            ),
+            'filters' => [
+                'q' => $query,
+                'class_id' => $classId,
+                'active' => $active,
+                'sort' => $sort,
+            ],
+            'classesForFilter' => $classeRepository->findForSelector(),
         ]);
+    }
+
+    #[Route('/student-enrollments/bulk', name: 'student_enrollments_bulk', methods: ['POST'])]
+    public function studentEnrollmentsBulk(
+        Request $request,
+        StudentEnrollmentRepository $studentEnrollmentRepository,
+        EntityManagerInterface $em,
+    ): Response {
+        $selectedIds = array_values(array_filter(array_map('intval', (array) $request->request->all('selected_ids'))));
+        $bulkAction = trim((string) $request->request->get('bulk_action', ''));
+
+        if ($selectedIds === []) {
+            $this->addFlash('error', 'Select at least one enrollment first.');
+            return $this->redirectToRoute('admin_student_enrollments_index', $this->getFilterQuery($request));
+        }
+
+        $enrollments = $studentEnrollmentRepository->findBy(['id' => $selectedIds]);
+        if ($enrollments === []) {
+            $this->addFlash('error', 'Selected enrollments could not be found.');
+            return $this->redirectToRoute('admin_student_enrollments_index', $this->getFilterQuery($request));
+        }
+
+        if ($bulkAction === 'delete') {
+            foreach ($enrollments as $enrollment) {
+                $em->remove($enrollment);
+            }
+            $em->flush();
+            $this->addFlash('success', sprintf('%d enrollment(s) deleted.', count($enrollments)));
+        } else {
+            $this->addFlash('error', 'Please select a valid bulk action.');
+        }
+
+        return $this->redirectToRoute('admin_student_enrollments_index', $this->getFilterQuery($request));
     }
 
     #[Route('/student-enrollments/new', name: 'student_enrollments_new', methods: ['GET', 'POST'])]
     public function studentEnrollmentsNew(
         Request $request,
+        StudentEnrollmentRepository $studentEnrollmentRepository,
         ClasseRepository $classeRepository,
         UserRepository $userRepository,
+        \App\Repository\AcademicYearRepository $academicYearRepository,
         EntityManagerInterface $em,
     ): Response {
-        $classes = $classeRepository->findBy([], ['name' => 'ASC']);
+        $classes = $classeRepository->findForSelector();
         $users = $userRepository->findStudentsForEnrollment();
+        $academicYears = $academicYearRepository->findForSelector();
         $errors = [];
 
         if ($request->isMethod('POST')) {
             $classId = (int) $request->request->get('class_id');
             $userId = (int) $request->request->get('user_id');
-            $enrolledAtRaw = trim($request->request->get('enrolled_at', ''));
-            $leftAtRaw = trim($request->request->get('left_at', ''));
+            $academicYearId = (int) $request->request->get('academic_year_id');
 
             $classe = $classId ? $classeRepository->find($classId) : null;
             $user = $userId ? $userRepository->findStudentForEnrollmentById($userId) : null;
-            $enrolledAt = \DateTime::createFromFormat('Y-m-d', $enrolledAtRaw) ?: null;
-            $leftAt = $leftAtRaw !== '' ? (\DateTime::createFromFormat('Y-m-d', $leftAtRaw) ?: null) : null;
+            $academicYear = $academicYearId ? $academicYearRepository->find($academicYearId) : null;
 
             if (!$classe) {
                 $errors[] = 'Please select a valid class.';
@@ -53,34 +108,42 @@ class AdminStudentEnrollmentController extends AbstractController
             if (!$user) {
                 $errors[] = 'Please select a valid student user.';
             }
-            if (!$enrolledAt) {
-                $errors[] = 'Enrollment date is required and must be valid.';
-            }
-            if ($leftAtRaw !== '' && !$leftAt) {
-                $errors[] = 'Left date must be a valid date.';
-            }
-            if ($enrolledAt && $leftAt && $leftAt < $enrolledAt) {
-                $errors[] = 'Left date cannot be earlier than enrollment date.';
+            if (!$academicYear) {
+                $errors[] = 'Please select a valid academic year.';
             }
 
             if (empty($errors)) {
-                $enrollment = new StudentEnrollment();
-                $enrollment->setClasse($classe);
-                $enrollment->setUser($user);
-                $enrollment->setEnrolledAt($enrolledAt);
-                $enrollment->setLeftAt($leftAt);
+                $existingEnrollment = $studentEnrollmentRepository->findOneBy([
+                    'user' => $user,
+                    'academicYear' => $academicYear,
+                ]);
 
-                $em->persist($enrollment);
-                $em->flush();
+                if ($existingEnrollment) {
+                    $errors[] = 'This student is already enrolled in a class for the selected academic year.';
+                } else {
+                    $enrollment = new StudentEnrollment();
+                    $enrollment->setClasse($classe);
+                    $enrollment->setUser($user);
+                    $enrollment->setAcademicYear($academicYear);
 
-                $this->addFlash('success', 'Enrollment created successfully.');
-                return $this->redirectToRoute('admin_student_enrollments_index');
+                    $em->persist($enrollment);
+                    $em->flush();
+
+                    $this->addFlash('success', 'Enrollment created successfully.');
+                    $returnTo = trim((string) $request->request->get('return_to', $request->query->get('return_to', '')));
+                    if (str_starts_with($returnTo, '/admin/')) {
+                        return $this->redirect($this->appendQueryParams($returnTo, ['enrollment_id' => $enrollment->getId()]));
+                    }
+
+                    return $this->redirectToRoute('admin_student_enrollments_index');
+                }
             }
         }
 
         return $this->render('admin/student_enrollments/new.html.twig', [
             'classes' => $classes,
             'users' => $users,
+            'academicYears' => $academicYears,
             'errors' => $errors,
         ]);
     }
@@ -92,6 +155,7 @@ class AdminStudentEnrollmentController extends AbstractController
         StudentEnrollmentRepository $studentEnrollmentRepository,
         ClasseRepository $classeRepository,
         UserRepository $userRepository,
+        \App\Repository\AcademicYearRepository $academicYearRepository,
         EntityManagerInterface $em,
     ): Response {
         $enrollment = $studentEnrollmentRepository->find($id);
@@ -99,20 +163,19 @@ class AdminStudentEnrollmentController extends AbstractController
             throw $this->createNotFoundException("Enrollment #{$id} not found.");
         }
 
-        $classes = $classeRepository->findBy([], ['name' => 'ASC']);
+        $classes = $classeRepository->findForSelector();
         $users = $userRepository->findStudentsForEnrollment();
+        $academicYears = $academicYearRepository->findForSelector();
         $errors = [];
 
         if ($request->isMethod('POST')) {
             $classId = (int) $request->request->get('class_id');
             $userId = (int) $request->request->get('user_id');
-            $enrolledAtRaw = trim($request->request->get('enrolled_at', ''));
-            $leftAtRaw = trim($request->request->get('left_at', ''));
+            $academicYearId = (int) $request->request->get('academic_year_id');
 
             $classe = $classId ? $classeRepository->find($classId) : null;
             $user = $userId ? $userRepository->findStudentForEnrollmentById($userId) : null;
-            $enrolledAt = \DateTime::createFromFormat('Y-m-d', $enrolledAtRaw) ?: null;
-            $leftAt = $leftAtRaw !== '' ? (\DateTime::createFromFormat('Y-m-d', $leftAtRaw) ?: null) : null;
+            $academicYear = $academicYearId ? $academicYearRepository->find($academicYearId) : null;
 
             if (!$classe) {
                 $errors[] = 'Please select a valid class.';
@@ -120,26 +183,28 @@ class AdminStudentEnrollmentController extends AbstractController
             if (!$user) {
                 $errors[] = 'Please select a valid student user.';
             }
-            if (!$enrolledAt) {
-                $errors[] = 'Enrollment date is required and must be valid.';
-            }
-            if ($leftAtRaw !== '' && !$leftAt) {
-                $errors[] = 'Left date must be a valid date.';
-            }
-            if ($enrolledAt && $leftAt && $leftAt < $enrolledAt) {
-                $errors[] = 'Left date cannot be earlier than enrollment date.';
+            if (!$academicYear) {
+                $errors[] = 'Please select a valid academic year.';
             }
 
             if (empty($errors)) {
-                $enrollment->setClasse($classe);
-                $enrollment->setUser($user);
-                $enrollment->setEnrolledAt($enrolledAt);
-                $enrollment->setLeftAt($leftAt);
+                $existingEnrollment = $studentEnrollmentRepository->findOneBy([
+                    'user' => $user,
+                    'academicYear' => $academicYear,
+                ]);
 
-                $em->flush();
+                if ($existingEnrollment && $existingEnrollment->getId() !== $enrollment->getId()) {
+                    $errors[] = 'This student is already enrolled in a class for the selected academic year.';
+                } else {
+                    $enrollment->setClasse($classe);
+                    $enrollment->setUser($user);
+                    $enrollment->setAcademicYear($academicYear);
 
-                $this->addFlash('success', 'Enrollment updated successfully.');
-                return $this->redirectToRoute('admin_student_enrollments_index');
+                    $em->flush();
+
+                    $this->addFlash('success', 'Enrollment updated successfully.');
+                    return $this->redirectToRoute('admin_student_enrollments_index');
+                }
             }
         }
 
@@ -147,6 +212,7 @@ class AdminStudentEnrollmentController extends AbstractController
             'enrollment' => $enrollment,
             'classes' => $classes,
             'users' => $users,
+            'academicYears' => $academicYears,
             'errors' => $errors,
         ]);
     }
@@ -170,5 +236,44 @@ class AdminStudentEnrollmentController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_student_enrollments_index');
+    }
+
+    /**
+     * @param array<string, int|string|null> $params
+     */
+    private function appendQueryParams(string $path, array $params): string
+    {
+        $parts = parse_url($path);
+        if (!is_array($parts)) {
+            return $path;
+        }
+
+        $query = [];
+        if (isset($parts['query'])) {
+            parse_str($parts['query'], $query);
+        }
+        foreach ($params as $key => $value) {
+            if ($value !== null && $value !== '') {
+                $query[$key] = $value;
+            }
+        }
+
+        $basePath = $parts['path'] ?? $path;
+        $queryString = http_build_query($query);
+
+        return $queryString === '' ? $basePath : $basePath . '?' . $queryString;
+    }
+
+    /**
+     * @return array{q:string,class_id:int,active:string,sort:string}
+     */
+    private function getFilterQuery(Request $request): array
+    {
+        return [
+            'q' => (string) $request->request->get('q', ''),
+            'class_id' => (int) $request->request->get('class_id', 0),
+            'active' => (string) $request->request->get('active', ''),
+            'sort' => (string) $request->request->get('sort', 'newest'),
+        ];
     }
 }

@@ -15,7 +15,7 @@ class Submission
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer")]
+    #[ORM\Column(type: "bigint")]
     private ?int $id = null;
 
     public function getId(): ?int
@@ -29,14 +29,8 @@ class Submission
         return $this;
     }
 
-    #[ORM\OneToOne(targetEntity: Assignment::class, inversedBy: "submission")]
-    #[
-        ORM\JoinColumn(
-            name: "assignment_id",
-            referencedColumnName: "id",
-            unique: true,
-        ),
-    ]
+    #[ORM\ManyToOne(targetEntity: Assignment::class, inversedBy: "submissions")]
+    #[ORM\JoinColumn(name: "assignment_id", referencedColumnName: "id", onDelete: "CASCADE")]
     private ?Assignment $assignment = null;
 
     public function getAssignment(): ?Assignment

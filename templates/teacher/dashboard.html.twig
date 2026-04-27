@@ -1,0 +1,126 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Teacher Dashboard — LearnWay{% endblock %}
+
+{% block body %}
+<div style="max-width: 1200px; margin: 0 auto; padding-bottom: 64px;">
+    
+    {# ── WELCOME HERO ── #}
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; background: linear-gradient(135deg, #224870, #2a4494); padding: 48px; border-radius: var(--m3-radius-large); color: white; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <h1 style="margin: 0; font-size: 2.5rem; font-weight: 300;">Welcome back, <span style="font-weight: 600;">{{ app.user.firstName }}</span>!</h1>
+            <p style="margin: 0; opacity: 0.9; font-size: 1.125rem;">Manage your classes, students, and curriculum all in one place.</p>
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <div style="background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: var(--m3-radius-full); font-size: 0.875rem; backdrop-filter: blur(8px);">
+                    {{ "now"|date("l, F jS") }}
+                </div>
+                <div style="background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: var(--m3-radius-full); font-size: 0.875rem; backdrop-filter: blur(8px);">
+                    {{ classeMap|length }} Active Classes
+                </div>
+            </div>
+        </div>
+        <div style="font-size: 5rem; opacity: 0.2; transform: rotate(15deg);">🎓</div>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div style="background-color: var(--m3-primary-container); color: var(--m3-on-primary-container); padding: 16px 24px; border-radius: var(--m3-radius-medium); margin-bottom: 32px; border-left: 4px solid var(--m3-primary);">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    {# ── MAIN CONTENT GRID ── #}
+    <div style="display: grid; grid-template-columns: 1fr 320px; gap: 40px; align-items: flex-start;">
+        
+        {# LEFT: CLASS CARDS #}
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <h2 style="margin: 0; font-size: 1.5rem; font-weight: 500; color: var(--m3-on-surface);">Your Classes</h2>
+            </div>
+
+            {% for entry in classeMap %}
+                <div class="m3-card m3-card-elevated" style="padding: 0; overflow: hidden; border: 1px solid var(--m3-outline-variant);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 24px; background: var(--m3-surface-container-low);">
+                        <div style="display: flex; align-items: center; gap: 20px;">
+                            <div style="width: 56px; height: 56px; background: var(--m3-primary); color: var(--m3-on-primary); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 600;">
+                                {{ entry.classe.name|slice(0, 1)|upper }}
+                            </div>
+                            <div>
+                                <h3 style="margin: 0; font-size: 1.25rem; font-weight: 500; color: var(--m3-on-surface);">{{ entry.classe.name }}</h3>
+                                <p style="margin: 0; font-size: 0.875rem; color: var(--m3-on-surface-variant);">
+                                    {{ entry.classe.gradeLevel }}{% if entry.classe.section %} · Section {{ entry.classe.section }}{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <a href="{{ path('teacher_class_students', {classId: entry.classe.id}) }}" class="m3-button m3-button-tonal" style="height: 40px; border-radius: 12px;">
+                            View Students
+                        </a>
+                    </div>
+                    
+                    <div style="padding: 24px;">
+                        <p style="margin: 0 0 16px 0; font-size: 0.75rem; font-weight: 600; color: var(--m3-outline); letter-spacing: 1px;">ASSIGNED SUBJECTS</p>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+                            {% for subject in entry.subjects %}
+                                <a href="{{ path('teacher_chapters', {subjectId: subject.id, classId: entry.classe.id}) }}" 
+                                   style="text-decoration: none; display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--m3-surface-container-highest); border-radius: 12px; border: 1px solid transparent; transition: all 0.2s;"
+                                   onmouseover="this.style.borderColor='var(--m3-outline)'; this.style.transform='translateY(-2px)'"
+                                   onmouseout="this.style.borderColor='transparent'; this.style.transform='translateY(0)'">
+                                    <span style="font-size: 1.25rem;">📚</span>
+                                    <div style="display: flex; flex-direction: column; min-width: 0;">
+                                        <span style="font-size: 0.9375rem; font-weight: 500; color: var(--m3-on-surface); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ subject.name }}</span>
+                                        <span style="font-size: 0.75rem; color: var(--m3-primary);">Manage Chapters →</span>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="m3-card m3-card-outlined" style="text-align: center; padding: 64px;">
+                    <div style="font-size: 4rem; margin-bottom: 16px; opacity: 0.5;">📭</div>
+                    <h3 style="margin: 0 0 8px; font-weight: 500;">No assignments found</h3>
+                    <p style="margin: 0; color: var(--m3-on-surface-variant);">You haven't been assigned to any classes or subjects yet.</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        {# RIGHT: QUICK STATS & ACTIONS #}
+        <aside style="display: flex; flex-direction: column; gap: 24px;">
+            <div class="m3-card m3-card-filled" style="padding: 24px; background: var(--m3-surface-container-high);">
+                <h3 style="margin: 0 0 20px 0; font-size: 1.125rem; font-weight: 500;">Quick Stats</h3>
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 40px; height: 40px; background: var(--m3-primary-container); color: var(--m3-on-primary-container); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">👥</div>
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--m3-on-surface-variant);">Total Classes</div>
+                            <div style="font-size: 1.125rem; font-weight: 600;">{{ classeMap|length }}</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 40px; height: 40px; background: var(--m3-secondary-container); color: var(--m3-on-secondary-container); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">📚</div>
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--m3-on-surface-variant);">Total Subjects</div>
+                            <div style="font-size: 1.125rem; font-weight: 600;">{{ assignments|length }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="m3-card m3-card-outlined" style="padding: 24px;">
+                <h3 style="margin: 0 0 16px 0; font-size: 1.125rem; font-weight: 500;">Resources</h3>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <a href="#" class="m3-button m3-button-text" style="justify-content: flex-start; padding: 0; height: 32px; font-size: 0.9375rem;">
+                        <span style="margin-right: 8px;">📖</span> Teacher Handbook
+                    </a>
+                    <a href="#" class="m3-button m3-button-text" style="justify-content: flex-start; padding: 0; height: 32px; font-size: 0.9375rem;">
+                        <span style="margin-right: 8px;">🗓️</span> School Calendar
+                    </a>
+                    <a href="#" class="m3-button m3-button-text" style="justify-content: flex-start; padding: 0; height: 32px; font-size: 0.9375rem;">
+                        <span style="margin-right: 8px;">💬</span> Help Center
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+</div>
+{% endblock %}

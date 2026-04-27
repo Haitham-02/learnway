@@ -28,20 +28,7 @@ class Classe
         return $this;
     }
 
-    #[ORM\ManyToOne(targetEntity: AcademicYear::class, inversedBy: 'classes')]
-    #[ORM\JoinColumn(name: 'academic_year_id', referencedColumnName: 'id')]
-    private ?AcademicYear $academicYear = null;
 
-    public function getAcademicYear(): ?AcademicYear
-    {
-        return $this->academicYear;
-    }
-
-    public function setAcademicYear(?AcademicYear $academicYear): self
-    {
-        $this->academicYear = $academicYear;
-        return $this;
-    }
 
     #[ORM\Column(type: 'string', nullable: false)]
     private ?string $name = null;
@@ -113,17 +100,31 @@ class Classe
         return $this;
     }
 
-    #[ORM\OneToOne(targetEntity: StudentEnrollment::class, mappedBy: 'classe')]
-    private ?StudentEnrollment $studentEnrollment = null;
+    #[ORM\OneToMany(targetEntity: StudentEnrollment::class, mappedBy: 'classe')]
+    private Collection $studentEnrollments;
 
-    public function getStudentEnrollment(): ?StudentEnrollment
+    /**
+     * @return Collection<int, StudentEnrollment>
+     */
+    public function getStudentEnrollments(): Collection
     {
-        return $this->studentEnrollment;
+        if (!$this->studentEnrollments instanceof Collection) {
+            $this->studentEnrollments = new ArrayCollection();
+        }
+        return $this->studentEnrollments;
     }
 
-    public function setStudentEnrollment(?StudentEnrollment $studentEnrollment): self
+    public function addStudentEnrollment(StudentEnrollment $studentEnrollment): self
     {
-        $this->studentEnrollment = $studentEnrollment;
+        if (!$this->getStudentEnrollments()->contains($studentEnrollment)) {
+            $this->getStudentEnrollments()->add($studentEnrollment);
+        }
+        return $this;
+    }
+
+    public function removeStudentEnrollment(StudentEnrollment $studentEnrollment): self
+    {
+        $this->getStudentEnrollments()->removeElement($studentEnrollment);
         return $this;
     }
 
@@ -155,38 +156,10 @@ class Classe
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: SubjectSection::class, mappedBy: 'classe')]
-    private Collection $subjectSections;
-
     public function __construct()
     {
         $this->forumPosts = new ArrayCollection();
-        $this->subjectSections = new ArrayCollection();
-    }
-
-    /**
-     * @return Collection<int, SubjectSection>
-     */
-    public function getSubjectSections(): Collection
-    {
-        if (!$this->subjectSections instanceof Collection) {
-            $this->subjectSections = new ArrayCollection();
-        }
-        return $this->subjectSections;
-    }
-
-    public function addSubjectSection(SubjectSection $subjectSection): self
-    {
-        if (!$this->getSubjectSections()->contains($subjectSection)) {
-            $this->getSubjectSections()->add($subjectSection);
-        }
-        return $this;
-    }
-
-    public function removeSubjectSection(SubjectSection $subjectSection): self
-    {
-        $this->getSubjectSections()->removeElement($subjectSection);
-        return $this;
+        $this->studentEnrollments = new ArrayCollection();
     }
 
     public function getGradeLevel(): ?string

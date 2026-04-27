@@ -1,0 +1,79 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Submissions for {{ assignment.title }} — LearnWay{% endblock %}
+
+{% block body %}
+<div style="max-width: 1000px; margin: 0 auto; padding-bottom: 64px;">
+    
+    <div style="margin-bottom: 32px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <a href="{{ path('teacher_chapter_show', {chapterId: assignment.chapter.id}) }}" class="m3-button m3-button-text" style="padding: 0; height: 32px; font-size: 0.875rem;">
+                ← Back to {{ assignment.chapter.title }}
+            </a>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+                <h1 style="margin: 0; font-size: 2rem; font-weight: 400; color: var(--m3-on-surface);">{{ assignment.title }}</h1>
+                <div style="color: var(--m3-on-surface-variant); font-size: 0.875rem; margin-top: 4px;">
+                    Due: {{ assignment.dueDate ? assignment.dueDate|date('M d, Y') : 'No due date' }}
+                </div>
+            </div>
+            <div style="padding: 8px 16px; border-radius: 12px; background: var(--m3-primary-container); color: var(--m3-on-primary-container); font-weight: 600; font-size: 0.875rem;">
+                {{ submissions|length }} Submissions
+            </div>
+        </div>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div style="background-color: var(--m3-primary-container); color: var(--m3-on-primary-container); padding: 16px 24px; border-radius: 12px; margin-bottom: 32px;">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <div class="m3-card m3-card-outlined" style="border-radius: 24px; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background-color: var(--m3-surface-container-low); border-bottom: 1px solid var(--m3-outline-variant);">
+                    <th style="padding: 16px 24px; text-align: left; font-size: 0.875rem; font-weight: 600; color: var(--m3-on-surface-variant);">Student</th>
+                    <th style="padding: 16px 24px; text-align: left; font-size: 0.875rem; font-weight: 600; color: var(--m3-on-surface-variant);">Submitted At</th>
+                    <th style="padding: 16px 24px; text-align: left; font-size: 0.875rem; font-weight: 600; color: var(--m3-on-surface-variant);">Status</th>
+                    <th style="padding: 16px 24px; text-align: right; font-size: 0.875rem; font-weight: 600; color: var(--m3-on-surface-variant);">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for submission in submissions %}
+                    <tr style="border-bottom: 1px solid var(--m3-outline-variant);">
+                        <td style="padding: 16px 24px;">
+                            <div style="font-weight: 500;">{{ submission.student.firstName }} {{ submission.student.lastName }}</div>
+                            <div style="font-size: 0.75rem; color: var(--m3-on-surface-variant);">{{ submission.student.email }}</div>
+                        </td>
+                        <td style="padding: 16px 24px; color: var(--m3-on-surface-variant); font-size: 0.875rem;">
+                            {{ submission.submittedAt ? submission.submittedAt|date('M d, Y H:i') : 'Unknown' }}
+                        </td>
+                        <td style="padding: 16px 24px;">
+                            <span style="padding: 4px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; 
+                                {% if submission.status == 'graded' %}
+                                    background: #dcfce7; color: #166534;
+                                {% else %}
+                                    background: #e0e7ff; color: #3730a3;
+                                {% endif %}">
+                                {{ submission.status|title }}
+                            </span>
+                        </td>
+                        <td style="padding: 16px 24px; text-align: right;">
+                            <a href="{{ path('teacher_submission_review', {submissionId: submission.id}) }}" class="m3-button m3-button-text" style="height: 32px; font-size: 0.875rem;">Review</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4" style="padding: 32px; text-align: center; color: var(--m3-on-surface-variant);">
+                            No submissions yet.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

@@ -4,6 +4,10 @@
         <meta charset="UTF-8">
         <title>{% block title %}Welcome!{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="/css/main.css">
         {% block stylesheets %}
         {% endblock %}
 
@@ -18,7 +22,161 @@
         <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
         {% endif %}
     </head>
-    <body>
+    {% set currentRoute = app.request.attributes.get('_route') ?? '' %}
+    {% set isAdminRoute = currentRoute starts with 'admin_' or (currentRoute == 'app_dashboard' and is_granted('ROLE_ADMIN')) %}
+    {% set isTeacherRoute = currentRoute starts with 'teacher_' or (currentRoute == 'app_dashboard' and is_granted('ROLE_TEACHER') and not is_granted('ROLE_ADMIN')) %}
+    {% set isStudentRoute = currentRoute starts with 'student_' or (currentRoute == 'app_dashboard' and is_granted('ROLE_STUDENT') and not is_granted('ROLE_TEACHER') and not is_granted('ROLE_ADMIN')) %}
+    {% set themeClass = isAdminRoute ? 'theme-admin' : (isTeacherRoute ? 'theme-teacher' : (isStudentRoute ? 'theme-student' : '')) %}
+    <body class="{{ themeClass }}" style="margin: 0; {% if isAdminRoute or isTeacherRoute or isStudentRoute %}display: flex; min-height: 100vh;{% endif %}">
+        {# ── ADMIN SIDEBAR ── #}
+        {% if app.user and is_granted('ROLE_ADMIN') and isAdminRoute %}
+            <aside style="width: 280px; flex-shrink: 0; background-color: var(--m3-surface-container); color: var(--m3-on-surface); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; z-index: 40; border-right: 1px solid var(--m3-outline); transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                <div style="padding: 1.5rem; font-size: 1.5rem; font-weight: 700; color: var(--m3-primary); letter-spacing: -0.025em; display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background-color: var(--m3-primary); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: var(--m3-on-primary);">🎓</div>
+                    LearnWay
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 0.25rem; padding: 0 12px;">
+                    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--m3-on-surface-variant); margin: 0 16px 8px; font-weight: 600;">Main Menu</div>
+                    <a href="{{ path('app_dashboard') }}" class="m3-sidebar-item {{ currentRoute == 'app_dashboard' ? 'active' : '' }}">
+                        <span>🏠</span> Dashboard
+                    </a>
+                    <a href="{{ path('admin_users_index') }}" class="m3-sidebar-item {{ currentRoute starts with 'admin_users_' ? 'active' : '' }}">
+                        <span>👥</span> Users
+                    </a>
+                    
+                    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--m3-on-surface-variant); margin: 1rem 16px 8px; font-weight: 600;">Organization</div>
+                    <a href="{{ path('admin_setup_new_year') }}" class="m3-sidebar-item {{ currentRoute == 'admin_setup_new_year' ? 'active' : '' }}" style="background-color: var(--m3-primary-container); color: var(--m3-on-primary-container); margin-bottom: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <span>✨</span> Setup Wizard
+                    </a>
+                    <a href="{{ path('admin_academic_years_index') }}" class="m3-sidebar-item {{ currentRoute starts with 'admin_academic_years_' ? 'active' : '' }}">
+                        <span>📅</span> Academic Years
+                    </a>
+                    <a href="{{ path('admin_terms_index') }}" class="m3-sidebar-item {{ currentRoute starts with 'admin_terms_' ? 'active' : '' }}">
+                        <span>⏳</span> Terms
+                    </a>
+                    <a href="{{ path('admin_classes_index') }}" class="m3-sidebar-item {{ currentRoute starts with 'admin_classes_' ? 'active' : '' }}">
+                        <span>🏫</span> Classes
+                    </a>
+                    
+                    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--m3-on-surface-variant); margin: 1rem 16px 8px; font-weight: 600;">Curriculum</div>
+                    <a href="{{ path('admin_subjects_index') }}" class="m3-sidebar-item {{ currentRoute starts with 'admin_subjects_' ? 'active' : '' }}">
+                        <span>📚</span> Subjects
+                    </a>
+                    <a href="{{ path('admin_chapters_index') }}" class="m3-sidebar-item {{ currentRoute starts with 'admin_chapters_' ? 'active' : '' }}">
+                        <span>📖</span> Chapters
+                    </a>
+                    
+                    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--m3-on-surface-variant); margin: 1rem 16px 8px; font-weight: 600;">Activity</div>
+                    <a href="{{ path('admin_student_enrollments_index') }}" class="m3-sidebar-item {{ currentRoute starts with 'admin_student_enrollments_' ? 'active' : '' }}">
+                        <span>📝</span> Enrollments
+                    </a>
+                    <a href="{{ path('admin_teacher_assignments_index') }}" class="m3-sidebar-item {{ currentRoute starts with 'admin_teacher_assignments_' ? 'active' : '' }}">
+                        <span>🧑‍🏫</span> Teacher Assignments
+                    </a>
+                    <a href="{{ path('admin_forum_posts_index') }}" class="m3-sidebar-item {{ currentRoute starts with 'admin_forum_posts_' ? 'active' : '' }}">
+                        <span>💬</span> Forum
+                    </a>
+
+                </div>
+                <div style="margin-top: auto; padding: 1.25rem; border-top: 1px solid #1e293b; display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: #334155; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff;">
+                        {{ app.user ? app.user.userIdentifier|slice(0, 1)|upper : 'A' }}
+                    </div>
+                    <div style="display: flex; flex-direction: column; overflow: hidden;">
+                        <span style="font-size: 0.875rem; font-weight: 600; color: #f8fafc; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">{{ app.user ? app.user.userIdentifier : 'Admin' }}</span>
+                    </div>
+                </div>
+            </aside>
+            <main style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0; background-color: var(--m3-surface);">
+                <header style="background-color: var(--m3-surface-container); height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-bottom: 1px solid var(--m3-outline);">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <a href="{{ path('app_dashboard') }}" style="color: var(--m3-on-surface-variant); text-decoration: none;">🏠</a>
+                        <span style="color: var(--m3-outline);">/</span>
+                        <span style="color: var(--m3-on-surface-variant);">Admin</span>
+                        <span style="color: var(--m3-outline);">/</span>
+                        <span style="font-weight: 500; color: var(--m3-on-surface);">{{ currentRoute|replace({'admin_': '', '_': ' '})|title }}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span style="font-size: 0.875rem; color: var(--m3-on-surface-variant);">{{ app.user.userIdentifier }}</span>
+                        <a href="{{ path('app_logout') }}" class="m3-button m3-button-outlined" style="height: 36px; padding: 0 16px; border-color: var(--m3-error); color: var(--m3-error);">Sign out</a>
+                    </div>
+                </header>
+                <div style="padding: 24px; flex-grow: 1; overflow-y: auto;">
+        {% endif %}
+
+        {# ── TEACHER SIDEBAR ── #}
+        {% if app.user and is_granted('ROLE_TEACHER') and isTeacherRoute %}
+            <aside style="width: 280px; flex-shrink: 0; background-color: var(--m3-surface-container); color: var(--m3-on-surface); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; z-index: 40; border-right: 1px solid var(--m3-outline); transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                <div style="padding: 1.5rem; font-size: 1.5rem; font-weight: 700; color: var(--m3-primary); letter-spacing: -0.025em; display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background-color: var(--m3-primary); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: var(--m3-on-primary);">🎓</div>
+                    LearnWay
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 0.25rem; padding: 0 12px;">
+                    {{ render(controller('App\\Controller\\Teacher\\TeacherNavController::sidebarNav')) }}
+                </div>
+                <div style="margin-top: auto; padding: 1.25rem; border-top: 1px solid var(--m3-outline); display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background-color: var(--m3-primary); display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--m3-on-primary);">
+                        {{ app.user ? app.user.firstName|slice(0, 1)|upper : 'T' }}
+                    </div>
+                    <div style="display: flex; flex-direction: column; overflow: hidden;">
+                        <span style="font-size: 0.875rem; font-weight: 600; color: var(--m3-on-surface); white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">{{ app.user ? app.user.firstName ~ ' ' ~ app.user.lastName : 'Teacher' }}</span>
+                    </div>
+                </div>
+            </aside>
+            <main style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0; background-color: var(--m3-surface);">
+                <header style="background-color: var(--m3-surface-container); height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-bottom: 1px solid var(--m3-outline);">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <a href="{{ path('app_dashboard') }}" style="color: var(--m3-on-surface-variant); text-decoration: none;">🏠</a>
+                        <span style="color: var(--m3-outline);">/</span>
+                        <span style="font-weight: 500; color: var(--m3-on-surface);">{{ currentRoute|replace({'teacher_': '', '_': ' '})|title }}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span style="font-size: 0.875rem; color: var(--m3-on-surface-variant);">{{ app.user.firstName }} {{ app.user.lastName }}</span>
+                        <a href="{{ path('app_logout') }}" class="m3-button m3-button-outlined" style="height: 36px; padding: 0 16px; border-color: var(--m3-error); color: var(--m3-error);">Sign out</a>
+                    </div>
+                </header>
+                <div style="padding: 24px; flex-grow: 1; overflow-y: auto;">
+        {% endif %}
+        
+        {# ── STUDENT SIDEBAR ── #}
+        {% if app.user and is_granted('ROLE_STUDENT') and isStudentRoute %}
+            <aside style="width: 280px; flex-shrink: 0; background-color: var(--m3-surface-container); color: var(--m3-on-surface); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; z-index: 40; border-right: 1px solid var(--m3-outline); transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                <div style="padding: 1.5rem; font-size: 1.5rem; font-weight: 700; color: var(--m3-primary); letter-spacing: -0.025em; display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background-color: var(--m3-primary); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: var(--m3-on-primary);">🎓</div>
+                    LearnWay
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 0.25rem; padding: 0 12px;">
+                    {{ render(controller('App\\Controller\\Student\\StudentNavController::sidebarNav')) }}
+                </div>
+                <div style="margin-top: auto; padding: 1.25rem; border-top: 1px solid var(--m3-outline); display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background-color: var(--m3-primary); display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--m3-on-primary);">
+                        {{ app.user ? app.user.firstName|slice(0, 1)|upper : 'S' }}
+                    </div>
+                    <div style="display: flex; flex-direction: column; overflow: hidden;">
+                        <span style="font-size: 0.875rem; font-weight: 600; color: var(--m3-on-surface); white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">{{ app.user ? app.user.firstName ~ ' ' ~ app.user.lastName : 'Student' }}</span>
+                    </div>
+                </div>
+            </aside>
+            <main style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0; background-color: var(--m3-surface);">
+                <header style="background-color: var(--m3-surface-container); height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-bottom: 1px solid var(--m3-outline);">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <a href="{{ path('app_dashboard') }}" style="color: var(--m3-on-surface-variant); text-decoration: none;">🏠</a>
+                        <span style="color: var(--m3-outline);">/</span>
+                        <span style="font-weight: 500; color: var(--m3-on-surface);">{{ currentRoute|replace({'student_': '', '_': ' '})|title }}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span style="font-size: 0.875rem; color: var(--m3-on-surface-variant);">{{ app.user.firstName }} {{ app.user.lastName }}</span>
+                        <a href="{{ path('app_logout') }}" class="m3-button m3-button-outlined" style="height: 36px; padding: 0 16px; border-color: var(--m3-error); color: var(--m3-error);">Sign out</a>
+                    </div>
+                </header>
+                <div style="padding: 24px; flex-grow: 1; overflow-y: auto;">
+        {% endif %}
+
         {% block body %}{% endblock %}
+
+        {% if (app.user and is_granted('ROLE_ADMIN') and isAdminRoute) or (app.user and is_granted('ROLE_TEACHER') and isTeacherRoute) or (app.user and is_granted('ROLE_STUDENT') and isStudentRoute) %}
+                </div>
+            </main>
+        {% endif %}
     </body>
 </html>

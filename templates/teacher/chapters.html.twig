@@ -1,0 +1,71 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Chapters: {{ ta.subject.name }} · {{ ta.classe.name }} — Teacher{% endblock %}
+
+{% block body %}
+<div style="max-width: 1200px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;">
+        <div style="display: flex; flex-direction: column;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                <a href="{{ path('app_dashboard') }}" class="m3-button m3-button-outlined" style="padding: 0 12px; height: 32px; border: none;">
+                    <span>←</span> Dashboard
+                </a>
+            </div>
+            <h1 style="margin: 0; font-size: 2rem; font-weight: 400; color: var(--m3-on-surface);">
+                {{ ta.subject.name }} <span style="color: var(--m3-outline);">·</span> {{ ta.classe.name }}
+            </h1>
+        </div>
+        <a href="{{ path('teacher_chapter_new', {subjectId: ta.subject.id, classId: ta.classe.id}) }}" class="m3-button m3-button-filled">
+            <span>+</span> New Chapter
+        </a>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div style="background-color: var(--m3-primary-container); color: var(--m3-on-primary-container); padding: 16px 24px; border-radius: var(--m3-radius-medium); margin-bottom: 24px;">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+        {% for chapter in chapters %}
+            <div class="m3-card m3-card-elevated" style="display: flex; align-items: center; justify-content: space-between; padding: 20px 24px;">
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <a href="{{ path('teacher_chapter_show', {chapterId: chapter.id}) }}" style="text-decoration: none; font-size: 1.125rem; font-weight: 500; color: var(--m3-on-surface);">{{ chapter.title }}</a>
+                        {% if chapter.isPublished %}
+                            <span style="font-size: 0.75rem; padding: 0 12px; height: 24px; display: flex; align-items: center; border-radius: var(--m3-radius-full); background-color: var(--m3-primary-container); color: var(--m3-on-primary-container); font-weight: 500;">Published</span>
+                        {% else %}
+                            <span style="font-size: 0.75rem; padding: 0 12px; height: 24px; display: flex; align-items: center; border-radius: var(--m3-radius-full); background-color: var(--m3-surface-variant); color: var(--m3-on-surface-variant); font-weight: 500;">Draft</span>
+                        {% endif %}
+                    </div>
+                    {% if chapter.description %}
+                        <p style="margin: 0; color: var(--m3-on-surface-variant); font-size: 0.875rem;">{{ chapter.description|slice(0, 120) }}{% if chapter.description|length > 120 %}…{% endif %}</p>
+                    {% endif %}
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <a href="{{ path('teacher_chapter_show', {chapterId: chapter.id}) }}" class="m3-button m3-button-filled" style="background-color: var(--m3-secondary); color: var(--m3-on-secondary);">
+                        Manage
+                    </a>
+                    <a href="{{ path('teacher_assignments', {subjectId: ta.subject.id, classId: ta.classe.id, chapterId: chapter.id}) }}" class="m3-button m3-button-tonal">
+                        Assignments
+                    </a>
+                    <a href="{{ path('teacher_chapter_edit', {subjectId: ta.subject.id, classId: ta.classe.id, chapterId: chapter.id}) }}" class="m3-button m3-button-outlined">
+                        Edit
+                    </a>
+                    <form method="post" action="{{ path('teacher_chapter_delete', {subjectId: ta.subject.id, classId: ta.classe.id, chapterId: chapter.id}) }}" onsubmit="return confirm('Delete this chapter?');" style="margin: 0;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_chapter_' ~ chapter.id) }}">
+                        <button type="submit" class="m3-button" style="background-color: transparent; color: var(--m3-error); border: 1px solid var(--m3-error);">
+                            Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% else %}
+            <div class="m3-card m3-card-outlined" style="text-align: center; padding: 64px;">
+                <div style="font-size: 3rem; margin-bottom: 16px;">📖</div>
+                <p style="font-size: 1.1rem; color: var(--m3-on-surface-variant);">No chapters yet. Create your first chapter!</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

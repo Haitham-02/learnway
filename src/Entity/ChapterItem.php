@@ -14,7 +14,7 @@ class ChapterItem
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'bigint')]
     private ?int $id = null;
 
     public function getId(): ?int
@@ -43,6 +43,34 @@ class ChapterItem
         return $this;
     }
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $title = null;
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    public function setTitle(?string $title): self
+    {
+        $this->title = $title;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $url = null;
+
+    public function getUrl(): ?string
+    {
+        return $this->url;
+    }
+
+    public function setUrl(?string $url): self
+    {
+        $this->url = $url;
+        return $this;
+    }
+
     #[ORM\Column(type: 'string', nullable: false)]
     private ?string $type = null;
 
@@ -68,34 +96,6 @@ class ChapterItem
     public function setSort_order(?int $sort_order): self
     {
         $this->sort_order = $sort_order;
-        return $this;
-    }
-
-    #[ORM\OneToOne(targetEntity: ChapterContent::class, mappedBy: 'chapterItem')]
-    private ?ChapterContent $chapterContent = null;
-
-    public function getChapterContent(): ?ChapterContent
-    {
-        return $this->chapterContent;
-    }
-
-    public function setChapterContent(?ChapterContent $chapterContent): self
-    {
-        $this->chapterContent = $chapterContent;
-        return $this;
-    }
-
-    #[ORM\OneToOne(targetEntity: ChapterFile::class, mappedBy: 'chapterItem')]
-    private ?ChapterFile $chapterFile = null;
-
-    public function getChapterFile(): ?ChapterFile
-    {
-        return $this->chapterFile;
-    }
-
-    public function setChapterFile(?ChapterFile $chapterFile): self
-    {
-        $this->chapterFile = $chapterFile;
         return $this;
     }
 

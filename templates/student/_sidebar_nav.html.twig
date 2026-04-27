@@ -1,0 +1,23 @@
+{# Embedded sidebar navigation for students #}
+{% set currentRoute = app.request.attributes.get('_route') ?? '' %}
+{% set currentSubjectId = app.request.attributes.get('subjectId') ?? app.request.attributes.get('_route_params').subjectId|default('') %}
+
+<div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--m3-on-surface-variant); margin: 0 16px 8px; font-weight: 600;">Navigation</div>
+
+<a href="{{ path('app_dashboard') }}" class="m3-sidebar-item {{ currentRoute == 'app_dashboard' ? 'active' : '' }}">
+    <span style="font-size: 1.25rem;">🏠</span> 
+    <span style="flex-grow: 1;">Dashboard</span>
+</a>
+
+{% if assignments|length > 0 %}
+    <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--m3-primary); margin: 1.5rem 16px 8px; font-weight: 700; border-bottom: 1px solid var(--m3-outline); padding-bottom: 4px;">
+        📚 My Subjects
+    </div>
+
+    {% for ta in assignments %}
+        <a href="{{ path('student_subject_chapters', {subjectId: ta.subject.id}) }}" class="m3-sidebar-item {{ currentSubjectId == ta.subject.id ? 'active' : '' }}">
+            <span style="font-size: 1.25rem;">📘</span> 
+            <span style="flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ ta.subject.name }}</span>
+        </a>
+    {% endfor %}
+{% endif %}

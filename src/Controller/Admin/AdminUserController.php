@@ -171,6 +171,14 @@ class AdminUserController extends AbstractController
                 $em->flush();
 
                 $this->addFlash('success', "User «{$email}» created successfully.");
+                $returnTo = trim((string) $request->request->get('return_to', $request->query->get('return_to', '')));
+                if (str_starts_with($returnTo, '/admin/')) {
+                    return $this->redirect($this->appendQueryParams($returnTo, [
+                        'user_id' => $user->getId(),
+                        'teacher_id' => $user->getId(),
+                    ]));
+                }
+
                 return $this->redirectToRoute('admin_users_index');
             }
         }
@@ -179,5 +187,31 @@ class AdminUserController extends AbstractController
             'roles' => $roles,
             'errors' => $errors,
         ]);
+    }
+
+    /**
+     * @param array<string, int|string|null> $params
+     */
+    private function appendQueryParams(string $path, array $params): string
+    {
+        $parts = parse_url($path);
+        if (!is_array($parts)) {
+            return $path;
+        }
+
+        $query = [];
+        if (isset($parts['query'])) {
+            parse_str($parts['query'], $query);
+        }
+        foreach ($params as $key => $value) {
+            if ($value !== null && $value !== '') {
+                $query[$key] = $value;
+            }
+        }
+
+        $basePath = $parts['path'] ?? $path;
+        $queryString = http_build_query($query);
+
+        return $queryString === '' ? $basePath : $basePath . '?' . $queryString;
     }
 }

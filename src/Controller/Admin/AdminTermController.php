@@ -4,8 +4,8 @@ namespace App\Controller\Admin;
 
 use App\Entity\Term;
 use App\Repository\AcademicYearRepository;
-use App\Repository\SubjectSectionRepository;
 use App\Repository\TermRepository;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,7 +32,7 @@ class AdminTermController extends AbstractController
         TermRepository $termRepository,
         EntityManagerInterface $em,
     ): Response {
-        $academicYears = $academicYearRepository->findBy([], ['id' => 'DESC']);
+        $academicYears = $academicYearRepository->findForSelector();
         $errors = [];
 
         if ($request->isMethod('POST')) {
@@ -79,11 +79,28 @@ class AdminTermController extends AbstractController
                 $term->setEndDate($endDate);
                 $term->setIsCurrent($isCurrent);
 
-                $em->persist($term);
-                $em->flush();
+                if ($isCurrent) {
+                    foreach ($termRepository->findBy(['academicYear' => $academicYear, 'is_current' => true]) as $currentTerm) {
+                        $currentTerm->setIsCurrent(false);
+                    }
+                }
 
-                $this->addFlash('success', "Term «{$name}» created successfully.");
-                return $this->redirectToRoute('admin_terms_index');
+                $em->persist($term);
+                try {
+                    $em->flush();
+                } catch (UniqueConstraintViolationException) {
+                    $errors[] = 'Another term in this academic year is already marked as current.';
+                }
+
+                if (empty($errors)) {
+                    $this->addFlash('success', "Term «{$name}» created successfully.");
+                    $returnTo = trim((string) $request->request->get('return_to', $request->query->get('return_to', '')));
+                    if (str_starts_with($returnTo, '/admin/')) {
+                        return $this->redirect($this->appendQueryParams($returnTo, ['term_id' => $term->getId()]));
+                    }
+
+                    return $this->redirectToRoute('admin_terms_index');
+                }
             }
         }
 
@@ -106,7 +123,7 @@ class AdminTermController extends AbstractController
             throw $this->createNotFoundException("Term #{$id} not found.");
         }
 
-        $academicYears = $academicYearRepository->findBy([], ['id' => 'DESC']);
+        $academicYears = $academicYearRepository->findForSelector();
         $errors = [];
 
         if ($request->isMethod('POST')) {
@@ -152,10 +169,24 @@ class AdminTermController extends AbstractController
                 $term->setEndDate($endDate);
                 $term->setIsCurrent($isCurrent);
 
-                $em->flush();
+                if ($isCurrent) {
+                    foreach ($termRepository->findBy(['academicYear' => $academicYear, 'is_current' => true]) as $currentTerm) {
+                        if ($currentTerm->getId() !== $term->getId()) {
+                            $currentTerm->setIsCurrent(false);
+                        }
+                    }
+                }
 
-                $this->addFlash('success', "Term «{$name}» updated successfully.");
-                return $this->redirectToRoute('admin_terms_index');
+                try {
+                    $em->flush();
+                } catch (UniqueConstraintViolationException) {
+                    $errors[] = 'Another term in this academic year is already marked as current.';
+                }
+
+                if (empty($errors)) {
+                    $this->addFlash('success', "Term «{$name}» updated successfully.");
+                    return $this->redirectToRoute('admin_terms_index');
+                }
             }
         }
 
@@ -171,7 +202,6 @@ class AdminTermController extends AbstractController
         int $id,
         Request $request,
         TermRepository $termRepository,
-        SubjectSectionRepository $subjectSectionRepository,
         EntityManagerInterface $em,
     ): Response {
         $term = $termRepository->find($id);
@@ -180,12 +210,6 @@ class AdminTermController extends AbstractController
         }
 
         if ($this->isCsrfTokenValid('delete_term_' . $id, $request->request->get('_token'))) {
-            $inUse = $subjectSectionRepository->findOneBy(['term' => $term]) !== null;
-            if ($inUse) {
-                $this->addFlash('error', "Term «{$term->getName()}» is used in subject sections and cannot be deleted.");
-                return $this->redirectToRoute('admin_terms_index');
-            }
-
             $name = $term->getName();
             $em->remove($term);
             $em->flush();
@@ -193,5 +217,31 @@ class AdminTermController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_terms_index');
+    }
+
+    /**
+     * @param array<string, int|string|null> $params
+     */
+    private function appendQueryParams(string $path, array $params): string
+    {
+        $parts = parse_url($path);
+        if (!is_array($parts)) {
+            return $path;
+        }
+
+        $query = [];
+        if (isset($parts['query'])) {
+            parse_str($parts['query'], $query);
+        }
+        foreach ($params as $key => $value) {
+            if ($value !== null && $value !== '') {
+                $query[$key] = $value;
+            }
+        }
+
+        $basePath = $parts['path'] ?? $path;
+        $queryString = http_build_query($query);
+
+        return $queryString === '' ? $basePath : $basePath . '?' . $queryString;
     }
 }

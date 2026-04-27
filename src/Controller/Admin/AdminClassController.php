@@ -27,19 +27,15 @@ class AdminClassController extends AbstractController
     #[Route('/classes/new', name: 'classes_new', methods: ['GET', 'POST'])]
     public function classesNew(
         Request $request,
-        AcademicYearRepository $academicYearRepository,
         EntityManagerInterface $em,
     ): Response {
-        $academicYears = $academicYearRepository->findBy([], ['id' => 'DESC']);
         $errors = [];
 
         if ($request->isMethod('POST')) {
             $name = trim($request->request->get('name', ''));
             $gradeLevel = trim($request->request->get('grade_level', ''));
             $section = trim($request->request->get('section', ''));
-            $academicYearId = (int) $request->request->get('academic_year_id');
             $isActive = (bool) $request->request->get('is_active', false);
-            $academicYear = $academicYearId ? $academicYearRepository->find($academicYearId) : null;
 
             if ($name === '') {
                 $errors[] = 'Class name is required.';
@@ -47,16 +43,12 @@ class AdminClassController extends AbstractController
             if ($gradeLevel === '') {
                 $errors[] = 'Grade level is required.';
             }
-            if (!$academicYear) {
-                $errors[] = 'Please select a valid academic year.';
-            }
 
             if (empty($errors)) {
                 $classe = new Classe();
                 $classe->setName($name);
                 $classe->setGradeLevel($gradeLevel);
                 $classe->setSection($section !== '' ? $section : null);
-                $classe->setAcademicYear($academicYear);
                 $classe->setIsActive($isActive);
                 $classe->setCreatedAt(new \DateTime());
 
@@ -64,12 +56,16 @@ class AdminClassController extends AbstractController
                 $em->flush();
 
                 $this->addFlash('success', "Class «{$name}» created successfully.");
+                $returnTo = trim((string) $request->request->get('return_to', $request->query->get('return_to', '')));
+                if (str_starts_with($returnTo, '/admin/')) {
+                    return $this->redirect($this->appendQueryParams($returnTo, ['class_id' => $classe->getId()]));
+                }
+
                 return $this->redirectToRoute('admin_classes_index');
             }
         }
 
         return $this->render('admin/classes/new.html.twig', [
-            'academicYears' => $academicYears,
             'errors' => $errors,
         ]);
     }
@@ -79,7 +75,6 @@ class AdminClassController extends AbstractController
         int $id,
         Request $request,
         ClasseRepository $classeRepository,
-        AcademicYearRepository $academicYearRepository,
         EntityManagerInterface $em,
     ): Response {
         $classe = $classeRepository->find($id);
@@ -87,16 +82,13 @@ class AdminClassController extends AbstractController
             throw $this->createNotFoundException("Class #{$id} not found.");
         }
 
-        $academicYears = $academicYearRepository->findBy([], ['id' => 'DESC']);
         $errors = [];
 
         if ($request->isMethod('POST')) {
             $name = trim($request->request->get('name', ''));
             $gradeLevel = trim($request->request->get('grade_level', ''));
             $section = trim($request->request->get('section', ''));
-            $academicYearId = (int) $request->request->get('academic_year_id');
             $isActive = (bool) $request->request->get('is_active', false);
-            $academicYear = $academicYearId ? $academicYearRepository->find($academicYearId) : null;
 
             if ($name === '') {
                 $errors[] = 'Class name is required.';
@@ -104,15 +96,11 @@ class AdminClassController extends AbstractController
             if ($gradeLevel === '') {
                 $errors[] = 'Grade level is required.';
             }
-            if (!$academicYear) {
-                $errors[] = 'Please select a valid academic year.';
-            }
 
             if (empty($errors)) {
                 $classe->setName($name);
                 $classe->setGradeLevel($gradeLevel);
                 $classe->setSection($section !== '' ? $section : null);
-                $classe->setAcademicYear($academicYear);
                 $classe->setIsActive($isActive);
 
                 $em->flush();
@@ -124,7 +112,6 @@ class AdminClassController extends AbstractController
 
         return $this->render('admin/classes/edit.html.twig', [
             'class' => $classe,
-            'academicYears' => $academicYears,
             'errors' => $errors,
         ]);
     }
@@ -149,5 +136,31 @@ class AdminClassController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_classes_index');
+    }
+
+    /**
+     * @param array<string, int|string|null> $params
+     */
+    private function appendQueryParams(string $path, array $params): string
+    {
+        $parts = parse_url($path);
+        if (!is_array($parts)) {
+            return $path;
+        }
+
+        $query = [];
+        if (isset($parts['query'])) {
+            parse_str($parts['query'], $query);
+        }
+        foreach ($params as $key => $value) {
+            if ($value !== null && $value !== '') {
+                $query[$key] = $value;
+            }
+        }
+
+        $basePath = $parts['path'] ?? $path;
+        $queryString = http_build_query($query);
+
+        return $queryString === '' ? $basePath : $basePath . '?' . $queryString;
     }
 }

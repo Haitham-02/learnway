@@ -15,7 +15,7 @@ class ChapterContent
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'bigint')]
     private ?int $id = null;
 
     public function getId(): ?int
@@ -29,18 +29,18 @@ class ChapterContent
         return $this;
     }
 
-    #[ORM\OneToOne(targetEntity: ChapterItem::class, inversedBy: 'chapterContent')]
-    #[ORM\JoinColumn(name: 'item_id', referencedColumnName: 'id', unique: true)]
-    private ?ChapterItem $chapterItem = null;
+    #[ORM\ManyToOne(targetEntity: Chapter::class, inversedBy: 'chapterContents')]
+    #[ORM\JoinColumn(name: 'chapter_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    private ?Chapter $chapter = null;
 
-    public function getChapterItem(): ?ChapterItem
+    public function getChapter(): ?Chapter
     {
-        return $this->chapterItem;
+        return $this->chapter;
     }
 
-    public function setChapterItem(?ChapterItem $chapterItem): self
+    public function setChapter(?Chapter $chapter): self
     {
-        $this->chapterItem = $chapterItem;
+        $this->chapter = $chapter;
         return $this;
     }
 

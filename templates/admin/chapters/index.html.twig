@@ -3,69 +3,76 @@
 {% block title %}Chapters — Admin{% endblock %}
 
 {% block body %}
-<div style="max-width:1200px;margin:2rem auto;padding:0 1rem;font-family:sans-serif;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
-        <h1 style="margin:0;font-size:1.5rem;">Chapter Management</h1>
-        <div style="display:flex;gap:.75rem;">
-            <a href="{{ path('app_dashboard') }}" style="padding:.5rem 1rem;background:#6b7280;color:#fff;border-radius:6px;text-decoration:none;font-size:.9rem;">← Dashboard</a>
-            <a href="{{ path('admin_chapters_new') }}" style="padding:.5rem 1rem;background:#2563eb;color:#fff;border-radius:6px;text-decoration:none;font-size:.9rem;">+ Add Chapter</a>
+<div style="max-width: 1200px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;">
+        <h1 style="margin: 0; font-size: 2rem; font-weight: 400; color: var(--m3-on-surface);">Chapter Management</h1>
+        <div style="display: flex; gap: 12px;">
+            <a href="{{ path('app_dashboard') }}" class="m3-button m3-button-outlined">
+                ← Dashboard
+            </a>
+            <a href="{{ path('admin_chapters_new') }}" class="m3-button m3-button-filled">
+                + Add Chapter
+            </a>
         </div>
     </div>
 
     {% for message in app.flashes('success') %}
-        <div style="background:#d1fae5;color:#065f46;padding:.75rem 1rem;border-radius:6px;margin-bottom:1rem;">{{ message }}</div>
+        <div style="background-color: var(--m3-primary-container); color: var(--m3-on-primary-container); padding: 16px 24px; border-radius: var(--m3-radius-medium); margin-bottom: 24px;">
+            {{ message }}
+        </div>
     {% endfor %}
     {% for message in app.flashes('error') %}
-        <div style="background:#fee2e2;color:#b91c1c;padding:.75rem 1rem;border-radius:6px;margin-bottom:1rem;">{{ message }}</div>
+        <div style="background-color: var(--m3-error-container); color: var(--m3-on-error-container); padding: 16px 24px; border-radius: var(--m3-radius-medium); margin-bottom: 24px;">
+            {{ message }}
+        </div>
     {% endfor %}
 
-    <div style="background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1);overflow:hidden;">
-        <table style="width:100%;border-collapse:collapse;font-size:.9rem;">
-            <thead style="background:#f9fafb;">
+    <div class="m3-card m3-card-outlined" style="padding: 0; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+            <thead style="background-color: var(--m3-surface-container-low);">
                 <tr>
-                    <th style="padding:.75rem 1rem;text-align:left;border-bottom:1px solid #e5e7eb;">#</th>
-                    <th style="padding:.75rem 1rem;text-align:left;border-bottom:1px solid #e5e7eb;">Title</th>
-                    <th style="padding:.75rem 1rem;text-align:left;border-bottom:1px solid #e5e7eb;">Subject Section</th>
-                    <th style="padding:.75rem 1rem;text-align:left;border-bottom:1px solid #e5e7eb;">Sort</th>
-                    <th style="padding:.75rem 1rem;text-align:left;border-bottom:1px solid #e5e7eb;">Published</th>
-                    <th style="padding:.75rem 1rem;text-align:left;border-bottom:1px solid #e5e7eb;">Updated</th>
-                    <th style="padding:.75rem 1rem;text-align:left;border-bottom:1px solid #e5e7eb;">Actions</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">TITLE</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">CLASS</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">SUBJECT</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">ORDER</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">STATUS</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">UPDATED</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">ACTIONS</th>
                 </tr>
             </thead>
             <tbody>
             {% for chapter in chapters %}
-                {% set section = chapter.subjectSection %}
-                <tr style="border-bottom:1px solid #f3f4f6;">
-                    <td style="padding:.75rem 1rem;color:#6b7280;">{{ chapter.id }}</td>
-                    <td style="padding:.75rem 1rem;font-weight:600;">{{ chapter.title }}</td>
-                    <td style="padding:.75rem 1rem;">
-                        {% if section %}
-                            #{{ section.id }} — {{ section.classe ? section.classe.name : '—' }} / {{ section.subject ? section.subject.name : '—' }} / {{ section.term ? section.term.name : '—' }}
-                        {% else %}
-                            —
-                        {% endif %}
-                    </td>
-                    <td style="padding:.75rem 1rem;">{{ chapter.sortOrder is not null ? chapter.sortOrder : '—' }}</td>
-                    <td style="padding:.75rem 1rem;">
+                <tr style="border-bottom: 1px solid var(--m3-surface-container-high); transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--m3-surface-container-low)'" onmouseout="this.style.backgroundColor='transparent'">
+                    <td style="padding: 16px 24px; font-weight: 500; color: var(--m3-on-surface);">{{ chapter.title }}</td>
+                    <td style="padding: 16px 24px; color: var(--m3-on-surface-variant);">{{ chapter.classe ? chapter.classe.name : '—' }}</td>
+                    <td style="padding: 16px 24px; color: var(--m3-on-surface-variant);">{{ chapter.subject ? chapter.subject.name : '—' }}</td>
+                    <td style="padding: 16px 24px; color: var(--m3-on-surface-variant);">{{ chapter.sortOrder is not null ? chapter.sortOrder : '—' }}</td>
+                    <td style="padding: 16px 24px;">
                         {% if chapter.isPublished %}
-                            <span style="color:#16a34a;">● Published</span>
+                            <span style="color: var(--m3-primary); display: flex; align-items: center; gap: 4px;">● Published</span>
                         {% else %}
-                            <span style="color:#6b7280;">● Draft</span>
+                            <span style="color: var(--m3-outline); display: flex; align-items: center; gap: 4px;">○ Draft</span>
                         {% endif %}
                     </td>
-                    <td style="padding:.75rem 1rem;">{{ chapter.updatedAt ? chapter.updatedAt|date('Y-m-d H:i') : '—' }}</td>
-                    <td style="padding:.75rem 1rem;">
-                        <div style="display:flex;gap:.5rem;">
-                            <a href="{{ path('admin_chapters_edit', {id: chapter.id}) }}" style="padding:.3rem .7rem;background:#2563eb;color:#fff;border-radius:5px;text-decoration:none;font-size:.82rem;">Edit</a>
-                            <form method="post" action="{{ path('admin_chapters_delete', {id: chapter.id}) }}" onsubmit="return confirm('Delete chapter {{ chapter.title }}?');">
+                    <td style="padding: 16px 24px; color: var(--m3-on-surface-variant);">{{ chapter.updatedAt ? chapter.updatedAt|date('M d, Y H:i') : '—' }}</td>
+                    <td style="padding: 16px 24px;">
+                        <div style="display: flex; gap: 8px;">
+                            <a href="{{ path('admin_chapters_edit', {id: chapter.id}) }}" class="m3-button m3-button-tonal" style="height: 32px; padding: 0 12px;">
+                                Edit
+                            </a>
+                            <form method="post" action="{{ path('admin_chapters_delete', {id: chapter.id}) }}" onsubmit="return confirm('Delete chapter {{ chapter.title }}?');" style="margin: 0;">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete_chapter_' ~ chapter.id) }}">
-                                <button type="submit" style="padding:.3rem .7rem;background:#dc2626;color:#fff;border:none;border-radius:5px;font-size:.82rem;cursor:pointer;">Delete</button>
+                                <button type="submit" class="m3-button" style="height: 32px; padding: 0 12px; background: transparent; border: 1px solid var(--m3-error); color: var(--m3-error);">
+                                    Delete
+                                </button>
                             </form>
                         </div>
                     </td>
                 </tr>
             {% else %}
-                <tr><td colspan="7" style="padding:2rem;text-align:center;color:#9ca3af;">No chapters found.</td></tr>
+                <tr>
+                    <td colspan="7" style="padding: 48px; text-align: center; color: var(--m3-outline);">No chapters found.</td>
+                </tr>
             {% endfor %}
             </tbody>
         </table>

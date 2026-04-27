@@ -3,60 +3,53 @@
 {% block title %}Add Academic Year — Admin{% endblock %}
 
 {% block body %}
-    <div style="max-width:560px;margin:2rem auto;padding:0 1rem;font-family:sans-serif;">
+<div style="max-width: 600px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 24px;">
+        <a href="{{ path('admin_academic_years_index') }}" class="m3-button m3-button-outlined" style="border: none;">
+            <span>←</span> Back
+        </a>
+        <h1 style="margin: 0; font-size: 2rem; font-weight: 400; color: var(--m3-on-surface);">Add Academic Year</h1>
+    </div>
 
-        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;">
-            <a href="{{ path('admin_academic_years_index') }}"
-               style="color:#6b7280;text-decoration:none;font-size:.9rem;">← Back to Academic Years</a>
-            <h1 style="margin:0;font-size:1.5rem;">Add Academic Year</h1>
+    {% if errors is not empty %}
+        <div style="background-color: var(--m3-error-container); color: var(--m3-on-error-container); padding: 16px 24px; border-radius: var(--m3-radius-medium); margin-bottom: 24px;">
+            <ul style="margin: 0; padding-left: 20px;">
+                {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+            </ul>
         </div>
+    {% endif %}
 
-        {% if errors is not empty %}
-            <div style="background:#fee2e2;color:#b91c1c;padding:.75rem 1rem;border-radius:6px;margin-bottom:1.25rem;">
-                <ul style="margin:0;padding-left:1.25rem;">
-                    {% for error in errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
+    <div class="m3-card m3-card-outlined" style="padding: 32px;">
+        <form method="post" novalidate style="display: flex; flex-direction: column; gap: 24px;">
+            <input type="hidden" name="return_to" value="{{ app.request.query.get('return_to', '') }}">
+
+            <div>
+                <label class="m3-label">NAME *</label>
+                <input type="text" name="name" required class="m3-text-field" value="{{ app.request.request.get('name', '') }}" placeholder="e.g. 2025-2026">
             </div>
-        {% endif %}
 
-        <div style="background:#fff;padding:2rem;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1);">
-            <form method="post" novalidate>
-                <div style="margin-bottom:1rem;">
-                    <label style="display:block;margin-bottom:.4rem;font-size:.9rem;font-weight:600;">Name</label>
-                    <input type="text" name="name" required
-                           placeholder="e.g. 2025-2026"
-                           value="{{ app.request.request.get('name', '') }}"
-                           style="width:100%;padding:.6rem .8rem;border:1px solid #d1d5db;border-radius:6px;font-size:1rem;box-sizing:border-box;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <div>
+                    <label class="m3-label">START DATE *</label>
+                    <input type="date" name="start_date" required class="m3-text-field" value="{{ app.request.request.get('start_date', '') }}">
                 </div>
-
-                <div style="margin-bottom:1rem;">
-                    <label style="display:block;margin-bottom:.4rem;font-size:.9rem;font-weight:600;">Start Date</label>
-                    <input type="date" name="start_date" required
-                           value="{{ app.request.request.get('start_date', '') }}"
-                           style="width:100%;padding:.6rem .8rem;border:1px solid #d1d5db;border-radius:6px;font-size:1rem;box-sizing:border-box;">
+                <div>
+                    <label class="m3-label">END DATE *</label>
+                    <input type="date" name="end_date" required class="m3-text-field" value="{{ app.request.request.get('end_date', '') }}">
                 </div>
+            </div>
 
-                <div style="margin-bottom:1rem;">
-                    <label style="display:block;margin-bottom:.4rem;font-size:.9rem;font-weight:600;">End Date</label>
-                    <input type="date" name="end_date" required
-                           value="{{ app.request.request.get('end_date', '') }}"
-                           style="width:100%;padding:.6rem .8rem;border:1px solid #d1d5db;border-radius:6px;font-size:1rem;box-sizing:border-box;">
-                </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <input type="checkbox" name="is_current" id="is_current" value="1" {% if app.request.request.get('is_current') %}checked{% endif %} class="m3-checkbox">
+                <label for="is_current" style="font-size: 1rem; color: var(--m3-on-surface); cursor: pointer;">Mark as current academic year</label>
+            </div>
 
-                <div style="margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;">
-                    <input type="checkbox" name="is_current" id="is_current" value="1"
-                           {% if app.request.request.get('is_current') %}checked{% endif %}
-                           style="width:1rem;height:1rem;">
-                    <label for="is_current" style="font-size:.9rem;font-weight:600;">Mark as current academic year</label>
-                </div>
-
-                <button type="submit"
-                        style="width:100%;padding:.75rem;background:#2563eb;color:#fff;border:none;border-radius:6px;font-size:1rem;font-weight:600;cursor:pointer;">
+            <div style="margin-top: 8px;">
+                <button type="submit" class="m3-button m3-button-filled" style="width: 100%; height: 48px;">
                     Create Academic Year
                 </button>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
+</div>
 {% endblock %}

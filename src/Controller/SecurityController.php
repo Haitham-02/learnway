@@ -27,10 +27,4 @@ class SecurityController extends AbstractController
     {
         throw new \LogicException('This method is intercepted by the firewall.');
     }
-
-    #[Route('/dashboard', name: 'app_dashboard')]
-    public function dashboard(): Response
-    {
-        return $this->render('security/dashboard.html.twig');
-    }
 }

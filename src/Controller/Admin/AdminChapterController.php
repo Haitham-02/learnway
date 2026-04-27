@@ -7,7 +7,8 @@ use App\Repository\AssignmentRepository;
 use App\Repository\ChapterItemRepository;
 use App\Repository\ChapterProgressRepository;
 use App\Repository\ChapterRepository;
-use App\Repository\SubjectSectionRepository;
+use App\Repository\ClasseRepository;
+use App\Repository\SubjectRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,10 +31,12 @@ class AdminChapterController extends AbstractController
     #[Route('/chapters/new', name: 'chapters_new', methods: ['GET', 'POST'])]
     public function chaptersNew(
         Request $request,
-        SubjectSectionRepository $subjectSectionRepository,
+        ClasseRepository $classeRepository,
+        SubjectRepository $subjectRepository,
         EntityManagerInterface $em,
     ): Response {
-        $sections = $subjectSectionRepository->findBy([], ['id' => 'DESC']);
+        $classes = $classeRepository->findForSelector();
+        $subjects = $subjectRepository->findForSelector();
         $errors = [];
 
         if ($request->isMethod('POST')) {
@@ -41,7 +44,7 @@ class AdminChapterController extends AbstractController
                 $errors[] = 'Your session expired. Please try submitting the form again.';
             }
 
-            $formData = $this->parseChapterFormData($request, $subjectSectionRepository);
+            $formData = $this->parseChapterFormData($request, $classeRepository, $subjectRepository);
             $errors = array_merge($errors, $formData['errors']);
 
             if (empty($errors)) {
@@ -54,12 +57,21 @@ class AdminChapterController extends AbstractController
                 $em->flush();
 
                 $this->addFlash('success', "Chapter «{$chapter->getTitle()}» created successfully.");
+                $returnTo = trim((string) $request->request->get('return_to', $request->query->get('return_to', '')));
+                if (str_starts_with($returnTo, '/admin/')) {
+                    return $this->redirect($this->appendQueryParams($returnTo, [
+                        'class_id' => $chapter->getClasse()?->getId(),
+                        'subject_id' => $chapter->getSubject()?->getId(),
+                    ]));
+                }
+
                 return $this->redirectToRoute('admin_chapters_index');
             }
         }
 
         return $this->render('admin/chapters/new.html.twig', [
-            'sections' => $sections,
+            'classes' => $classes,
+            'subjects' => $subjects,
             'errors' => $errors,
         ]);
     }
@@ -69,7 +81,8 @@ class AdminChapterController extends AbstractController
         int $id,
         Request $request,
         ChapterRepository $chapterRepository,
-        SubjectSectionRepository $subjectSectionRepository,
+        ClasseRepository $classeRepository,
+        SubjectRepository $subjectRepository,
         EntityManagerInterface $em,
     ): Response {
         $chapter = $chapterRepository->find($id);
@@ -77,7 +90,8 @@ class AdminChapterController extends AbstractController
             throw $this->createNotFoundException("Chapter #{$id} not found.");
         }
 
-        $sections = $subjectSectionRepository->findBy([], ['id' => 'DESC']);
+        $classes = $classeRepository->findForSelector();
+        $subjects = $subjectRepository->findForSelector();
         $errors = [];
 
         if ($request->isMethod('POST')) {
@@ -85,7 +99,7 @@ class AdminChapterController extends AbstractController
                 $errors[] = 'Your session expired. Please try submitting the form again.';
             }
 
-            $formData = $this->parseChapterFormData($request, $subjectSectionRepository);
+            $formData = $this->parseChapterFormData($request, $classeRepository, $subjectRepository);
             $errors = array_merge($errors, $formData['errors']);
 
             if (empty($errors)) {
@@ -101,7 +115,8 @@ class AdminChapterController extends AbstractController
 
         return $this->render('admin/chapters/edit.html.twig', [
             'chapter' => $chapter,
-            'sections' => $sections,
+            'classes' => $classes,
+            'subjects' => $subjects,
             'errors' => $errors,
         ]);
     }
@@ -143,26 +158,36 @@ class AdminChapterController extends AbstractController
     /**
      * @return array{
      *     errors: string[],
-     *     section: ?\App\Entity\SubjectSection,
+     *     classe: ?\App\Entity\Classe,
+     *     subject: ?\App\Entity\Subject,
      *     title: string,
      *     description: ?string,
      *     sortOrder: ?int,
      *     isPublished: bool
      * }
      */
-    private function parseChapterFormData(Request $request, SubjectSectionRepository $subjectSectionRepository): array
+    private function parseChapterFormData(
+        Request $request,
+        ClasseRepository $classeRepository,
+        SubjectRepository $subjectRepository,
+    ): array
     {
         $errors = [];
-        $sectionId = (int) $request->request->get('subject_section_id');
+        $classId = (int) $request->request->get('class_id');
+        $subjectId = (int) $request->request->get('subject_id');
         $title = trim((string) $request->request->get('title', ''));
         $description = trim((string) $request->request->get('description', ''));
         $sortOrderRaw = trim((string) $request->request->get('sort_order', ''));
         $isPublished = (bool) $request->request->get('is_published', false);
-        $section = $sectionId ? $subjectSectionRepository->find($sectionId) : null;
+        $classe = $classId ? $classeRepository->find($classId) : null;
+        $subject = $subjectId ? $subjectRepository->find($subjectId) : null;
         $sortOrder = null;
 
-        if (!$section) {
-            $errors[] = 'Please select a valid subject section.';
+        if (!$classe) {
+            $errors[] = 'Please select a valid class.';
+        }
+        if (!$subject) {
+            $errors[] = 'Please select a valid subject.';
         }
         if ($title === '') {
             $errors[] = 'Chapter title is required.';
@@ -178,7 +203,8 @@ class AdminChapterController extends AbstractController
 
         return [
             'errors' => $errors,
-            'section' => $section,
+            'classe' => $classe,
+            'subject' => $subject,
             'title' => $title,
             'description' => $description !== '' ? $description : null,
             'sortOrder' => $sortOrder,
@@ -188,7 +214,8 @@ class AdminChapterController extends AbstractController
 
     /**
      * @param array{
-     *     section: ?\App\Entity\SubjectSection,
+     *     classe: ?\App\Entity\Classe,
+     *     subject: ?\App\Entity\Subject,
      *     title: string,
      *     description: ?string,
      *     sortOrder: ?int,
@@ -197,10 +224,37 @@ class AdminChapterController extends AbstractController
      */
     private function applyChapterFormData(Chapter $chapter, array $formData): void
     {
-        $chapter->setSubjectSection($formData['section']);
+        $chapter->setClasse($formData['classe']);
+        $chapter->setSubject($formData['subject']);
         $chapter->setTitle($formData['title']);
         $chapter->setDescription($formData['description']);
         $chapter->setSortOrder($formData['sortOrder']);
         $chapter->setIsPublished($formData['isPublished']);
+    }
+
+    /**
+     * @param array<string, int|string|null> $params
+     */
+    private function appendQueryParams(string $path, array $params): string
+    {
+        $parts = parse_url($path);
+        if (!is_array($parts)) {
+            return $path;
+        }
+
+        $query = [];
+        if (isset($parts['query'])) {
+            parse_str($parts['query'], $query);
+        }
+        foreach ($params as $key => $value) {
+            if ($value !== null && $value !== '') {
+                $query[$key] = $value;
+            }
+        }
+
+        $basePath = $parts['path'] ?? $path;
+        $queryString = http_build_query($query);
+
+        return $queryString === '' ? $basePath : $basePath . '?' . $queryString;
     }
 }

@@ -3,51 +3,114 @@
 {% block title %}Student Enrollments — Admin{% endblock %}
 
 {% block body %}
-<div style="max-width:1100px;margin:2rem auto;padding:0 1rem;font-family:sans-serif;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
-        <h1 style="margin:0;font-size:1.5rem;">Student Enrollments</h1>
-        <div style="display:flex;gap:.75rem;">
-            <a href="{{ path('app_dashboard') }}" style="padding:.5rem 1rem;background:#6b7280;color:#fff;border-radius:6px;text-decoration:none;font-size:.9rem;">← Dashboard</a>
-            <a href="{{ path('admin_student_enrollments_new') }}" style="padding:.5rem 1rem;background:#2563eb;color:#fff;border-radius:6px;text-decoration:none;font-size:.9rem;">+ Add Student Enrollment</a>
+<div style="max-width: 1200px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;">
+        <h1 style="margin: 0; font-size: 2rem; font-weight: 400; color: var(--m3-on-surface);">Student Enrollments</h1>
+        <div style="display: flex; gap: 12px;">
+            <a href="{{ path('app_dashboard') }}" class="m3-button m3-button-outlined">
+                ← Dashboard
+            </a>
+            <a href="{{ path('admin_student_enrollments_new') }}" class="m3-button m3-button-filled">
+                + Add Enrollment
+            </a>
         </div>
     </div>
 
     {% for message in app.flashes('success') %}
-        <div style="background:#d1fae5;color:#065f46;padding:.75rem 1rem;border-radius:6px;margin-bottom:1rem;">{{ message }}</div>
+        <div style="background-color: var(--m3-primary-container); color: var(--m3-on-primary-container); padding: 16px 24px; border-radius: var(--m3-radius-medium); margin-bottom: 24px;">
+            {{ message }}
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div style="background-color: var(--m3-error-container); color: var(--m3-on-error-container); padding: 16px 24px; border-radius: var(--m3-radius-medium); margin-bottom: 24px;">
+            {{ message }}
+        </div>
     {% endfor %}
 
-    <div style="background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1);overflow:hidden;">
-        <table style="width:100%;border-collapse:collapse;font-size:.9rem;">
-            <thead style="background:#f9fafb;">
+    {# Filters #}
+    <div class="m3-card m3-card-outlined" style="padding: 20px 24px; margin-bottom: 24px;">
+        <form method="get" style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 16px; align-items: flex-end;">
+            <div>
+                <label class="m3-label" style="margin-bottom: 4px;">SEARCH</label>
+                <input type="text" name="q" value="{{ filters.q }}" class="m3-text-field" placeholder="Class, student, email...">
+            </div>
+            <div>
+                <label class="m3-label" style="margin-bottom: 4px;">CLASS</label>
+                <select name="class_id" class="m3-select">
+                    <option value="0">All Classes</option>
+                    {% for class in classesForFilter %}
+                        <option value="{{ class.id }}" {% if filters.class_id == class.id %}selected{% endif %}>{{ class.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="m3-label" style="margin-bottom: 4px;">SORT</label>
+                <select name="sort" class="m3-select">
+                    <option value="newest" {% if filters.sort == 'newest' %}selected{% endif %}>Newest</option>
+                    <option value="oldest" {% if filters.sort == 'oldest' %}selected{% endif %}>Oldest</option>
+                </select>
+            </div>
+            <button type="submit" class="m3-button m3-button-tonal" style="height: 48px; padding: 0 24px; border-radius: var(--m3-radius-small);">
+                Apply
+            </button>
+        </form>
+    </div>
+
+    {# Bulk actions #}
+    <form id="bulk-enrollments" method="post" action="{{ path('admin_student_enrollments_bulk') }}" style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px;">
+        <input type="hidden" name="q" value="{{ filters.q }}">
+        <input type="hidden" name="class_id" value="{{ filters.class_id }}">
+        <input type="hidden" name="active" value="{{ filters.active }}">
+        <input type="hidden" name="sort" value="{{ filters.sort }}">
+        <select name="bulk_action" class="m3-select" style="width: auto; min-width: 160px;">
+            <option value="">Bulk action</option>
+            <option value="delete">Delete selected</option>
+        </select>
+        <button type="submit" class="m3-button m3-button-outlined" style="height: 48px; padding: 0 20px;">
+            Apply to selected
+        </button>
+    </form>
+
+    <div class="m3-card m3-card-outlined" style="padding: 0; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+            <thead style="background-color: var(--m3-surface-container-low);">
                 <tr>
-                    <th style="padding:.75rem 1rem;text-align:left;border-bottom:1px solid #e5e7eb;">#</th>
-                    <th style="padding:.75rem 1rem;text-align:left;border-bottom:1px solid #e5e7eb;">Class</th>
-                    <th style="padding:.75rem 1rem;text-align:left;border-bottom:1px solid #e5e7eb;">Student</th>
-                    <th style="padding:.75rem 1rem;text-align:left;border-bottom:1px solid #e5e7eb;">Enrolled</th>
-                    <th style="padding:.75rem 1rem;text-align:left;border-bottom:1px solid #e5e7eb;">Left</th>
-                    <th style="padding:.75rem 1rem;text-align:left;border-bottom:1px solid #e5e7eb;">Actions</th>
+                    <th style="padding: 16px 12px; text-align: center; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline); width: 40px;">
+                        <input type="checkbox" onclick="document.querySelectorAll('.enrollment-checkbox').forEach(cb => cb.checked = this.checked)">
+                    </th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">CLASS</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">STUDENT</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">ACADEMIC YEAR</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">ACTIONS</th>
                 </tr>
             </thead>
             <tbody>
             {% for enrollment in enrollments %}
-                <tr style="border-bottom:1px solid #f3f4f6;">
-                    <td style="padding:.75rem 1rem;color:#6b7280;">{{ enrollment.id }}</td>
-                    <td style="padding:.75rem 1rem;">{{ enrollment.classe ? enrollment.classe.name : '—' }}</td>
-                    <td style="padding:.75rem 1rem;">{{ enrollment.user ? enrollment.user.firstName ~ ' ' ~ enrollment.user.lastName : '—' }}</td>
-                    <td style="padding:.75rem 1rem;">{{ enrollment.enrolledAt ? enrollment.enrolledAt|date('Y-m-d') : '—' }}</td>
-                    <td style="padding:.75rem 1rem;">{{ enrollment.leftAt ? enrollment.leftAt|date('Y-m-d') : '—' }}</td>
-                    <td style="padding:.75rem 1rem;">
-                        <div style="display:flex;gap:.5rem;">
-                            <a href="{{ path('admin_student_enrollments_edit', {id: enrollment.id}) }}" style="padding:.3rem .7rem;background:#2563eb;color:#fff;border-radius:5px;text-decoration:none;font-size:.82rem;">Edit</a>
-                            <form method="post" action="{{ path('admin_student_enrollments_delete', {id: enrollment.id}) }}" onsubmit="return confirm('Delete this enrollment?');">
+                <tr style="border-bottom: 1px solid var(--m3-surface-container-high); transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--m3-surface-container-low)'" onmouseout="this.style.backgroundColor='transparent'">
+                    <td style="padding: 16px 12px; text-align: center;">
+                        <input form="bulk-enrollments" class="enrollment-checkbox" type="checkbox" name="selected_ids[]" value="{{ enrollment.id }}">
+                    </td>
+                    <td style="padding: 16px 24px; font-weight: 500; color: var(--m3-on-surface);">{{ enrollment.classe ? enrollment.classe.name : '—' }}</td>
+                    <td style="padding: 16px 24px; color: var(--m3-on-surface-variant);">{{ enrollment.user ? enrollment.user.firstName ~ ' ' ~ enrollment.user.lastName : '—' }}</td>
+                    <td style="padding: 16px 24px; color: var(--m3-on-surface-variant);">{{ enrollment.academicYear ? enrollment.academicYear.name : '—' }}</td>
+                    <td style="padding: 16px 24px;">
+                        <div style="display: flex; gap: 8px;">
+                            <a href="{{ path('admin_student_enrollments_edit', {id: enrollment.id}) }}" class="m3-button m3-button-tonal" style="height: 32px; padding: 0 12px;">
+                                Edit
+                            </a>
+                            <form method="post" action="{{ path('admin_student_enrollments_delete', {id: enrollment.id}) }}" onsubmit="return confirm('Delete this enrollment?');" style="margin: 0;">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete_student_enrollment_' ~ enrollment.id) }}">
-                                <button type="submit" style="padding:.3rem .7rem;background:#dc2626;color:#fff;border:none;border-radius:5px;font-size:.82rem;cursor:pointer;">Delete</button>
+                                <button type="submit" class="m3-button" style="height: 32px; padding: 0 12px; background: transparent; border: 1px solid var(--m3-error); color: var(--m3-error);">
+                                    Delete
+                                </button>
                             </form>
                         </div>
                     </td>
                 </tr>
             {% else %}
-                <tr><td colspan="6" style="padding:2rem;text-align:center;color:#9ca3af;">No enrollments found.</td></tr>
+                <tr>
+                    <td colspan="5" style="padding: 48px; text-align: center; color: var(--m3-outline);">No enrollments found.</td>
+                </tr>
             {% endfor %}
             </tbody>
         </table>

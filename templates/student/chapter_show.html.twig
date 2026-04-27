@@ -1,0 +1,131 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ chapter.title }} — LearnWay{% endblock %}
+
+{% block body %}
+<div style="max-width: 1000px; margin: 0 auto; padding-bottom: 64px;">
+    
+    <div style="margin-bottom: 40px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <a href="{{ path('student_subject_chapters', {subjectId: chapter.subject.id}) }}" class="m3-button m3-button-text" style="padding: 0; height: 32px; font-size: 0.875rem;">
+                ← Back to {{ chapter.subject.name }}
+            </a>
+        </div>
+        <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+            <div>
+                <h1 style="margin: 0; font-size: 2.5rem; font-weight: 400; color: var(--m3-on-surface);">{{ chapter.title }}</h1>
+                <p style="margin: 4px 0 0; color: var(--m3-on-surface-variant); font-size: 1.125rem;">{{ chapter.description }}</p>
+            </div>
+            <div style="background: var(--m3-primary-container); color: var(--m3-on-primary-container); padding: 8px 16px; border-radius: 12px; font-weight: 600; font-size: 0.875rem;">
+                Chapter Content
+            </div>
+        </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 32px;">
+        
+        {# ── TEXT CONTENT BLOCKS ── #}
+        {% if chapter.chapterContents|length > 0 %}
+            <section>
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    {% for content in chapter.chapterContents %}
+                        <div class="m3-card m3-card-filled" style="padding: 32px; background: white; border-radius: 24px; box-shadow: 0 4px 24px rgba(0,0,0,0.04); border: 1px solid var(--m3-outline-variant);">
+                            <div style="font-family: 'Roboto', sans-serif; line-height: 1.8; color: var(--m3-on-surface); font-size: 1.1rem; white-space: pre-wrap;">{{ content.body }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        {# ── DOWNLOADABLE FILES ── #}
+        {% if chapter.chapterFiles|length > 0 %}
+            <section>
+                <h2 style="margin: 0 0 16px 0; font-size: 1.25rem; font-weight: 500; color: var(--m3-on-surface); display: flex; align-items: center; gap: 12px;">
+                    <span>📁</span> Resources & Downloads
+                </h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
+                    {% for file in chapter.chapterFiles %}
+                        <div class="m3-card m3-card-outlined" style="padding: 16px; display: flex; align-items: center; justify-content: space-between; border-radius: 16px;">
+                            <div style="display: flex; align-items: center; gap: 16px; min-width: 0;">
+                                <div style="font-size: 1.5rem;">📄</div>
+                                <div style="min-width: 0;">
+                                    <div style="font-size: 0.9375rem; font-weight: 500; color: var(--m3-on-surface); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ file.fileName }}</div>
+                                    <div style="font-size: 0.75rem; color: var(--m3-on-surface-variant);">{{ (file.fileSize / 1024 / 1024)|number_format(2) }} MB</div>
+                                </div>
+                            </div>
+                            <a href="{{ file.filePath }}" download class="m3-button m3-button-tonal" style="min-width: 44px; width: 44px; height: 44px; padding: 0; border-radius: 12px;">
+                                ⬇️
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        {# ── ASSIGNMENTS ── #}
+        {% if chapter.assignments|length > 0 %}
+            <section>
+                <h2 style="margin: 0 0 16px 0; font-size: 1.25rem; font-weight: 500; color: var(--m3-on-surface); display: flex; align-items: center; gap: 12px;">
+                    <span>📝</span> Assignments & Tasks
+                </h2>
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    {% for assignment in chapter.assignments %}
+                        <div class="m3-card m3-card-outlined" style="padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; border-radius: 20px;">
+                            <div style="display: flex; align-items: center; gap: 20px;">
+                                <div style="width: 48px; height: 48px; background: var(--m3-secondary-container); color: var(--m3-on-secondary-container); display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 1.25rem;">
+                                    {% if assignment.type == 'quiz' %}❓{% else %}📝{% endif %}
+                                </div>
+                                <div>
+                                    <h3 style="margin: 0; font-size: 1.125rem; font-weight: 500;">{{ assignment.title }}</h3>
+                                    <div style="display: flex; gap: 16px; margin-top: 4px;">
+                                        <span style="font-size: 0.8125rem; color: var(--m3-on-surface-variant); display: flex; align-items: center; gap: 4px;">
+                                            📅 Due: {{ assignment.due_date ? assignment.due_date|date('M d, Y') : 'No deadline' }}
+                                        </span>
+                                        <span style="font-size: 0.8125rem; color: var(--m3-on-surface-variant); display: flex; align-items: center; gap: 4px;">
+                                            📂 Type: {{ assignment.submission_type|title }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="{{ path('student_assignment_show', {assignmentId: assignment.id}) }}" class="m3-button m3-button-filled" style="border-radius: 12px;">
+                                Open Assignment
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        {# ── EXTERNAL LINKS / ITEMS ── #}
+        {% if chapter.chapterItems|length > 0 %}
+            <section>
+                <h2 style="margin: 0 0 16px 0; font-size: 1.25rem; font-weight: 500; color: var(--m3-on-surface); display: flex; align-items: center; gap: 12px;">
+                    <span>🔗</span> Related Links
+                </h2>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    {% for item in chapter.chapterItems %}
+                        <div class="m3-card m3-card-filled" style="padding: 16px 24px; border-radius: 16px; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <span style="font-size: 1.25rem;">🌐</span>
+                                <span style="font-weight: 500;">{{ item.title }}</span>
+                            </div>
+                            <a href="{{ item.url }}" target="_blank" class="m3-button m3-button-text" style="color: var(--m3-primary);">
+                                Open Link ↗
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        {% if chapter.chapterContents|length == 0 and chapter.chapterFiles|length == 0 and chapter.chapterItems|length == 0 %}
+            <div class="m3-card m3-card-outlined" style="text-align: center; padding: 64px; border-radius: 24px;">
+                <div style="font-size: 4rem; margin-bottom: 16px; opacity: 0.3;">⏳</div>
+                <h3 style="margin: 0; font-weight: 500;">Coming Soon</h3>
+                <p style="margin: 8px 0 0; color: var(--m3-on-surface-variant);">The instructor is currently preparing the materials for this chapter.</p>
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

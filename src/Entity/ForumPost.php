@@ -15,7 +15,7 @@ class ForumPost
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'bigint')]
     private ?int $id = null;
 
     public function getId(): ?int
@@ -30,7 +30,7 @@ class ForumPost
     }
 
     #[ORM\ManyToOne(targetEntity: Classe::class, inversedBy: 'forumPosts')]
-    #[ORM\JoinColumn(name: 'class_id', referencedColumnName: 'id')]
+    #[ORM\JoinColumn(name: 'class_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private ?Classe $classe = null;
 
     public function getClasse(): ?Classe

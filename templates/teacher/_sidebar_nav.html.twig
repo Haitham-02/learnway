@@ -1,0 +1,30 @@
+{# Embedded sidebar navigation — rendered via {{ render(controller('App\\Controller\\TeacherController::sidebarNav')) }} #}
+{% set currentRoute = app.request.attributes.get('_route') ?? '' %}
+{% set currentClassId = app.request.attributes.get('classId') ?? app.request.attributes.get('_route_params').classId|default('') %}
+{% set currentSubjectId = app.request.attributes.get('subjectId') ?? app.request.attributes.get('_route_params').subjectId|default('') %}
+
+<div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--m3-on-surface-variant); margin: 0 16px 8px; font-weight: 600;">Navigation</div>
+
+<a href="{{ path('app_dashboard') }}" class="m3-sidebar-item {{ currentRoute == 'app_dashboard' ? 'active' : '' }}">
+    <span style="font-size: 1.25rem;">🏠</span> 
+    <span style="flex-grow: 1;">Dashboard</span>
+</a>
+
+{% for entry in classeMap %}
+    <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--m3-primary); margin: 1.5rem 16px 8px; font-weight: 700; border-bottom: 1px solid var(--m3-outline); padding-bottom: 4px;">
+        🏫 {{ entry.classe.name }}
+    </div>
+
+    <a href="{{ path('teacher_class_students', {classId: entry.classe.id}) }}" class="m3-sidebar-item {{ currentRoute == 'teacher_class_students' and currentClassId == entry.classe.id ? 'active' : '' }}">
+        <span style="font-size: 1.25rem;">👥</span> 
+        <span style="flex-grow: 1;">Students</span>
+    </a>
+
+    {% for subject in entry.subjects %}
+        {% set isActiveSubject = (currentRoute in ['teacher_chapters','teacher_chapter_new','teacher_chapter_edit','teacher_assignments','teacher_assignment_new','teacher_assignment_edit']) and currentSubjectId == subject.id and currentClassId == entry.classe.id %}
+        <a href="{{ path('teacher_chapters', {subjectId: subject.id, classId: entry.classe.id}) }}" class="m3-sidebar-item {{ isActiveSubject ? 'active' : '' }}">
+            <span style="font-size: 1.25rem;">📚</span> 
+            <span style="flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ subject.name }}</span>
+        </a>
+    {% endfor %}
+{% endfor %}

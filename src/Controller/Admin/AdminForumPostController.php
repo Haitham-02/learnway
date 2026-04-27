@@ -32,8 +32,8 @@ class AdminForumPostController extends AbstractController
         UserRepository $userRepository,
         EntityManagerInterface $em,
     ): Response {
-        $classes = $classeRepository->findBy([], ['name' => 'ASC']);
-        $users = $userRepository->findBy([], ['id' => 'DESC']);
+        $classes = $classeRepository->findForSelector();
+        $users = $userRepository->findForAuthorSelector();
         $errors = [];
 
         if ($request->isMethod('POST')) {
@@ -76,6 +76,11 @@ class AdminForumPostController extends AbstractController
                 $em->flush();
 
                 $this->addFlash('success', 'Forum post created successfully.');
+                $returnTo = trim((string) $request->request->get('return_to', $request->query->get('return_to', '')));
+                if (str_starts_with($returnTo, '/admin/')) {
+                    return $this->redirect($this->appendQueryParams($returnTo, ['forum_post_id' => $post->getId()]));
+                }
+
                 return $this->redirectToRoute('admin_forum_posts_index');
             }
         }
@@ -101,8 +106,8 @@ class AdminForumPostController extends AbstractController
             throw $this->createNotFoundException("Forum post #{$id} not found.");
         }
 
-        $classes = $classeRepository->findBy([], ['name' => 'ASC']);
-        $users = $userRepository->findBy([], ['id' => 'DESC']);
+        $classes = $classeRepository->findForSelector();
+        $users = $userRepository->findForAuthorSelector();
         $errors = [];
 
         if ($request->isMethod('POST')) {
@@ -173,5 +178,31 @@ class AdminForumPostController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_forum_posts_index');
+    }
+
+    /**
+     * @param array<string, int|string|null> $params
+     */
+    private function appendQueryParams(string $path, array $params): string
+    {
+        $parts = parse_url($path);
+        if (!is_array($parts)) {
+            return $path;
+        }
+
+        $query = [];
+        if (isset($parts['query'])) {
+            parse_str($parts['query'], $query);
+        }
+        foreach ($params as $key => $value) {
+            if ($value !== null && $value !== '') {
+                $query[$key] = $value;
+            }
+        }
+
+        $basePath = $parts['path'] ?? $path;
+        $queryString = http_build_query($query);
+
+        return $queryString === '' ? $basePath : $basePath . '?' . $queryString;
     }
 }

@@ -1,0 +1,71 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Assign Teacher — Admin{% endblock %}
+
+{% block body %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 24px;">
+        <a href="{{ path('admin_teacher_assignments_index') }}" class="m3-button m3-button-outlined" style="border: none;">
+            <span>←</span> Back
+        </a>
+        <h1 style="margin: 0; font-size: 2rem; font-weight: 400; color: var(--m3-on-surface);">Assign Teacher</h1>
+    </div>
+
+    {% if errors is not empty %}
+        <div style="background-color: var(--m3-error-container); color: var(--m3-on-error-container); padding: 16px 24px; border-radius: var(--m3-radius-medium); margin-bottom: 24px;">
+            <ul style="margin: 0; padding-left: 20px;">
+                {% for error in errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <div class="m3-card m3-card-outlined" style="padding: 32px;">
+        <form method="post" novalidate style="display: flex; flex-direction: column; gap: 24px;">
+            <div>
+                <label class="m3-label">TEACHER</label>
+                <select name="teacher_id" required class="m3-select">
+                    <option value="">— Select teacher —</option>
+                    {% for teacher in teachers %}
+                        <option value="{{ teacher.id }}" {% if app.request.request.get('teacher_id') == teacher.id %}selected{% endif %}>
+                            {{ teacher.firstName }} {{ teacher.lastName }} ({{ teacher.email }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="m3-label">SUBJECT</label>
+                <select name="subject_id" required class="m3-select">
+                    <option value="">— Select subject —</option>
+                    {% for subject in subjects %}
+                        <option value="{{ subject.id }}" {% if app.request.request.get('subject_id') == subject.id %}selected{% endif %}>
+                            {{ subject.name }} {% if subject.term %}[{{ subject.term.displayName }}]{% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+                <p style="margin: 4px 0 0; font-size: 0.75rem; color: var(--m3-on-surface-variant);">Subjects are now associated with specific academic terms.</p>
+            </div>
+
+            <div>
+                <label class="m3-label">CLASS</label>
+                <select name="class_id" required class="m3-select">
+                    <option value="">— Select class —</option>
+                    {% for class in classes %}
+                        <option value="{{ class.id }}" {% if app.request.request.get('class_id') == class.id %}selected{% endif %}>
+                            {{ class.name }} ({{ class.gradeLevel }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="margin-top: 8px;">
+                <button type="submit" class="m3-button m3-button-filled" style="width: 100%; height: 48px;">
+                    Create Assignment
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

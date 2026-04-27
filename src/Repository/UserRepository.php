@@ -26,7 +26,9 @@ class UserRepository extends ServiceEntityRepository
             ->addSelect('r')
             ->andWhere('UPPER(r.name) = :role')
             ->setParameter('role', 'STUDENT')
-            ->orderBy('u.id', 'DESC')
+            ->orderBy('u.is_active', 'DESC')
+            ->addOrderBy('u.last_name', 'ASC')
+            ->addOrderBy('u.first_name', 'ASC')
             ->getQuery()
             ->getResult();
     }
@@ -54,7 +56,9 @@ class UserRepository extends ServiceEntityRepository
             ->addSelect('r')
             ->andWhere('UPPER(r.name) = :role')
             ->setParameter('role', 'TEACHER')
-            ->orderBy('u.id', 'DESC')
+            ->orderBy('u.is_active', 'DESC')
+            ->addOrderBy('u.last_name', 'ASC')
+            ->addOrderBy('u.first_name', 'ASC')
             ->getQuery()
             ->getResult();
     }
@@ -70,6 +74,21 @@ class UserRepository extends ServiceEntityRepository
             ->setParameter('role', 'TEACHER')
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /**
+     * @return User[]
+     */
+    public function findForAuthorSelector(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->leftJoin('u.role', 'r')
+            ->addSelect('r')
+            ->orderBy('u.is_active', 'DESC')
+            ->addOrderBy('u.last_name', 'ASC')
+            ->addOrderBy('u.first_name', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 
     //    /**

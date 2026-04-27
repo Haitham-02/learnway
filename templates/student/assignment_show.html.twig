@@ -1,0 +1,130 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ assignment.title }} — LearnWay{% endblock %}
+
+{% block body %}
+<div style="max-width: 900px; margin: 0 auto; padding-bottom: 64px;">
+    
+    <div style="margin-bottom: 40px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <a href="{{ path('student_chapter_show', {chapterId: assignment.chapter.id}) }}" class="m3-button m3-button-text" style="padding: 0; height: 32px; font-size: 0.875rem;">
+                ← Back to {{ assignment.chapter.title }}
+            </a>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <h1 style="margin: 0; font-size: 2.5rem; font-weight: 400; color: var(--m3-on-surface);">{{ assignment.title }}</h1>
+            <div style="padding: 8px 16px; border-radius: 12px; font-weight: 600; font-size: 0.875rem; 
+                {% if submission %}
+                    background: var(--m3-primary-container); color: var(--m3-on-primary-container);
+                {% else %}
+                    background: var(--m3-surface-variant); color: var(--m3-on-surface-variant);
+                {% endif %}">
+                {{ submission ? submission.status|title : 'Not Submitted' }}
+            </div>
+        </div>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div style="background-color: var(--m3-primary-container); color: var(--m3-on-primary-container); padding: 16px 24px; border-radius: 12px; margin-bottom: 32px;">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <div style="display: grid; grid-template-columns: 1fr; gap: 32px;">
+        
+        {# ── INSTRUCTIONS ── #}
+        <section class="m3-card m3-card-outlined" style="padding: 32px; border-radius: 24px;">
+            <h2 style="margin: 0 0 16px 0; font-size: 1.25rem; font-weight: 500;">Instructions</h2>
+            <div style="color: var(--m3-on-surface-variant); line-height: 1.7; font-size: 1.05rem;">
+                {{ assignment.description|default('No specific instructions provided.')|nl2br }}
+            </div>
+            
+            <div style="margin-top: 32px; display: flex; gap: 32px; padding-top: 24px; border-top: 1px solid var(--m3-outline-variant);">
+                <div>
+                    <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--m3-outline); font-weight: 600; margin-bottom: 4px;">Due Date</div>
+                    <div style="font-weight: 500;">{{ assignment.due_date ? assignment.due_date|date('M d, Y · H:i') : 'No deadline' }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--m3-outline); font-weight: 600; margin-bottom: 4px;">Submission Type</div>
+                    <div style="font-weight: 500;">{{ assignment.submission_type|title }}</div>
+                </div>
+            </div>
+        </section>
+
+        {# ── SUBMISSION FORM ── #}
+        {% if not submission or submission.status == 'draft' %}
+            <section class="m3-card m3-card-filled" style="padding: 32px; border-radius: 24px; background: white; border: 2px solid var(--m3-primary);">
+                <h2 style="margin: 0 0 24px 0; font-size: 1.25rem; font-weight: 500;">Submit Your Work</h2>
+                
+                <form action="{{ path('student_assignment_submit', {assignmentId: assignment.id}) }}" method="post" enctype="multipart/form-data">
+                    <div style="display: flex; flex-direction: column; gap: 24px;">
+                        
+                        {% if assignment.submission_type|lower in ['text', 'both'] %}
+                            <div>
+                                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 8px;">Response Text</label>
+                                <textarea name="submission_text" rows="8" class="m3-text-field" style="width: 100%; border-radius: 12px; padding: 16px;" placeholder="Type your response here..."></textarea>
+                            </div>
+                        {% endif %}
+
+                        {% if assignment.submission_type|lower in ['file', 'both'] %}
+                            <div>
+                                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 8px;">Upload Files</label>
+                                <div style="border: 2px dashed var(--m3-outline-variant); padding: 32px; border-radius: 16px; text-align: center;">
+                                    <input type="file" name="files[]" multiple style="margin-bottom: 12px;">
+                                    <p style="margin: 0; font-size: 0.75rem; color: var(--m3-on-surface-variant);">You can select multiple files if needed.</p>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div style="display: flex; justify-content: flex-end;">
+                            <button type="submit" class="m3-button m3-button-filled" style="height: 56px; padding: 0 40px; border-radius: 16px; font-size: 1rem;">
+                                Submit Assignment
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </section>
+        {% else %}
+            {# ── VIEW SUBMISSION ── #}
+            <section class="m3-card m3-card-filled" style="padding: 32px; border-radius: 24px; background: var(--m3-surface-container-low);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+                    <h2 style="margin: 0; font-size: 1.25rem; font-weight: 500;">Your Submission</h2>
+                    <span style="font-size: 0.875rem; color: var(--m3-on-surface-variant);">Submitted on {{ submission.submitted_at|date('M d, Y · H:i') }}</span>
+                </div>
+
+                {% if submission.submissionText %}
+                    <div style="background: white; padding: 24px; border-radius: 16px; border: 1px solid var(--m3-outline-variant); margin-bottom: 24px; white-space: pre-wrap; line-height: 1.6;">{{ submission.submissionText }}</div>
+                {% endif %}
+
+                {% if submission.submissionFiles|length > 0 %}
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        {% for file in submission.submissionFiles %}
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: white; border-radius: 12px; border: 1px solid var(--m3-outline-variant);">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <span>📄</span>
+                                    <span style="font-size: 0.9375rem;">{{ file.fileName }}</span>
+                                </div>
+                                <a href="{{ file.filePath }}" class="m3-button m3-button-text">View</a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {# ── FEEDBACK ── #}
+                {% if submission.feedback %}
+                    <div style="margin-top: 32px; padding-top: 24px; border-top: 2px solid white;">
+                        <h3 style="margin: 0 0 12px 0; font-size: 1.125rem; font-weight: 600; color: var(--m3-primary);">Instructor Feedback</h3>
+                        <div style="background: var(--m3-primary-container); color: var(--m3-on-primary-container); padding: 24px; border-radius: 16px; line-height: 1.6;">
+                            {{ submission.feedback|nl2br }}
+                        </div>
+                        <div style="margin-top: 12px; font-size: 0.8125rem; opacity: 0.8;">
+                            Reviewed by {{ submission.reviewer.firstName }} on {{ submission.reviewed_at|date('M d, Y') }}
+                        </div>
+                    </div>
+                {% endif %}
+            </section>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

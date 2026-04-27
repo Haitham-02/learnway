@@ -1,0 +1,76 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Teacher Assignments — Admin{% endblock %}
+
+{% block body %}
+<div style="max-width: 1200px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;">
+        <h1 style="margin: 0; font-size: 2rem; font-weight: 400; color: var(--m3-on-surface);">Teacher Assignments</h1>
+        <a href="{{ path('admin_teacher_assignments_new') }}" class="m3-button m3-button-filled">
+            + Assign Teacher
+        </a>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div style="background-color: var(--m3-primary-container); color: var(--m3-on-primary-container); padding: 16px 24px; border-radius: var(--m3-radius-medium); margin-bottom: 24px;">
+            {{ message }}
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div style="background-color: var(--m3-error-container); color: var(--m3-on-error-container); padding: 16px 24px; border-radius: var(--m3-radius-medium); margin-bottom: 24px;">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <div class="m3-card m3-card-outlined" style="padding: 0; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+            <thead style="background-color: var(--m3-surface-container-low);">
+                <tr>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">TEACHER</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">SUBJECT & TERM</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">CLASS</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ta in assignments %}
+                <tr style="border-bottom: 1px solid var(--m3-surface-container-high); transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--m3-surface-container-low)'" onmouseout="this.style.backgroundColor='transparent'">
+                    <td style="padding: 16px 24px;">
+                        <span style="font-weight: 500; color: var(--m3-on-surface);">{{ ta.teacher ? ta.teacher.firstName ~ ' ' ~ ta.teacher.lastName : '—' }}</span>
+                    </td>
+                    <td style="padding: 16px 24px;">
+                        {% if ta.subject %}
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-weight: 500; color: var(--m3-primary);">{{ ta.subject.name }}</span>
+                                {% if ta.subject.term %}
+                                    <span style="font-size: 0.75rem; color: var(--m3-on-surface-variant);">
+                                        {{ ta.subject.term.name }} ({{ ta.subject.term.academicYear.name }})
+                                    </span>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <span style="color: var(--m3-outline);">—</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 16px 24px; color: var(--m3-on-surface-variant);">
+                        {{ ta.classe ? ta.classe.name ~ ' (' ~ ta.classe.gradeLevel ~ ')' : '—' }}
+                    </td>
+                    <td style="padding: 16px 24px;">
+                        <form method="post" action="{{ path('admin_teacher_assignments_delete', {id: ta.id}) }}" onsubmit="return confirm('Remove this assignment?');" style="margin: 0;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_teacher_assignment_' ~ ta.id) }}">
+                            <button type="submit" class="m3-button" style="height: 32px; padding: 0 12px; background: transparent; border: 1px solid var(--m3-error); color: var(--m3-error);">
+                                Remove
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="padding: 48px; text-align: center; color: var(--m3-outline);">No teacher assignments yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

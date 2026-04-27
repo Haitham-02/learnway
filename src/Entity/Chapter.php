@@ -15,7 +15,7 @@ class Chapter
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'bigint')]
     private ?int $id = null;
 
     public function getId(): ?int
@@ -29,18 +29,33 @@ class Chapter
         return $this;
     }
 
-    #[ORM\ManyToOne(targetEntity: SubjectSection::class, inversedBy: 'chapters')]
-    #[ORM\JoinColumn(name: 'section_id', referencedColumnName: 'id')]
-    private ?SubjectSection $subjectSection = null;
+    #[ORM\ManyToOne(targetEntity: Classe::class)]
+    #[ORM\JoinColumn(name: 'class_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    private ?Classe $classe = null;
 
-    public function getSubjectSection(): ?SubjectSection
+    public function getClasse(): ?Classe
     {
-        return $this->subjectSection;
+        return $this->classe;
     }
 
-    public function setSubjectSection(?SubjectSection $subjectSection): self
+    public function setClasse(?Classe $classe): self
     {
-        $this->subjectSection = $subjectSection;
+        $this->classe = $classe;
+        return $this;
+    }
+
+    #[ORM\ManyToOne(targetEntity: Subject::class)]
+    #[ORM\JoinColumn(name: 'subject_id', referencedColumnName: 'id')]
+    private ?Subject $subject = null;
+
+    public function getSubject(): ?Subject
+    {
+        return $this->subject;
+    }
+
+    public function setSubject(?Subject $subject): self
+    {
+        $this->subject = $subject;
         return $this;
     }
 
@@ -184,6 +199,72 @@ class Chapter
         return $this;
     }
 
+    #[ORM\OneToMany(targetEntity: ChapterFile::class, mappedBy: 'chapter')]
+    private Collection $chapterFiles;
+
+    /**
+     * @return Collection<int, ChapterFile>
+     */
+    public function getChapterFiles(): Collection
+    {
+        if (!$this->chapterFiles instanceof Collection) {
+            $this->chapterFiles = new ArrayCollection();
+        }
+        return $this->chapterFiles;
+    }
+
+    public function addChapterFile(ChapterFile $chapterFile): self
+    {
+        if (!$this->getChapterFiles()->contains($chapterFile)) {
+            $this->getChapterFiles()->add($chapterFile);
+            $chapterFile->setChapter($this);
+        }
+        return $this;
+    }
+
+    public function removeChapterFile(ChapterFile $chapterFile): self
+    {
+        if ($this->getChapterFiles()->removeElement($chapterFile)) {
+            if ($chapterFile->getChapter() === $this) {
+                $chapterFile->setChapter(null);
+            }
+        }
+        return $this;
+    }
+
+    #[ORM\OneToMany(targetEntity: ChapterContent::class, mappedBy: 'chapter')]
+    private Collection $chapterContents;
+
+    /**
+     * @return Collection<int, ChapterContent>
+     */
+    public function getChapterContents(): Collection
+    {
+        if (!$this->chapterContents instanceof Collection) {
+            $this->chapterContents = new ArrayCollection();
+        }
+        return $this->chapterContents;
+    }
+
+    public function addChapterContent(ChapterContent $chapterContent): self
+    {
+        if (!$this->getChapterContents()->contains($chapterContent)) {
+            $this->getChapterContents()->add($chapterContent);
+            $chapterContent->setChapter($this);
+        }
+        return $this;
+    }
+
+    public function removeChapterContent(ChapterContent $chapterContent): self
+    {
+        if ($this->getChapterContents()->removeElement($chapterContent)) {
+            if ($chapterContent->getChapter() === $this) {
+                $chapterContent->setChapter(null);
+            }
+        }
+        return $this;
+    }
+
     #[ORM\OneToOne(targetEntity: ChapterProgress::class, mappedBy: 'chapter')]
     private ?ChapterProgress $chapterProgress = null;
 
@@ -191,6 +272,8 @@ class Chapter
     {
         $this->assignments = new ArrayCollection();
         $this->chapterItems = new ArrayCollection();
+        $this->chapterFiles = new ArrayCollection();
+        $this->chapterContents = new ArrayCollection();
     }
 
     public function getChapterProgress(): ?ChapterProgress

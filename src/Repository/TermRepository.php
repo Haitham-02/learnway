@@ -16,6 +16,22 @@ class TermRepository extends ServiceEntityRepository
         parent::__construct($registry, Term::class);
     }
 
+    /**
+     * @return Term[]
+     */
+    public function findForSelector(): array
+    {
+        return $this->createQueryBuilder('t')
+            ->leftJoin('t.academicYear', 'a')
+            ->addSelect('a')
+            ->orderBy('a.is_current', 'DESC')
+            ->addOrderBy('t.is_current', 'DESC')
+            ->addOrderBy('t.start_date', 'DESC')
+            ->addOrderBy('t.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return Term[] Returns an array of Term objects
     //     */

@@ -16,6 +16,19 @@ class AcademicYearRepository extends ServiceEntityRepository
         parent::__construct($registry, AcademicYear::class);
     }
 
+    /**
+     * @return AcademicYear[]
+     */
+    public function findForSelector(): array
+    {
+        return $this->createQueryBuilder('a')
+            ->orderBy('a.is_current', 'DESC')
+            ->addOrderBy('a.start_date', 'DESC')
+            ->addOrderBy('a.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return AcademicYear[] Returns an array of AcademicYear objects
     //     */

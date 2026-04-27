@@ -3,61 +3,119 @@
 {% block title %}Edit Chapter — Admin{% endblock %}
 
 {% block body %}
-<div style="max-width:640px;margin:2rem auto;padding:0 1rem;font-family:sans-serif;">
-    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;">
-        <a href="{{ path('admin_chapters_index') }}" style="color:#6b7280;text-decoration:none;font-size:.9rem;">← Back to Chapters</a>
-        <h1 style="margin:0;font-size:1.5rem;">Edit Chapter #{{ chapter.id }}</h1>
+<div style="max-width: 600px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 24px;">
+        <a href="{{ path('admin_chapters_index') }}" class="m3-button m3-button-outlined" style="border: none;">
+            <span>←</span> Back
+        </a>
+        <h1 style="margin: 0; font-size: 2rem; font-weight: 400; color: var(--m3-on-surface);">Edit Chapter</h1>
+        <div style="margin-left: auto; display: flex; gap: 8px;">
+            <a href="{{ path('admin_classes_new', { return_to: app.request.uri }) }}" class="m3-button m3-button-text" style="font-size: 0.875rem;">+ Class</a>
+            <a href="{{ path('admin_subjects_new', { return_to: app.request.uri }) }}" class="m3-button m3-button-text" style="font-size: 0.875rem;">+ Subject</a>
+        </div>
     </div>
 
     {% if errors is not empty %}
-        <div style="background:#fee2e2;color:#b91c1c;padding:.75rem 1rem;border-radius:6px;margin-bottom:1.25rem;">
-            <ul style="margin:0;padding-left:1.25rem;">{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>
+        <div style="background-color: var(--m3-error-container); color: var(--m3-on-error-container); padding: 16px 24px; border-radius: var(--m3-radius-medium); margin-bottom: 24px;">
+            <ul style="margin: 0; padding-left: 20px;">{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>
         </div>
     {% endif %}
 
-    {% set selectedSection = app.request.isMethod('POST') ? app.request.request.get('subject_section_id') : (chapter.subjectSection ? chapter.subjectSection.id : '') %}
+    {% set selectedClass = app.request.isMethod('POST') ? app.request.request.get('class_id') : (chapter.classe ? chapter.classe.id : '') %}
+    {% set selectedSubject = app.request.isMethod('POST') ? app.request.request.get('subject_id') : (chapter.subject ? chapter.subject.id : '') %}
     {% set title = app.request.isMethod('POST') ? app.request.request.get('title') : chapter.title %}
     {% set description = app.request.isMethod('POST') ? app.request.request.get('description') : (chapter.description ?: '') %}
     {% set sortOrder = app.request.isMethod('POST') ? app.request.request.get('sort_order') : (chapter.sortOrder is not null ? chapter.sortOrder : '') %}
     {% set isPublished = app.request.isMethod('POST') ? app.request.request.get('is_published') : chapter.isPublished %}
 
-    <div style="background:#fff;padding:2rem;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1);">
-        <form method="post" novalidate>
+    <div class="m3-card m3-card-outlined" style="padding: 32px;">
+        <form method="post" novalidate style="display: flex; flex-direction: column; gap: 24px;">
             <input type="hidden" name="_token" value="{{ csrf_token('chapter_edit_' ~ chapter.id) }}">
-            <div style="margin-bottom:1rem;">
-                <label style="display:block;margin-bottom:.4rem;font-size:.9rem;font-weight:600;">Subject Section</label>
-                <select name="subject_section_id" required style="width:100%;padding:.6rem .8rem;border:1px solid #d1d5db;border-radius:6px;background:#fff;">
-                    <option value="">— Select subject section —</option>
-                    {% for section in sections %}
-                        <option value="{{ section.id }}" {% if selectedSection == section.id %}selected{% endif %}>
-                            #{{ section.id }} — {{ section.classe ? section.classe.name : '—' }} / {{ section.subject ? section.subject.name : '—' }} / {{ section.term ? section.term.name : '—' }}
-                        </option>
-                    {% endfor %}
-                </select>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <div>
+                    <label class="m3-label">CLASS *</label>
+                    <select id="chapter-class" name="class_id" required class="m3-select">
+                        <option value="">— Select class —</option>
+                        {% for class in classes %}
+                            <option value="{{ class.id }}" data-grade="{{ class.gradeLevel }}" {% if selectedClass == class.id %}selected{% endif %}>{{ class.name }} ({{ class.gradeLevel }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="m3-label">SUBJECT *</label>
+                    <select id="chapter-subject" name="subject_id" required class="m3-select">
+                        <option value="">— Select subject —</option>
+                        {% for subject in subjects %}
+                            <option value="{{ subject.id }}" data-grade="{{ subject.gradeLevel ?: '' }}" {% if selectedSubject == subject.id %}selected{% endif %}>{{ subject.name }}{% if subject.gradeLevel %} — {{ subject.gradeLevel }}{% endif %}</option>
+                        {% endfor %}
+                    </select>
+                    <p style="margin: 4px 0 0; font-size: 0.75rem; color: var(--m3-on-surface-variant);">Subjects are filtered by the selected class's grade level.</p>
+                </div>
             </div>
 
-            <div style="margin-bottom:1rem;">
-                <label style="display:block;margin-bottom:.4rem;font-size:.9rem;font-weight:600;">Title</label>
-                <input type="text" name="title" required value="{{ title }}" style="width:100%;padding:.6rem .8rem;border:1px solid #d1d5db;border-radius:6px;font-size:1rem;box-sizing:border-box;">
+            <div>
+                <label class="m3-label">TITLE *</label>
+                <input type="text" name="title" required class="m3-text-field" value="{{ title }}">
             </div>
 
-            <div style="margin-bottom:1rem;">
-                <label style="display:block;margin-bottom:.4rem;font-size:.9rem;font-weight:600;">Description</label>
-                <textarea name="description" rows="4" style="width:100%;padding:.6rem .8rem;border:1px solid #d1d5db;border-radius:6px;font-size:1rem;box-sizing:border-box;">{{ description }}</textarea>
+            <div>
+                <label class="m3-label">DESCRIPTION</label>
+                <textarea name="description" rows="4" class="m3-text-field" style="resize: vertical;">{{ description }}</textarea>
             </div>
 
-            <div style="margin-bottom:1rem;">
-                <label style="display:block;margin-bottom:.4rem;font-size:.9rem;font-weight:600;">Sort Order</label>
-                <input type="number" name="sort_order" value="{{ sortOrder }}" style="width:100%;padding:.6rem .8rem;border:1px solid #d1d5db;border-radius:6px;font-size:1rem;box-sizing:border-box;">
+            <div>
+                <label class="m3-label">SORT ORDER</label>
+                <input type="number" name="sort_order" class="m3-text-field" value="{{ sortOrder }}">
             </div>
 
-            <div style="margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;">
-                <input type="checkbox" name="is_published" id="is_published" value="1" {% if isPublished %}checked{% endif %} style="width:1rem;height:1rem;">
-                <label for="is_published" style="font-size:.9rem;font-weight:600;">Published</label>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <input type="checkbox" name="is_published" id="is_published" value="1" {% if isPublished %}checked{% endif %} class="m3-checkbox">
+                <label for="is_published" style="font-size: 1rem; color: var(--m3-on-surface); cursor: pointer;">Published</label>
             </div>
 
-            <button type="submit" style="width:100%;padding:.75rem;background:#2563eb;color:#fff;border:none;border-radius:6px;font-size:1rem;font-weight:600;cursor:pointer;">Save Changes</button>
+            <div style="margin-top: 8px;">
+                <button type="submit" class="m3-button m3-button-filled" style="width: 100%; height: 48px;">
+                    Save Changes
+                </button>
+            </div>
         </form>
     </div>
 </div>
+
+<script>
+(function () {
+    const classSelect = document.getElementById('chapter-class');
+    const subjectSelect = document.getElementById('chapter-subject');
+    if (!classSelect || !subjectSelect) return;
+
+    const originalOptions = Array.from(subjectSelect.options).map(function (option) {
+        return { value: option.value, text: option.text, grade: option.getAttribute('data-grade') || '' };
+    });
+
+    function normalize(g) { return (g || '').trim().toLowerCase(); }
+
+    function syncSubjects() {
+        const selectedClass = classSelect.options[classSelect.selectedIndex];
+        const classGrade = normalize(selectedClass ? selectedClass.getAttribute('data-grade') : '');
+        const currentValue = subjectSelect.value;
+
+        subjectSelect.innerHTML = '';
+        originalOptions.forEach(function (opt) {
+            const subjGrade = normalize(opt.grade);
+            if (opt.value === '' || classGrade === '' || subjGrade === '' || subjGrade === classGrade) {
+                const el = document.createElement('option');
+                el.value = opt.value;
+                el.textContent = opt.text;
+                el.setAttribute('data-grade', opt.grade);
+                if (opt.value === currentValue) el.selected = true;
+                subjectSelect.appendChild(el);
+            }
+        });
+    }
+
+    classSelect.addEventListener('change', syncSubjects);
+    syncSubjects();
+})();
+</script>
 {% endblock %}

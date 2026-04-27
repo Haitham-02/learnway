@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Students in {{ classe.name }} — Teacher{% endblock %}
+
+{% block body %}
+<div style="max-width: 1200px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 24px;">
+        <a href="{{ path('app_dashboard') }}" class="m3-button m3-button-outlined" style="border: none;">
+            <span>←</span> Dashboard
+        </a>
+        <h1 style="margin: 0; font-size: 2rem; font-weight: 400; color: var(--m3-on-surface);">
+            Students in <span style="color: var(--m3-primary);">{{ classe.name }}</span>
+        </h1>
+    </div>
+
+    <div class="m3-card m3-card-outlined" style="padding: 0; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+            <thead style="background-color: var(--m3-surface-container-low);">
+                <tr>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); font-weight: 600; border-bottom: 1px solid var(--m3-outline);">#</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); font-weight: 600; border-bottom: 1px solid var(--m3-outline);">NAME</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); font-weight: 600; border-bottom: 1px solid var(--m3-outline);">EMAIL</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); font-weight: 600; border-bottom: 1px solid var(--m3-outline);">ACADEMIC YEAR</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for enrollment in enrollments %}
+                <tr style="border-bottom: 1px solid var(--m3-surface-container-high); transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--m3-surface-container-low)'" onmouseout="this.style.backgroundColor='transparent'">
+                    <td style="padding: 16px 24px; color: var(--m3-outline);">{{ loop.index }}</td>
+                    <td style="padding: 16px 24px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; border-radius: var(--m3-radius-full); background-color: var(--m3-primary-container); color: var(--m3-on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.875rem;">
+                                {{ enrollment.user ? enrollment.user.firstName|slice(0,1)|upper : '?' }}
+                            </div>
+                            <div style="font-weight: 500; color: var(--m3-on-surface);">
+                                {{ enrollment.user ? enrollment.user.firstName ~ ' ' ~ enrollment.user.lastName : '—' }}
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding: 16px 24px; color: var(--m3-on-surface-variant);">{{ enrollment.user ? enrollment.user.email : '—' }}</td>
+                    <td style="padding: 16px 24px; color: var(--m3-on-surface-variant);">
+                        <span style="padding: 4px 12px; border-radius: var(--m3-radius-full); background-color: var(--m3-surface-variant); font-size: 0.75rem; font-weight: 500;">
+                            {{ enrollment.academicYear ? enrollment.academicYear.name : '—' }}
+                        </span>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="4" style="padding: 48px; text-align: center; color: var(--m3-outline);">No students enrolled in this class.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

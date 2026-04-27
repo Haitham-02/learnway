@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ content ? 'Edit Content' : 'Add Content' }} — Teacher{% endblock %}
+
+{% block body %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 24px;">
+        <a href="{{ path('teacher_chapter_show', {chapterId: chapter.id}) }}" class="m3-button m3-button-outlined" style="border: none;">
+            <span>←</span> Back to Chapter
+        </a>
+        <h1 style="margin: 0; font-size: 2rem; font-weight: 400; color: var(--m3-on-surface);">{{ content ? 'Edit Content' : 'Add Content' }}</h1>
+    </div>
+
+    <p style="margin: -16px 0 32px 48px; color: var(--m3-on-surface-variant); font-size: 1rem;">
+        {{ chapter.title }}
+    </p>
+
+    <div class="m3-card m3-card-outlined" style="padding: 32px;">
+        <form method="post" novalidate style="display: flex; flex-direction: column; gap: 24px;">
+            <div>
+                <label class="m3-label">TITLE (OPTIONAL)</label>
+                <input type="text" name="title" class="m3-text-field" value="{{ content ? content.title : '' }}" placeholder="e.g. Overview, Summary, etc.">
+            </div>
+
+            <div>
+                <label class="m3-label">BODY CONTENT *</label>
+                <textarea name="body" rows="12" required class="m3-text-field" style="resize: vertical; font-family: 'Roboto Mono', monospace; font-size: 0.9rem;" placeholder="Write your chapter content here...">{{ content ? content.body : '' }}</textarea>
+                <p style="margin: 8px 0 0 0; color: var(--m3-on-surface-variant); font-size: 0.75rem;">Support for Markdown or Rich Text can be added later.</p>
+            </div>
+
+            <div style="margin-top: 8px; display: flex; gap: 16px;">
+                <button type="submit" class="m3-button m3-button-filled" style="flex: 1; height: 48px;">
+                    {{ content ? 'Save Changes' : 'Add Content Block' }}
+                </button>
+                <a href="{{ path('teacher_chapter_show', {chapterId: chapter.id}) }}" class="m3-button m3-button-outlined" style="flex: 1; height: 48px; display: flex; align-items: center; justify-content: center;">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
