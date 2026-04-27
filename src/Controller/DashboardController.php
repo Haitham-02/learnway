@@ -13,6 +13,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
+use Symfony\UX\Chartjs\Model\Chart;
 
 class DashboardController extends AbstractController
 {
@@ -25,10 +27,11 @@ class DashboardController extends AbstractController
         StudentEnrollmentRepository $enrollmentRepo,
         ForumPostRepository $forumRepo,
         ChapterRepository $chapterRepo,
-        TeacherAssignmentRepository $taRepo
+        TeacherAssignmentRepository $taRepo,
+        ChartBuilderInterface $chartBuilder
     ): Response {
         if ($this->isGranted('ROLE_ADMIN')) {
-            return $this->adminDashboard($userRepo, $classeRepo, $subjectRepo, $enrollmentRepo, $forumRepo, $chapterRepo);
+            return $this->adminDashboard($userRepo, $classeRepo, $subjectRepo, $enrollmentRepo, $forumRepo, $chapterRepo, $chartBuilder);
         }
 
         if ($this->isGranted('ROLE_TEACHER')) {
@@ -67,7 +70,8 @@ class DashboardController extends AbstractController
         SubjectRepository $subjectRepo,
         StudentEnrollmentRepository $enrollmentRepo,
         ForumPostRepository $forumRepo,
-        ChapterRepository $chapterRepo
+        ChapterRepository $chapterRepo,
+        ChartBuilderInterface $chartBuilder
     ): Response {
         $stats = [
             'users' => $userRepo->count([]),
@@ -78,8 +82,26 @@ class DashboardController extends AbstractController
             'forum_posts' => $forumRepo->count([]),
         ];
 
+
+        // Example Chart: User roles distribution
+        $chart = $chartBuilder->createChart(Chart::TYPE_PIE);
+        $chart->setData([
+            'labels' => ['Students', 'Teachers', 'Admins'],
+            'datasets' => [
+                [
+                    'backgroundColor' => ['#4f46e5', '#10b981', '#f59e0b'],
+                    'data' => [
+                        $userRepo->countByRole('Student'),
+                        $userRepo->countByRole('Teacher'),
+                        $userRepo->countByRole('Admin'),
+                    ],
+                ],
+            ],
+        ]);
+
         return $this->render('security/dashboard.html.twig', [
             'stats' => $stats,
+            'chart' => $chart,
         ]);
     }
 

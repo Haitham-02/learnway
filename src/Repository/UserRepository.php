@@ -106,13 +106,14 @@ class UserRepository extends ServiceEntityRepository
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?User
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function countByRole(string $roleName): int
+    {
+        return $this->createQueryBuilder('u')
+            ->select('count(u.id)')
+            ->leftJoin('u.role', 'r')
+            ->andWhere('UPPER(r.name) = :role')
+            ->setParameter('role', strtoupper($roleName))
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }
