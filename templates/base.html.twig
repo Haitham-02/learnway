@@ -21,11 +21,17 @@
         <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
         <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
         {% endif %}
+        
+        {# ── HTMX ── #}
+        <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+        <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
     </head>
     {% set currentRoute = app.request.attributes.get('_route') ?? '' %}
-    {% set isAdminRoute = currentRoute starts with 'admin_' or (currentRoute == 'app_dashboard' and is_granted('ROLE_ADMIN')) %}
-    {% set isTeacherRoute = currentRoute starts with 'teacher_' or (currentRoute == 'app_dashboard' and is_granted('ROLE_TEACHER') and not is_granted('ROLE_ADMIN')) %}
-    {% set isStudentRoute = currentRoute starts with 'student_' or (currentRoute == 'app_dashboard' and is_granted('ROLE_STUDENT') and not is_granted('ROLE_TEACHER') and not is_granted('ROLE_ADMIN')) %}
+    {% set isForumRoute = currentRoute starts with 'app_forum_' %}
+    {% set isMessageRoute = currentRoute starts with 'app_messages_' %}
+    {% set isAdminRoute = currentRoute starts with 'admin_' or (currentRoute == 'app_dashboard' and is_granted('ROLE_ADMIN')) or (isForumRoute and is_granted('ROLE_ADMIN')) or (isMessageRoute and is_granted('ROLE_ADMIN')) %}
+    {% set isTeacherRoute = (not isAdminRoute) and (currentRoute starts with 'teacher_' or (currentRoute == 'app_dashboard' and is_granted('ROLE_TEACHER')) or (isForumRoute and is_granted('ROLE_TEACHER')) or (isMessageRoute and is_granted('ROLE_TEACHER'))) %}
+    {% set isStudentRoute = (not isAdminRoute) and (not isTeacherRoute) and (currentRoute starts with 'student_' or (currentRoute == 'app_dashboard' and is_granted('ROLE_STUDENT')) or (isForumRoute and is_granted('ROLE_STUDENT')) or (isMessageRoute and is_granted('ROLE_STUDENT'))) %}
     {% set themeClass = isAdminRoute ? 'theme-admin' : (isTeacherRoute ? 'theme-teacher' : (isStudentRoute ? 'theme-student' : '')) %}
     <body class="{{ themeClass }}" style="margin: 0; {% if isAdminRoute or isTeacherRoute or isStudentRoute %}display: flex; min-height: 100vh;{% endif %}">
         {# ── ADMIN SIDEBAR ── #}
@@ -40,8 +46,22 @@
                     <a href="{{ path('app_dashboard') }}" class="m3-sidebar-item {{ currentRoute == 'app_dashboard' ? 'active' : '' }}">
                         <span>🏠</span> Dashboard
                     </a>
+                    <a href="{{ path('app_forum_index') }}" class="m3-sidebar-item {{ currentRoute starts with 'app_forum_' ? 'active' : '' }}">
+                        <span>💬</span> Community Forum
+                    </a>
+                    <a href="{{ path('app_messages_index') }}" class="m3-sidebar-item {{ currentRoute starts with 'app_messages_' ? 'active' : '' }}">
+                        <span>✉️</span> Messages
+                    </a>
                     <a href="{{ path('admin_users_index') }}" class="m3-sidebar-item {{ currentRoute starts with 'admin_users_' ? 'active' : '' }}">
                         <span>👥</span> Users
+                    </a>
+                    
+                    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--m3-on-surface-variant); margin: 1rem 16px 8px; font-weight: 600;">Forum Management</div>
+                    <a href="{{ path('admin_forum_posts_index') }}" class="m3-sidebar-item {{ currentRoute starts with 'admin_forum_posts' ? 'active' : '' }}">
+                        <span>🛡️</span> Manage Posts
+                    </a>
+                    <a href="{{ path('admin_forum_comments_index') }}" class="m3-sidebar-item {{ currentRoute starts with 'admin_forum_comments' ? 'active' : '' }}">
+                        <span>💬</span> Manage Comments
                     </a>
                     
                     <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--m3-on-surface-variant); margin: 1rem 16px 8px; font-weight: 600;">Organization</div>
@@ -67,14 +87,14 @@
                     </a>
                     
                     <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--m3-on-surface-variant); margin: 1rem 16px 8px; font-weight: 600;">Activity</div>
+                    <a href="{{ path('admin_announcement_index') }}" class="m3-sidebar-item {{ currentRoute starts with 'admin_announcement_' ? 'active' : '' }}">
+                        <span>📢</span> Announcements
+                    </a>
                     <a href="{{ path('admin_student_enrollments_index') }}" class="m3-sidebar-item {{ currentRoute starts with 'admin_student_enrollments_' ? 'active' : '' }}">
                         <span>📝</span> Enrollments
                     </a>
                     <a href="{{ path('admin_teacher_assignments_index') }}" class="m3-sidebar-item {{ currentRoute starts with 'admin_teacher_assignments_' ? 'active' : '' }}">
                         <span>🧑‍🏫</span> Teacher Assignments
-                    </a>
-                    <a href="{{ path('admin_forum_posts_index') }}" class="m3-sidebar-item {{ currentRoute starts with 'admin_forum_posts_' ? 'active' : '' }}">
-                        <span>💬</span> Forum
                     </a>
 
                 </div>

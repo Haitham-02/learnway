@@ -354,18 +354,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    #[ORM\OneToOne(targetEntity: ConversationMember::class, mappedBy: "user")]
-    private ?ConversationMember $conversationMember = null;
+    #[ORM\OneToMany(targetEntity: ConversationMember::class, mappedBy: 'user')]
+    private Collection $conversationMembers;
 
-    public function getConversationMember(): ?ConversationMember
+    /**
+     * @return Collection<int, ConversationMember>
+     */
+    public function getConversationMembers(): Collection
     {
-        return $this->conversationMember;
+        if (!$this->conversationMembers instanceof Collection) {
+            $this->conversationMembers = new ArrayCollection();
+        }
+        return $this->conversationMembers;
     }
 
-    public function setConversationMember(
-        ?ConversationMember $conversationMember,
-    ): self {
-        $this->conversationMember = $conversationMember;
+    public function addConversationMember(ConversationMember $conversationMember): self
+    {
+        if (!$this->getConversationMembers()->contains($conversationMember)) {
+            $this->getConversationMembers()->add($conversationMember);
+            $conversationMember->setUser($this);
+        }
+        return $this;
+    }
+
+    public function removeConversationMember(ConversationMember $conversationMember): self
+    {
+        if ($this->getConversationMembers()->removeElement($conversationMember)) {
+            if ($conversationMember->getUser() === $this) {
+                $conversationMember->setUser(null);
+            }
+        }
         return $this;
     }
 
@@ -581,6 +599,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->submissions = new ArrayCollection();
         $this->readMessages = new ArrayCollection();
         $this->studentEnrollments = new ArrayCollection();
+        $this->conversationMembers = new ArrayCollection();
     }
 
     /**

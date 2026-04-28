@@ -6,7 +6,7 @@
 <div style="max-width: 1200px; margin: 0 auto; padding-bottom: 64px;">
     
     {# ── WELCOME HERO ── #}
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; background: linear-gradient(135deg, #122c34, #224870); padding: 48px; border-radius: var(--m3-radius-large); color: white; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; background: linear-gradient(135deg, #122c34, #224870); padding: 48px; border-radius: var(--m3-radius-large); color: white; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
         <div style="display: flex; flex-direction: column; gap: 8px;">
             <h1 style="margin: 0; font-size: 2.5rem; font-weight: 300;">Hello, <span style="font-weight: 600;">{{ app.user.firstName }}</span>!</h1>
             <p style="margin: 0; opacity: 0.9; font-size: 1.125rem;">
@@ -24,6 +24,36 @@
         </div>
         <div style="font-size: 5rem; opacity: 0.2; transform: rotate(-10deg);">📖</div>
     </div>
+
+    {# ── ANNOUNCEMENTS ── #}
+    {% if announcements is not empty %}
+        <div style="margin-bottom: 40px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <h2 style="margin: 0; font-size: 1.5rem; font-weight: 500; color: var(--m3-on-surface);">Latest Announcements</h2>
+                <span style="background: var(--m3-primary); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">{{ announcements|length }}</span>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                {% for announcement in announcements %}
+                    <div class="m3-card m3-card-elevated" style="padding: 24px; border-left: 6px solid {% if announcement.priority == 'URGENT' %}var(--m3-error){% elseif announcement.priority == 'HIGH' %}#f59e0b{% else %}var(--m3-primary){% endif %}; position: relative; overflow: hidden;">
+                        {% if announcement.isPinned %}
+                            <div style="position: absolute; top: 12px; right: 12px; font-size: 1.25rem; transform: rotate(45deg);">📌</div>
+                        {% endif %}
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div>
+                                <h3 style="margin: 0 0 4px 0; font-size: 1.25rem; font-weight: 600;">{{ announcement.title }}</h3>
+                                <p style="margin: 0; font-size: 0.8125rem; color: var(--m3-on-surface-variant);">
+                                    Posted on {{ announcement.publishAt|date('M d, Y') }} • 
+                                    {% if announcement.targetType == 'SCHOOL' %}Global{% elseif announcement.targetType == 'GRADE' %}Grade Level{% else %}Class Specific{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div style="font-size: 1rem; line-height: 1.6; color: var(--m3-on-surface); white-space: pre-wrap;">{{ announcement.content }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
 
     {# ── MAIN CONTENT ── #}
     <div style="display: grid; grid-template-columns: 1fr 320px; gap: 40px; align-items: flex-start;">
@@ -65,7 +95,21 @@
         <aside style="display: flex; flex-direction: column; gap: 24px;">
             <div class="m3-card m3-card-filled" style="padding: 24px; background: var(--m3-surface-container-high);">
                 <h3 style="margin: 0 0 16px 0; font-size: 1.125rem; font-weight: 500;">Upcoming</h3>
-                <p style="font-size: 0.875rem; color: var(--m3-on-surface-variant); margin: 0;">No upcoming assignments or exams.</p>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    {% for assignment in upcomingAssignments %}
+                        <div style="padding: 12px; background: var(--m3-surface-container); border-radius: var(--m3-radius-medium); border: 1px solid var(--m3-outline-variant);">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                                <span style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--m3-primary);">{{ assignment.type }}</span>
+                                <span style="font-size: 0.75rem; color: var(--m3-error); font-weight: 500;">Due {{ assignment.dueDate|date('M d, H:i') }}</span>
+                            </div>
+                            <h4 style="margin: 0 0 4px 0; font-size: 0.9375rem; font-weight: 500;">{{ assignment.title }}</h4>
+                            <p style="margin: 0 0 8px 0; font-size: 0.8125rem; color: var(--m3-on-surface-variant);">{{ assignment.chapter.subject.name }}</p>
+                            <a href="{{ path('student_assignment_show', {assignmentId: assignment.id}) }}" class="m3-button m3-button-text" style="padding: 0; height: auto; min-height: unset; font-size: 0.8125rem;">View Assignment</a>
+                        </div>
+                    {% else %}
+                        <p style="font-size: 0.875rem; color: var(--m3-on-surface-variant); margin: 0;">No upcoming assignments or exams.</p>
+                    {% endfor %}
+                </div>
             </div>
 
             <div class="m3-card m3-card-outlined" style="padding: 24px;">

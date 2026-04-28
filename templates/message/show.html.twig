@@ -1,0 +1,48 @@
+{% extends 'message/index.html.twig' %}
+
+{% block chat_content %}
+    {# ── CHAT HEADER ── #}
+    <div style="padding: 16px 32px; border-bottom: 1px solid var(--m3-outline-variant); display: flex; align-items: center; gap: 16px; background: white;">
+        <div style="width: 40px; height: 40px; background: var(--m3-primary-container); color: var(--m3-on-primary-container); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+            {{ recipient ? recipient.firstName|first : '?' }}
+        </div>
+        <div>
+            <div style="font-weight: 600; color: var(--m3-on-surface);">
+                {{ recipient ? recipient.firstName ~ ' ' ~ recipient.lastName : 'Unknown' }}
+            </div>
+            <div style="font-size: 0.75rem; color: #10b981; font-weight: 600;">
+                Online
+            </div>
+        </div>
+    </div>
+
+    {# ── MESSAGES LIST ── #}
+    <div style="flex-grow: 1; overflow: hidden; display: flex; flex-direction: column;">
+        <div id="message-container" 
+             data-controller="socket"
+             data-socket-url-value="{{ socketIoUrl }}"
+             data-socket-room-value="conversation_{{ conversation.id }}"
+             data-socket-current-user-id-value="{{ app.user.id }}"
+             hx-on::after-settle="this.scrollTop = this.scrollHeight"
+             style="flex-grow: 1; overflow-y: auto; padding: 32px; display: flex; flex-direction: column; gap: 16px; background: var(--m3-surface-container-lowest);">
+            
+            {% for msg in messages %}
+                {% include 'message/_message.html.twig' with {'message': msg} %}
+            {% endfor %}
+        </div>
+    </div>
+
+    {# ── INPUT AREA ── #}
+    <div style="padding: 24px 32px; background: white; border-top: 1px solid var(--m3-outline-variant);">
+        <form hx-post="{{ path('app_messages_show', {id: conversation.id}) }}" 
+              hx-target="#message-container" 
+              hx-swap="beforeend" 
+              hx-on::after-request="this.reset(); document.getElementById('message-container').scrollTop = document.getElementById('message-container').scrollHeight;"
+              style="display: flex; gap: 16px; align-items: center;">
+            <input type="text" name="content" required placeholder="Type a message..." autocomplete="off" style="flex-grow: 1; height: 48px; border-radius: 24px; border: 1px solid var(--m3-outline); padding: 0 24px; font-size: 1rem; outline: none; background: var(--m3-surface-container-low);" onfocus="this.style.border='2px solid var(--m3-primary)'; this.style.padding='0 23px';" onblur="this.style.border='1px solid var(--m3-outline)'; this.style.padding='0 24px';">
+            <button type="submit" class="m3-button m3-button-filled" style="width: 48px; height: 48px; border-radius: 50%; min-width: 48px; padding: 0; display: flex; align-items: center; justify-content: center;">
+                <span style="font-size: 1.5rem;">✈️</span>
+            </button>
+        </form>
+    </div>
+{% endblock %}

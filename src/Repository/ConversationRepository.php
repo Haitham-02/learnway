@@ -16,6 +16,33 @@ class ConversationRepository extends ServiceEntityRepository
         parent::__construct($registry, Conversation::class);
     }
 
+    /**
+     * Finds a peer-to-peer conversation between two users.
+     */
+    public function findPeerToPeerConversation(int $user1Id, int $user2Id): ?Conversation
+    {
+        // Sort IDs to ensure consistent hash regardless of who started the conversation
+        $ids = [$user1Id, $user2Id];
+        sort($ids);
+        $hash = md5(implode('_', $ids));
+
+        return $this->findOneBy(['pair_hash' => $hash]);
+    }
+
+    /**
+     * Lists all conversations for a specific user.
+     */
+    public function findConversationsForUser(int $userId): array
+    {
+        return $this->createQueryBuilder('c')
+            ->join('c.members', 'm')
+            ->where('m.user = :userId')
+            ->setParameter('userId', $userId)
+            ->orderBy('c.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return Conversation[] Returns an array of Conversation objects
     //     */

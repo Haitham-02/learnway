@@ -16,28 +16,24 @@ class AssignmentRepository extends ServiceEntityRepository
         parent::__construct($registry, Assignment::class);
     }
 
-    //    /**
-    //     * @return Assignment[] Returns an array of Assignment objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('a.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Assignment
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * @return Assignment[]
+     */
+    public function findUpcomingForStudent(\App\Entity\Classe $classe, \App\Entity\User $user): array
+    {
+        return $this->createQueryBuilder('a')
+            ->join('a.chapter', 'c')
+            ->leftJoin('a.submissions', 's', 'WITH', 's.student = :user')
+            ->andWhere('c.classe = :classe')
+            ->andWhere('a.status = :published')
+            ->andWhere('a.due_date >= :now')
+            ->andWhere('s.id IS NULL')
+            ->setParameter('classe', $classe)
+            ->setParameter('user', $user)
+            ->setParameter('published', 'PUBLISHED')
+            ->setParameter('now', new \DateTime())
+            ->orderBy('a.due_date', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

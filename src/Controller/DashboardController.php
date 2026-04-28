@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Repository\AnnouncementRepository;
+use App\Repository\AssignmentRepository;
 use App\Repository\ChapterRepository;
 use App\Repository\ClasseRepository;
 use App\Repository\ForumPostRepository;
@@ -28,6 +30,8 @@ class DashboardController extends AbstractController
         ForumPostRepository $forumRepo,
         ChapterRepository $chapterRepo,
         TeacherAssignmentRepository $taRepo,
+        AnnouncementRepository $announcementRepo,
+        AssignmentRepository $assignmentRepo,
         ChartBuilderInterface $chartBuilder
     ): Response {
         if ($this->isGranted('ROLE_ADMIN')) {
@@ -39,7 +43,7 @@ class DashboardController extends AbstractController
         }
 
         if ($this->isGranted('ROLE_STUDENT')) {
-            return $this->studentDashboard($enrollmentRepo, $taRepo);
+            return $this->studentDashboard($enrollmentRepo, $taRepo, $announcementRepo, $assignmentRepo);
         }
 
         // Default
@@ -50,17 +54,23 @@ class DashboardController extends AbstractController
 
     private function studentDashboard(
         StudentEnrollmentRepository $enrollmentRepo,
-        TeacherAssignmentRepository $taRepo
+        TeacherAssignmentRepository $taRepo,
+        AnnouncementRepository $announcementRepo,
+        AssignmentRepository $assignmentRepo
     ): Response {
         $enrollment = $enrollmentRepo->findOneBy(['user' => $this->getUser()], ['id' => 'DESC']);
         
         $classe = $enrollment?->getClasse();
         $assignments = $classe ? $taRepo->findBy(['classe' => $classe]) : [];
+        $announcements = $classe ? $announcementRepo->findForStudent($classe) : [];
+        $upcomingAssignments = $classe ? $assignmentRepo->findUpcomingForStudent($classe, $this->getUser()) : [];
 
         return $this->render('student/dashboard.html.twig', [
             'enrollment' => $enrollment,
             'classe' => $classe,
             'assignments' => $assignments,
+            'announcements' => $announcements,
+            'upcomingAssignments' => $upcomingAssignments,
         ]);
     }
 

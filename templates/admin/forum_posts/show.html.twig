@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Review Post: {{ post.title }} — Admin{% endblock %}
+
+{% block body %}
+<div style="max-width: 1000px; margin: 0 auto; padding-bottom: 64px;">
+    
+    <div style="margin-bottom: 32px; display: flex; align-items: center; justify-content: space-between;">
+        <a href="{{ path('admin_forum_posts_index') }}" class="m3-button m3-button-outlined" style="border-radius: 20px; height: 40px; padding: 0 16px; gap: 8px;">
+            <span style="font-size: 1.1rem;">←</span> Back to List
+        </a>
+        
+        <div style="display: flex; gap: 12px;">
+            {% if post.status != 'APPROVED' %}
+                <form method="post" action="{{ path('admin_forum_posts_approve', {id: post.id}) }}" style="margin: 0;">
+                    <button type="submit" class="m3-button m3-button-filled" style="height: 40px; padding: 0 24px; border-radius: 20px; background-color: var(--m3-primary);">
+                        Approve Post
+                    </button>
+                </form>
+            {% endif %}
+            {% if post.status != 'REJECTED' %}
+                <form method="post" action="{{ path('admin_forum_posts_reject', {id: post.id}) }}" style="margin: 0;">
+                    <button type="submit" class="m3-button m3-button-outlined" style="height: 40px; padding: 0 24px; border-radius: 20px; color: var(--m3-error); border-color: var(--m3-error);">
+                        Reject Post
+                    </button>
+                </form>
+            {% endif %}
+            <form method="post" action="{{ path('admin_forum_posts_delete', {id: post.id}) }}" onsubmit="return confirm('Permanently delete this post?');" style="margin: 0;">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete_forum_post_' ~ post.id) }}">
+                <button type="submit" class="m3-button" style="height: 40px; padding: 0 20px; border-radius: 20px; background: transparent; border: 1px solid var(--m3-outline); color: var(--m3-on-surface-variant);">
+                    Delete
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="m3-card m3-card-elevated" style="padding: 48px; border-radius: 24px;">
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--m3-outline-variant);">
+            <div style="width: 56px; height: 56px; background: var(--m3-primary-container); color: var(--m3-on-primary-container); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.5rem;">
+                {{ post.user.firstName|first }}
+            </div>
+            <div style="flex-grow: 1;">
+                <h4 style="margin: 0; font-size: 1.25rem; font-weight: 600; color: var(--m3-on-surface);">{{ post.user.firstName }} {{ post.user.lastName }}</h4>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                    <span style="font-size: 0.875rem; color: var(--m3-on-surface-variant);">
+                        Submitted on {{ post.createdAt|date('F j, Y \\a\\t H:i') }}
+                    </span>
+                    <span style="color: var(--m3-outline);">•</span>
+                    <span style="background: var(--m3-secondary-container); color: var(--m3-on-secondary-container); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">
+                        {{ post.classe ? post.classe.name : 'General' }}
+                    </span>
+                </div>
+            </div>
+            <div>
+                {% if post.status == 'PENDING' %}
+                    <span style="background: #fef3c7; color: #92400e; padding: 6px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; border: 1px solid #f59e0b;">PENDING REVIEW</span>
+                {% elseif post.status == 'APPROVED' %}
+                    <span style="background: var(--m3-primary-container); color: var(--m3-on-primary-container); padding: 6px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; border: 1px solid var(--m3-primary);">APPROVED</span>
+                {% else %}
+                    <span style="background: var(--m3-error-container); color: var(--m3-on-error-container); padding: 6px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; border: 1px solid var(--m3-error);">REJECTED</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <h1 style="margin: 0 0 24px 0; font-size: 2.25rem; font-weight: 400; color: var(--m3-on-surface); line-height: 1.2;">{{ post.title }}</h1>
+        
+        <div style="font-size: 1.125rem; line-height: 1.8; color: var(--m3-on-surface); white-space: pre-wrap; background: var(--m3-surface-container-lowest); padding: 32px; border-radius: 16px; border: 1px solid var(--m3-outline-variant);">{{ post.content }}</div>
+    </div>
+</div>
+{% endblock %}

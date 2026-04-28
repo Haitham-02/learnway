@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Forum Comments — Admin{% endblock %}
+
+{% block body %}
+<div style="max-width: 1200px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;">
+        <h1 style="margin: 0; font-size: 2rem; font-weight: 400; color: var(--m3-on-surface);">Forum Comments</h1>
+        <a href="{{ path('app_dashboard') }}" class="m3-button m3-button-outlined">← Dashboard</a>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div style="background-color: var(--m3-primary-container); color: var(--m3-on-primary-container); padding: 16px 24px; border-radius: var(--m3-radius-medium); margin-bottom: 24px;">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <div class="m3-card m3-card-outlined" style="padding: 0; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+            <thead style="background-color: var(--m3-surface-container-low);">
+                <tr>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">POST</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">CONTENT</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">AUTHOR</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">STATUS</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for comment in comments %}
+                <tr style="border-bottom: 1px solid var(--m3-surface-container-high);">
+                    <td style="padding: 16px 24px; color: var(--m3-on-surface);">{{ comment.forumPost.title }}</td>
+                    <td style="padding: 16px 24px; color: var(--m3-on-surface); max-width: 400px; line-height: 1.5;">{{ comment.content }}</td>
+                    <td style="padding: 16px 24px; color: var(--m3-on-surface-variant);">{{ comment.user.firstName }} {{ comment.user.lastName }}</td>
+                    <td style="padding: 16px 24px;">
+                        {% if comment.status == 'PENDING' %}
+                            <span style="color: #f59e0b; font-weight: 600;">PENDING</span>
+                        {% elseif comment.status == 'APPROVED' %}
+                            <span style="color: var(--m3-primary); font-weight: 600;">APPROVED</span>
+                        {% else %}
+                            <span style="color: var(--m3-error); font-weight: 600;">REJECTED</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 16px 24px;">
+                        <div style="display: flex; gap: 8px;">
+                            {% if comment.status == 'PENDING' %}
+                                <form method="post" action="{{ path('admin_forum_comments_approve', {id: comment.id}) }}" style="margin: 0;">
+                                    <button type="submit" class="m3-button m3-button-filled" style="height: 32px; padding: 0 12px;">Approve</button>
+                                </form>
+                                <form method="post" action="{{ path('admin_forum_comments_reject', {id: comment.id}) }}" style="margin: 0;">
+                                    <button type="submit" class="m3-button m3-button-outlined" style="height: 32px; padding: 0 12px; color: var(--m3-error); border-color: var(--m3-error);">Reject</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" style="padding: 48px; text-align: center; color: var(--m3-outline);">No comments found.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

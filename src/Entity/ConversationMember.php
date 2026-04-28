@@ -28,8 +28,8 @@ class ConversationMember
         return $this;
     }
 
-    #[ORM\OneToOne(targetEntity: Conversation::class, inversedBy: 'conversationMember')]
-    #[ORM\JoinColumn(name: 'conversation_id', referencedColumnName: 'id', unique: true)]
+    #[ORM\ManyToOne(targetEntity: Conversation::class, inversedBy: 'members')]
+    #[ORM\JoinColumn(name: 'conversation_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private ?Conversation $conversation = null;
 
     public function getConversation(): ?Conversation
@@ -43,8 +43,8 @@ class ConversationMember
         return $this;
     }
 
-    #[ORM\OneToOne(targetEntity: User::class, inversedBy: 'conversationMember')]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', unique: true)]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'conversationMembers')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id')]
     private ?User $user = null;
 
     public function getUser(): ?User

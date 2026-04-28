@@ -28,4 +28,19 @@ return [
     'chart.js' => [
         'version' => '3.9.1',
     ],
+    'socket.io-client' => [
+        'version' => '4.8.3',
+    ],
+    'engine.io-client' => [
+        'version' => '6.6.4',
+    ],
+    'socket.io-parser' => [
+        'version' => '4.2.5',
+    ],
+    '@socket.io/component-emitter' => [
+        'version' => '3.1.2',
+    ],
+    'engine.io-parser' => [
+        'version' => '5.2.3',
+    ],
 ];

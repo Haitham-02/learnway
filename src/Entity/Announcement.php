@@ -100,6 +100,20 @@ class Announcement
         return $this;
     }
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $target_value = null;
+
+    public function getTarget_value(): ?string
+    {
+        return $this->target_value;
+    }
+
+    public function setTarget_value(?string $target_value): self
+    {
+        $this->target_value = $target_value;
+        return $this;
+    }
+
     #[ORM\Column(type: 'string', nullable: true)]
     private ?string $priority = null;
 
@@ -142,7 +156,7 @@ class Announcement
         return $this;
     }
 
-    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $expire_at = null;
 
     public function getExpire_at(): ?\DateTimeInterface
@@ -176,6 +190,18 @@ class Announcement
     public function setTargetId(?int $target_id): static
     {
         $this->target_id = $target_id;
+
+        return $this;
+    }
+
+    public function getTargetValue(): ?string
+    {
+        return $this->target_value;
+    }
+
+    public function setTargetValue(?string $target_value): static
+    {
+        $this->target_value = $target_value;
 
         return $this;
     }

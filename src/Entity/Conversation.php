@@ -99,17 +99,30 @@ class Conversation
         return $this;
     }
 
-    #[ORM\OneToOne(targetEntity: ConversationMember::class, mappedBy: 'conversation')]
-    private ?ConversationMember $conversationMember = null;
+    #[ORM\OneToMany(targetEntity: ConversationMember::class, mappedBy: 'conversation', cascade: ['persist', 'remove'])]
+    private Collection $members;
 
-    public function getConversationMember(): ?ConversationMember
+    public function getMembers(): Collection
     {
-        return $this->conversationMember;
+        return $this->members;
     }
 
-    public function setConversationMember(?ConversationMember $conversationMember): self
+    public function addMember(ConversationMember $member): self
     {
-        $this->conversationMember = $conversationMember;
+        if (!$this->members->contains($member)) {
+            $this->members->add($member);
+            $member->setConversation($this);
+        }
+        return $this;
+    }
+
+    public function removeMember(ConversationMember $member): self
+    {
+        if ($this->members->removeElement($member)) {
+            if ($member->getConversation() === $this) {
+                $member->setConversation(null);
+            }
+        }
         return $this;
     }
 
@@ -119,6 +132,7 @@ class Conversation
     public function __construct()
     {
         $this->messages = new ArrayCollection();
+        $this->members = new ArrayCollection();
     }
 
     /**

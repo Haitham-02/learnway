@@ -1,0 +1,122 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ title }} — Admin{% endblock %}
+
+{% block body %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 24px;">
+        <a href="{{ path('admin_announcement_index') }}" class="m3-button m3-button-outlined" style="border: none;">
+            <span>←</span> Back
+        </a>
+        <h1 style="margin: 0; font-size: 2rem; font-weight: 400; color: var(--m3-on-surface);">{{ title }}</h1>
+    </div>
+
+    {% if errors is not empty %}
+        <div style="background-color: var(--m3-error-container); color: var(--m3-on-error-container); padding: 16px 24px; border-radius: var(--m3-radius-medium); margin-bottom: 24px;">
+            <ul style="margin: 0; padding-left: 20px;">
+                {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <div class="m3-card m3-card-outlined" style="padding: 32px;">
+        <form method="post" novalidate style="display: flex; flex-direction: column; gap: 24px;">
+            
+            <div>
+                <label class="m3-label">TITLE *</label>
+                <input type="text" name="title" required class="m3-text-field" value="{{ announcement ? announcement.title : app.request.request.get('title', '') }}" placeholder="Announcement Title">
+            </div>
+
+            <div>
+                <label class="m3-label">CONTENT *</label>
+                <textarea name="content" required class="m3-text-field" rows="6" placeholder="Announcement Content">{{ announcement ? announcement.content : app.request.request.get('content', '') }}</textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <div>
+                    <label class="m3-label">PRIORITY</label>
+                    <select name="priority" class="m3-select">
+                        <option value="NORMAL" {{ (announcement and announcement.priority == 'NORMAL') or app.request.request.get('priority') == 'NORMAL' ? 'selected' : '' }}>Normal</option>
+                        <option value="HIGH" {{ (announcement and announcement.priority == 'HIGH') or app.request.request.get('priority') == 'HIGH' ? 'selected' : '' }}>High</option>
+                        <option value="URGENT" {{ (announcement and announcement.priority == 'URGENT') or app.request.request.get('priority') == 'URGENT' ? 'selected' : '' }}>Urgent</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="m3-label">TARGET TYPE</label>
+                    <select name="target_type" class="m3-select" onchange="toggleTargetFields(this.value)">
+                        <option value="SCHOOL" {{ (announcement and announcement.targetType == 'SCHOOL') or app.request.request.get('target_type') == 'SCHOOL' ? 'selected' : '' }}>Entire School</option>
+                        <option value="GRADE" {{ (announcement and announcement.targetType == 'GRADE') or app.request.request.get('target_type') == 'GRADE' ? 'selected' : '' }}>Specific Grade Level</option>
+                        <option value="CLASS" {{ (announcement and announcement.targetType == 'CLASS') or app.request.request.get('target_type') == 'CLASS' ? 'selected' : '' }}>Specific Class</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="grade_target_wrapper" style="display: {{ (announcement and announcement.targetType == 'GRADE') or app.request.request.get('target_type') == 'GRADE' ? 'block' : 'none' }};">
+                <label class="m3-label">TARGET GRADE LEVEL</label>
+                <select name="target_value" class="m3-select">
+                    <option value="">Select Grade Level</option>
+                    {% for grade in gradeLevels %}
+                        <option value="{{ grade }}" {{ (announcement and announcement.targetValue == grade) or app.request.request.get('target_value') == grade ? 'selected' : '' }}>{{ grade }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div id="class_target_wrapper" style="display: {{ (announcement and announcement.targetType == 'CLASS') or app.request.request.get('target_type') == 'CLASS' ? 'block' : 'none' }};">
+                <label class="m3-label">TARGET CLASS</label>
+                <select name="target_id" class="m3-select">
+                    <option value="">Select Class</option>
+                    {% for class in classes %}
+                        <option value="{{ class.id }}" {{ (announcement and announcement.targetId == class.id) or app.request.request.get('target_id') == class.id ? 'selected' : '' }}>{{ class.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <div>
+                    <label class="m3-label">PUBLISH DATE & TIME</label>
+                    <input type="datetime-local" name="publish_at" class="m3-text-field" value="{{ announcement and announcement.publishAt ? announcement.publishAt|date('Y-m-d\\TH:i') : app.request.request.get('publish_at', 'now'|date('Y-m-d\\TH:i')) }}">
+                </div>
+                <div>
+                    <label class="m3-label">EXPIRATION DATE (OPTIONAL)</label>
+                    <input type="datetime-local" name="expire_at" class="m3-text-field" value="{{ announcement and announcement.expireAt ? announcement.expireAt|date('Y-m-d\\TH:i') : app.request.request.get('expire_at', '') }}">
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <input type="checkbox" name="is_pinned" id="is_pinned" value="1" {{ (announcement and announcement.isPinned) or app.request.request.get('is_pinned') ? 'checked' : '' }} class="m3-checkbox">
+                <label for="is_pinned" style="font-size: 1rem; color: var(--m3-on-surface); cursor: pointer;">Pin Announcement</label>
+            </div>
+
+            <div style="margin-top: 8px;">
+                <button type="submit" class="m3-button m3-button-filled" style="width: 100%; height: 48px;">
+                    {{ announcement ? 'Update Announcement' : 'Create Announcement' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleTargetFields(type) {
+    const gradeWrapper = document.getElementById('grade_target_wrapper');
+    const classWrapper = document.getElementById('class_target_wrapper');
+
+    gradeWrapper.style.display = 'none';
+    classWrapper.style.display = 'none';
+
+    if (type === 'GRADE') {
+        gradeWrapper.style.display = 'block';
+    } else if (type === 'CLASS') {
+        classWrapper.style.display = 'block';
+    }
+}
+
+// Initial toggle (backup for serverside rendering)
+document.addEventListener('DOMContentLoaded', function() {
+    const targetTypeSelect = document.querySelector('select[name="target_type"]');
+    if (targetTypeSelect) {
+        toggleTargetFields(targetTypeSelect.value);
+    }
+});
+</script>
+{% endblock %}

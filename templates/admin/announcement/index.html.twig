@@ -1,0 +1,94 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Announcements — Admin{% endblock %}
+
+{% block body %}
+<div style="max-width: 1200px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;">
+        <h1 style="margin: 0; font-size: 2rem; font-weight: 400; color: var(--m3-on-surface);">Announcements</h1>
+        <div style="display: flex; gap: 12px;">
+            <a href="{{ path('app_dashboard') }}" class="m3-button m3-button-outlined">
+                ← Dashboard
+            </a>
+            <a href="{{ path('admin_announcement_new') }}" class="m3-button m3-button-filled">
+                + New Announcement
+            </a>
+        </div>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div style="background-color: var(--m3-primary-container); color: var(--m3-on-primary-container); padding: 16px 24px; border-radius: var(--m3-radius-medium); margin-bottom: 24px;">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <div class="m3-card m3-card-outlined" style="padding: 0; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+            <thead style="background-color: var(--m3-surface-container-low);">
+                <tr>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">TITLE</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">TARGET</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">PRIORITY</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">STATUS</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">PUBLISH AT</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for announcement in announcements %}
+                <tr style="border-bottom: 1px solid var(--m3-surface-container-high); transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--m3-surface-container-low)'" onmouseout="this.style.backgroundColor='transparent'">
+                    <td style="padding: 16px 24px; font-weight: 500; color: var(--m3-on-surface);">{{ announcement.title }}</td>
+                    <td style="padding: 16px 24px; color: var(--m3-on-surface-variant);">
+                        {% if announcement.targetType == 'SCHOOL' %}
+                            Entire School
+                        {% elseif announcement.targetType == 'GRADE' %}
+                            Grade: {{ announcement.targetValue }}
+                        {% elseif announcement.targetType == 'CLASS' %}
+                            Class: {{ announcement.targetId }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td style="padding: 16px 24px;">
+                        {% if announcement.priority == 'URGENT' %}
+                            <span style="color: var(--m3-error); font-weight: 600;">URGENT</span>
+                        {% elseif announcement.priority == 'HIGH' %}
+                            <span style="color: #f59e0b; font-weight: 600;">HIGH</span>
+                        {% else %}
+                            Normal
+                        {% endif %}
+                    </td>
+                    <td style="padding: 16px 24px;">
+                        {% if announcement.expireAt and announcement.expireAt < date() %}
+                            <span style="color: var(--m3-outline);">Expired</span>
+                        {% elseif announcement.publishAt > date() %}
+                            <span style="color: #3b82f6;">Scheduled</span>
+                        {% else %}
+                            <span style="color: var(--m3-primary);">Active</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 16px 24px; color: var(--m3-on-surface-variant);">{{ announcement.publishAt|date('M d, Y H:i') }}</td>
+                    <td style="padding: 16px 24px;">
+                        <div style="display: flex; gap: 8px;">
+                            <a href="{{ path('admin_announcement_edit', {id: announcement.id}) }}" class="m3-button m3-button-tonal" style="height: 32px; padding: 0 12px;">
+                                Edit
+                            </a>
+                            <form method="post" action="{{ path('admin_announcement_delete', {id: announcement.id}) }}" onsubmit="return confirm('Delete announcement?');" style="margin: 0;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ announcement.id) }}">
+                                <button type="submit" class="m3-button" style="height: 32px; padding: 0 12px; background: transparent; border: 1px solid var(--m3-error); color: var(--m3-error);">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="padding: 48px; text-align: center; color: var(--m3-outline);">No announcements found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

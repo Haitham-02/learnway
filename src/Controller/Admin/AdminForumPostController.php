@@ -3,9 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\ForumPost;
-use App\Repository\ClasseRepository;
 use App\Repository\ForumPostRepository;
-use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,138 +23,48 @@ class AdminForumPostController extends AbstractController
         ]);
     }
 
-    #[Route('/forum-posts/new', name: 'forum_posts_new', methods: ['GET', 'POST'])]
-    public function forumPostsNew(
-        Request $request,
-        ClasseRepository $classeRepository,
-        UserRepository $userRepository,
-        EntityManagerInterface $em,
-    ): Response {
-        $classes = $classeRepository->findForSelector();
-        $users = $userRepository->findForAuthorSelector();
-        $errors = [];
-
-        if ($request->isMethod('POST')) {
-            $classId = (int) $request->request->get('class_id');
-            $userId = (int) $request->request->get('user_id');
-            $title = trim($request->request->get('title', ''));
-            $subtitle = trim($request->request->get('subtitle', ''));
-            $description = trim($request->request->get('description', ''));
-            $content = trim($request->request->get('content', ''));
-            $featuredImage = trim($request->request->get('featured_image', ''));
-
-            $classe = $classId ? $classeRepository->find($classId) : null;
-            $user = $userId ? $userRepository->find($userId) : null;
-
-            if (!$classe) {
-                $errors[] = 'Please select a valid class.';
-            }
-            if (!$user) {
-                $errors[] = 'Please select a valid author.';
-            }
-            if ($title === '') {
-                $errors[] = 'Title is required.';
-            }
-            if ($content === '') {
-                $errors[] = 'Content is required.';
-            }
-
-            if (empty($errors)) {
-                $post = new ForumPost();
-                $post->setClasse($classe);
-                $post->setUser($user);
-                $post->setTitle($title);
-                $post->setSubtitle($subtitle !== '' ? $subtitle : null);
-                $post->setDescription($description !== '' ? $description : null);
-                $post->setContent($content);
-                $post->setFeaturedImage($featuredImage !== '' ? $featuredImage : null);
-                $post->setCreatedAt(new \DateTime());
-
-                $em->persist($post);
-                $em->flush();
-
-                $this->addFlash('success', 'Forum post created successfully.');
-                $returnTo = trim((string) $request->request->get('return_to', $request->query->get('return_to', '')));
-                if (str_starts_with($returnTo, '/admin/')) {
-                    return $this->redirect($this->appendQueryParams($returnTo, ['forum_post_id' => $post->getId()]));
-                }
-
-                return $this->redirectToRoute('admin_forum_posts_index');
-            }
-        }
-
-        return $this->render('admin/forum_posts/new.html.twig', [
-            'classes' => $classes,
-            'users' => $users,
-            'errors' => $errors,
+    #[Route('/forum-posts/{id}', name: 'forum_posts_show')]
+    public function show(ForumPost $post): Response
+    {
+        return $this->render('admin/forum_posts/show.html.twig', [
+            'post' => $post,
         ]);
     }
 
-    #[Route('/forum-posts/{id}/edit', name: 'forum_posts_edit', methods: ['GET', 'POST'])]
-    public function forumPostsEdit(
-        int $id,
-        Request $request,
-        ForumPostRepository $forumPostRepository,
-        ClasseRepository $classeRepository,
-        UserRepository $userRepository,
-        EntityManagerInterface $em,
-    ): Response {
-        $post = $forumPostRepository->find($id);
-        if (!$post) {
-            throw $this->createNotFoundException("Forum post #{$id} not found.");
+    #[Route('/forum-posts/{id}/approve', name: 'forum_posts_approve', methods: ['POST'])]
+    public function approve(int $id, ForumPostRepository $repo, EntityManagerInterface $em): Response
+    {
+        $post = $repo->find($id);
+        if (!$post) throw $this->createNotFoundException();
+
+        if ($post->getStatus() === 'APPROVED') {
+            $this->addFlash('warning', 'This forum post is already approved.');
+            return $this->redirectToRoute('admin_forum_posts_index');
         }
 
-        $classes = $classeRepository->findForSelector();
-        $users = $userRepository->findForAuthorSelector();
-        $errors = [];
+        $post->setStatus('APPROVED');
+        $em->flush();
 
-        if ($request->isMethod('POST')) {
-            $classId = (int) $request->request->get('class_id');
-            $userId = (int) $request->request->get('user_id');
-            $title = trim($request->request->get('title', ''));
-            $subtitle = trim($request->request->get('subtitle', ''));
-            $description = trim($request->request->get('description', ''));
-            $content = trim($request->request->get('content', ''));
-            $featuredImage = trim($request->request->get('featured_image', ''));
+        $this->addFlash('success', 'Forum post approved.');
+        return $this->redirectToRoute('admin_forum_posts_index');
+    }
 
-            $classe = $classId ? $classeRepository->find($classId) : null;
-            $user = $userId ? $userRepository->find($userId) : null;
+    #[Route('/forum-posts/{id}/reject', name: 'forum_posts_reject', methods: ['POST'])]
+    public function reject(int $id, ForumPostRepository $repo, EntityManagerInterface $em): Response
+    {
+        $post = $repo->find($id);
+        if (!$post) throw $this->createNotFoundException();
 
-            if (!$classe) {
-                $errors[] = 'Please select a valid class.';
-            }
-            if (!$user) {
-                $errors[] = 'Please select a valid author.';
-            }
-            if ($title === '') {
-                $errors[] = 'Title is required.';
-            }
-            if ($content === '') {
-                $errors[] = 'Content is required.';
-            }
-
-            if (empty($errors)) {
-                $post->setClasse($classe);
-                $post->setUser($user);
-                $post->setTitle($title);
-                $post->setSubtitle($subtitle !== '' ? $subtitle : null);
-                $post->setDescription($description !== '' ? $description : null);
-                $post->setContent($content);
-                $post->setFeaturedImage($featuredImage !== '' ? $featuredImage : null);
-
-                $em->flush();
-
-                $this->addFlash('success', 'Forum post updated successfully.');
-                return $this->redirectToRoute('admin_forum_posts_index');
-            }
+        if ($post->getStatus() === 'REJECTED') {
+            $this->addFlash('warning', 'This forum post is already rejected.');
+            return $this->redirectToRoute('admin_forum_posts_index');
         }
 
-        return $this->render('admin/forum_posts/edit.html.twig', [
-            'post' => $post,
-            'classes' => $classes,
-            'users' => $users,
-            'errors' => $errors,
-        ]);
+        $post->setStatus('REJECTED');
+        $em->flush();
+
+        $this->addFlash('success', 'Forum post rejected.');
+        return $this->redirectToRoute('admin_forum_posts_index');
     }
 
     #[Route('/forum-posts/{id}/delete', name: 'forum_posts_delete', methods: ['POST'])]
@@ -178,31 +86,5 @@ class AdminForumPostController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_forum_posts_index');
-    }
-
-    /**
-     * @param array<string, int|string|null> $params
-     */
-    private function appendQueryParams(string $path, array $params): string
-    {
-        $parts = parse_url($path);
-        if (!is_array($parts)) {
-            return $path;
-        }
-
-        $query = [];
-        if (isset($parts['query'])) {
-            parse_str($parts['query'], $query);
-        }
-        foreach ($params as $key => $value) {
-            if ($value !== null && $value !== '') {
-                $query[$key] = $value;
-            }
-        }
-
-        $basePath = $parts['path'] ?? $path;
-        $queryString = http_build_query($query);
-
-        return $queryString === '' ? $basePath : $basePath . '?' . $queryString;
     }
 }

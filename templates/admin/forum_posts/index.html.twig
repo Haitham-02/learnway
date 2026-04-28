@@ -10,9 +10,6 @@
             <a href="{{ path('app_dashboard') }}" class="m3-button m3-button-outlined">
                 ← Dashboard
             </a>
-            <a href="{{ path('admin_forum_posts_new') }}" class="m3-button m3-button-filled">
-                + Add Post
-            </a>
         </div>
     </div>
 
@@ -29,22 +26,35 @@
                     <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">CLASS</th>
                     <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">TITLE</th>
                     <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">AUTHOR</th>
-                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">CREATED</th>
+                    <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">STATUS</th>
                     <th style="padding: 16px 24px; text-align: left; color: var(--m3-on-surface-variant); border-bottom: 1px solid var(--m3-outline);">ACTIONS</th>
                 </tr>
             </thead>
             <tbody>
             {% for post in posts %}
                 <tr style="border-bottom: 1px solid var(--m3-surface-container-high); transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--m3-surface-container-low)'" onmouseout="this.style.backgroundColor='transparent'">
-                    <td style="padding: 16px 24px; font-weight: 500; color: var(--m3-on-surface);">{{ post.classe ? post.classe.name : '—' }}</td>
+                    <td style="padding: 16px 24px; font-weight: 500; color: var(--m3-on-surface);">{{ post.classe ? post.classe.name : 'Global' }}</td>
                     <td style="padding: 16px 24px; color: var(--m3-on-surface);">{{ post.title }}</td>
                     <td style="padding: 16px 24px; color: var(--m3-on-surface-variant);">{{ post.user ? post.user.firstName ~ ' ' ~ post.user.lastName : '—' }}</td>
-                    <td style="padding: 16px 24px; color: var(--m3-on-surface-variant);">{{ post.createdAt ? post.createdAt|date('M d, Y H:i') : '—' }}</td>
+                    <td style="padding: 16px 24px;">
+                        {% if post.status == 'PENDING' %}
+                            <span style="color: #f59e0b; font-weight: 600;">PENDING</span>
+                        {% elseif post.status == 'APPROVED' %}
+                            <span style="color: var(--m3-primary); font-weight: 600;">APPROVED</span>
+                        {% else %}
+                            <span style="color: var(--m3-error); font-weight: 600;">REJECTED</span>
+                        {% endif %}
+                    </td>
                     <td style="padding: 16px 24px;">
                         <div style="display: flex; gap: 8px;">
-                            <a href="{{ path('admin_forum_posts_edit', {id: post.id}) }}" class="m3-button m3-button-tonal" style="height: 32px; padding: 0 12px;">
-                                Edit
+                            <a href="{{ path('admin_forum_posts_show', {id: post.id}) }}" class="m3-button m3-button-tonal" style="height: 32px; padding: 0 12px; font-size: 0.75rem;">
+                                Review
                             </a>
+                            {% if post.status == 'PENDING' %}
+                                <form method="post" action="{{ path('admin_forum_posts_approve', {id: post.id}) }}" style="margin: 0;">
+                                    <button type="submit" class="m3-button m3-button-filled" style="height: 32px; padding: 0 12px; background-color: var(--m3-primary); font-size: 0.75rem;">Approve</button>
+                                </form>
+                            {% endif %}
                             <form method="post" action="{{ path('admin_forum_posts_delete', {id: post.id}) }}" onsubmit="return confirm('Delete this forum post?');" style="margin: 0;">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete_forum_post_' ~ post.id) }}">
                                 <button type="submit" class="m3-button" style="height: 32px; padding: 0 12px; background: transparent; border: 1px solid var(--m3-error); color: var(--m3-error);">
