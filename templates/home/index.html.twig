@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearnWay | Elevate Your Learning Experience</title>
+    <meta name="description" content="LearnWay is a modern e-learning platform connecting students and teachers with real-time tools, community forums, and seamless course management.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🎓</text></svg>">
+    <link rel="stylesheet" href="{{ asset('css/landing.css') }}">
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav>
+        <a href="/" class="logo">
+            <span>🎓</span> LearnWay
+        </a>
+        <ul class="nav-links">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#stats">Impact</a></li>
+        </ul>
+        <div class="nav-btns">
+            <a href="{{ path('app_login') }}" class="btn btn-login">Login</a>
+            <a href="{{ path('app_login') }}" class="btn btn-register">Get Started</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-content fade-in">
+            <h1>Unlock Your Potential with <span>LearnWay</span></h1>
+            <p>The all-in-one platform for modern education. Empowering teachers and students through real-time collaboration and intuitive learning tools.</p>
+            <div class="hero-btns">
+                <a href="{{ path('app_login') }}" class="btn btn-register">Start Learning Now</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="{{ asset('images/landing_hero.png') }}" alt="LearnWay Hero Illustration">
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="section-header">
+            <h2>Everything You Need to Succeed</h2>
+        </div>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <span class="feature-icon">💬</span>
+                <h3>Real-Time Discussion</h3>
+                <p>Engage with your peers and instructors instantly through our integrated messaging and forum systems.</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">📊</span>
+                <h3>Progress Tracking</h3>
+                <p>Stay on top of your studies with detailed analytics and progress reports for every course.</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">📁</span>
+                <h3>Smart Resources</h3>
+                <p>Access all your course materials, assignments, and announcements in one organized place.</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">🛡️</span>
+                <h3>Secure Environment</h3>
+                <p>A safe and dedicated space for academic growth with role-based access and moderation.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section id="stats" class="stats">
+        <div class="stat-item">
+            <h3>10k+</h3>
+            <p>Active Students</p>
+        </div>
+        <div class="stat-item">
+            <h3>500+</h3>
+            <p>Expert Teachers</p>
+        </div>
+        <div class="stat-item">
+            <h3>100+</h3>
+            <p>Premium Courses</p>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="cta-box">
+            <h2>Ready to transform your education?</h2>
+            <p>Join thousands of students and educators today on LearnWay.</p>
+            <a href="{{ path('app_login') }}" class="btn btn-register" style="background: white; color: var(--primary);">Join LearnWay Today</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 LearnWay. Built with ❤️ for the future of education.</p>
+    </footer>
+
+    <script>
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Navbar change on scroll
+        window.addEventListener('scroll', function() {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 50) {
+                nav.style.padding = '1rem 10%';
+                nav.style.boxShadow = '0 5px 20px rgba(0,0,0,0.1)';
+            } else {
+                nav.style.padding = '1.5rem 10%';
+                nav.style.boxShadow = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

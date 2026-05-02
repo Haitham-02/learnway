@@ -30,7 +30,10 @@ security:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/teacher, roles: ROLE_TEACHER }
-        - { path: ^/, roles: ROLE_USER }
+        - { path: ^/dashboard, roles: ROLE_USER }
+        - { path: ^/forum, roles: ROLE_USER }
+        - { path: ^/messages, roles: ROLE_USER }
+        - { path: ^/$, roles: PUBLIC_ACCESS }
 
 when@test:
     security:
