@@ -4,9 +4,9 @@ require_once 'vendor/autoload.php';
 
 // Database configuration - MODIFY THESE VALUES
 $dbHost = 'localhost';
-$dbName = 'learnway';
-$dbUser = 'admin';
-$dbPass = 'adminadmin';
+$dbName = 'Learnway_final';
+$dbUser = 'root';
+$dbPass = '2532001';
 $dbPort = 3306;
 
 // Entity namespace and output directory

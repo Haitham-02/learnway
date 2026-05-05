@@ -1,0 +1,138 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Create Livestream{% endblock %}
+
+{% block body %}
+<div style="max-width: 600px; margin: 2rem auto; padding: 2rem;">
+    <h1 style="color: var(--m3-on-surface); margin-bottom: 2rem;">📹 Create New Livestream</h1>
+
+    <form method="POST" style="
+        background-color: var(--m3-surface-container);
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    ">
+        <!-- Title -->
+        <div style="margin-bottom: 1.5rem;">
+            <label style="
+                display: block;
+                margin-bottom: 0.5rem;
+                font-weight: 600;
+                color: var(--m3-on-surface);
+            ">Title *</label>
+            <input type="text" name="title" required style="
+                width: 100%;
+                padding: 0.75rem;
+                border: 2px solid var(--m3-outline);
+                border-radius: 8px;
+                font-size: 1rem;
+                box-sizing: border-box;
+                background-color: var(--m3-surface);
+                color: var(--m3-on-surface);
+                transition: border-color 0.3s ease;
+            " placeholder="e.g., Algebra Basics - Chapter 5" />
+        </div>
+
+        <!-- Description -->
+        <div style="margin-bottom: 1.5rem;">
+            <label style="
+                display: block;
+                margin-bottom: 0.5rem;
+                font-weight: 600;
+                color: var(--m3-on-surface);
+            ">Description</label>
+            <textarea name="description" style="
+                width: 100%;
+                padding: 0.75rem;
+                border: 2px solid var(--m3-outline);
+                border-radius: 8px;
+                font-size: 1rem;
+                box-sizing: border-box;
+                background-color: var(--m3-surface);
+                color: var(--m3-on-surface);
+                min-height: 100px;
+                font-family: inherit;
+            " placeholder="Add optional details..."></textarea>
+        </div>
+
+        <!-- Class -->
+        <div style="margin-bottom: 1.5rem;">
+            <label style="
+                display: block;
+                margin-bottom: 0.5rem;
+                font-weight: 600;
+                color: var(--m3-on-surface);
+            ">Class *</label>
+            <select name="class_id" required style="
+                width: 100%;
+                padding: 0.75rem;
+                border: 2px solid var(--m3-outline);
+                border-radius: 8px;
+                font-size: 1rem;
+                box-sizing: border-box;
+                background-color: var(--m3-surface);
+                color: var(--m3-on-surface);
+            ">
+                <option value="">-- Select a Class --</option>
+                {% for class in classes %}
+                    <option value="{{ class.id }}">{{ class.name }} ({{ class.gradeLevel }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Scheduled Date/Time -->
+        <div style="margin-bottom: 1.5rem;">
+            <label style="
+                display: block;
+                margin-bottom: 0.5rem;
+                font-weight: 600;
+                color: var(--m3-on-surface);
+            ">Scheduled Date & Time *</label>
+            <input type="datetime-local" name="scheduled_at" required style="
+                width: 100%;
+                padding: 0.75rem;
+                border: 2px solid var(--m3-outline);
+                border-radius: 8px;
+                font-size: 1rem;
+                box-sizing: border-box;
+                background-color: var(--m3-surface);
+                color: var(--m3-on-surface);
+            " />
+        </div>
+
+        <!-- Buttons -->
+        <div style="display: flex; gap: 1rem;">
+            <button type="submit" style="
+                flex: 1;
+                background-color: var(--m3-primary);
+                color: var(--m3-on-primary);
+                border: none;
+                padding: 0.875rem;
+                border-radius: 8px;
+                font-weight: 600;
+                font-size: 1rem;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.boxShadow='0 8px 16px rgba(0,0,0,0.2)'" onmouseout="this.style.boxShadow='none'">
+                ✅ Create Livestream
+            </button>
+            <a href="{{ path('app_livestream_teacher_list') }}" style="
+                flex: 1;
+                background-color: var(--m3-outline);
+                color: var(--m3-on-surface);
+                border: none;
+                padding: 0.875rem;
+                border-radius: 8px;
+                font-weight: 600;
+                font-size: 1rem;
+                text-decoration: none;
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.backgroundColor='var(--m3-outline-variant)'" onmouseout="this.style.backgroundColor='var(--m3-outline)'">
+                ❌ Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

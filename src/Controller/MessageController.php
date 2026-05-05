@@ -108,7 +108,13 @@ class MessageController extends AbstractController
         EntityManagerInterface $em,
         MessageRepository $messageRepo
     ): Response {
-        $redis = new RedisClient(['host' => '127.0.0.1']);
+        // Connect to Redis - use 'redis' hostname when running in Docker, otherwise localhost
+        $redisHost = $_ENV['REDIS_HOST'] ?? 'localhost';
+        $redis = new RedisClient(['host' => $redisHost]);
+        
+        // Debug logging
+        error_log("Redis connection: host={$redisHost}");
+        
         $user = $this->getUser();
         
         // Ensure user is a member
@@ -124,9 +130,19 @@ class MessageController extends AbstractController
             throw $this->createAccessDeniedException('You are not a member of this conversation.');
         }
 
+        // Debug request method
+        error_log("=== MESSAGE REQUEST ===");
+        error_log("Method: " . $request->getMethod());
+        error_log("Is POST: " . ($request->isMethod('POST') ? 'YES' : 'NO'));
+        error_log("POST content: " . json_encode($request->request->all()));
+        error_log("QUERY string: " . $request->getQueryString());
+
         if ($request->isMethod('POST')) {
+            error_log("✓ Processing POST request");
             $content = trim($request->request->get('content', ''));
+            error_log("Message content: '{$content}'");
             if ($content !== '') {
+                error_log("Creating new message entity");
                 $message = new Message();
                 $message->setConversation($conversation);
                 $message->setUser($user);
@@ -136,26 +152,34 @@ class MessageController extends AbstractController
 
                 $em->persist($message);
                 $em->flush();
+                
+                error_log("✓ Message saved to DB: ID=" . $message->getId());
 
                 // Publish to Redis for real-time update
                 try {
-                    $redis->publish('chat-messages', json_encode([
+                    $messageData = json_encode([
                         'room' => 'conversation_' . $conversation->getId(),
                         'html' => $this->renderView('message/_message.html.twig', [
                             'message' => $message,
                         ])
-                    ]));
+                    ]);
+                    $redis->publish('chat-messages', $messageData);
+                    error_log("✓ Message published to Redis for conversation {$conversation->getId()}");
                 } catch (\Exception $e) {
-                    // Log or handle the failure gracefully
+                    error_log("✗ Redis publish failed: " . $e->getMessage());
                 }
 
                 if ($request->headers->has('HX-Request')) {
+                    error_log("✓ HTMX request detected, returning partial response");
                     return $this->render('message/_message.html.twig', [
                         'message' => $message,
                     ]);
                 }
 
+                error_log("✓ Redirecting to conversation page");
                 return $this->redirectToRoute('app_messages_show', ['id' => $conversation->getId()]);
+            } else {
+                error_log("⚠ Empty message content, skipping");
             }
         }
 

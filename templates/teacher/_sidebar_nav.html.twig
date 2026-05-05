@@ -20,6 +20,11 @@
     <span style="flex-grow: 1;">Messages</span>
 </a>
 
+<a href="{{ path('app_livestream_teacher_list') }}" class="m3-sidebar-item {{ currentRoute starts with 'app_livestream_teacher_' or currentRoute == 'app_livestream_show' ? 'active' : '' }}">
+    <span style="font-size: 1.25rem;">📹</span> 
+    <span style="flex-grow: 1;">Livestreams</span>
+</a>
+
 {% for entry in classeMap %}
     <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--m3-primary); margin: 1.5rem 16px 8px; font-weight: 700; border-bottom: 1px solid var(--m3-outline); padding-bottom: 4px;">
         🏫 {{ entry.classe.name }}

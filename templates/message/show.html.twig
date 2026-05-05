@@ -34,15 +34,83 @@
 
     {# ── INPUT AREA ── #}
     <div style="padding: 24px 32px; background: white; border-top: 1px solid var(--m3-outline-variant);">
-        <form hx-post="{{ path('app_messages_show', {id: conversation.id}) }}" 
+        <form id="message-form"
+              hx-post="{{ path('app_messages_show', {id: conversation.id}) }}" 
               hx-target="#message-container" 
-              hx-swap="beforeend" 
-              hx-on::after-request="this.reset(); document.getElementById('message-container').scrollTop = document.getElementById('message-container').scrollHeight;"
+              hx-swap="beforeend"
+              hx-on::after-request="
+                var input = document.getElementById('message-form').querySelector('input[name=content]');
+                if(input) input.value = '';
+                var container = document.getElementById('message-container');
+                if(container) container.scrollTop = container.scrollHeight;
+              "
+              hx-on::response-error="console.error('HTMX Error:', event.detail.xhr.status, event.detail.xhr.responseText)"
               style="display: flex; gap: 16px; align-items: center;">
             <input type="text" name="content" required placeholder="Type a message..." autocomplete="off" style="flex-grow: 1; height: 48px; border-radius: 24px; border: 1px solid var(--m3-outline); padding: 0 24px; font-size: 1rem; outline: none; background: var(--m3-surface-container-low);" onfocus="this.style.border='2px solid var(--m3-primary)'; this.style.padding='0 23px';" onblur="this.style.border='1px solid var(--m3-outline)'; this.style.padding='0 24px';">
             <button type="submit" class="m3-button m3-button-filled" style="width: 48px; height: 48px; border-radius: 50%; min-width: 48px; padding: 0; display: flex; align-items: center; justify-content: center;">
                 <span style="font-size: 1.5rem;">✈️</span>
             </button>
         </form>
+        <script>
+            // Ensure form works reliably
+            function initMessageForm() {
+                const form = document.getElementById('message-form');
+                if(!form) {
+                    console.log('Message form not found yet, retrying...');
+                    setTimeout(initMessageForm, 100);
+                    return;
+                }
+                
+                console.log('✓ Initializing message form');
+                
+                // Process form with HTMX
+                if(window.htmx) {
+                    htmx.process(form);
+                    console.log('✓ HTMX processed form');
+                }
+                
+                // Log all form submissions
+                form.addEventListener('htmx:xhr:sendstart', function(e) {
+                    console.log('✓ HTMX sending request to:', e.detail.requestConfig.path);
+                });
+                
+                form.addEventListener('htmx:beforeRequest', function(e) {
+                    console.log('✓ HTMX before request, method:', e.detail.requestConfig.verb, 'data:', e.detail.xhr.body);
+                });
+                
+                form.addEventListener('htmx:afterRequest', function(e) {
+                    console.log('✓ HTMX after request, status:', e.detail.xhr.status, 'response length:', e.detail.xhr.response.length);
+                });
+                
+                form.addEventListener('htmx:responseError', function(e) {
+                    console.error('✗ HTMX error:', e.detail.xhr.status, e.detail.xhr.responseText);
+                });
+                
+                // Allow Enter key to submit
+                const input = form.querySelector('input[name=content]');
+                if(input) {
+                    input.addEventListener('keypress', function(e) {
+                        if(e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            console.log('✓ Enter key pressed, submitting form');
+                            htmx.ajax('POST', form.getAttribute('hx-post'), {
+                                source: form,
+                                target: '#message-container',
+                                swap: 'beforeend',
+                                values: {content: input.value}
+                            });
+                            input.value = '';
+                        }
+                    });
+                }
+            }
+            
+            // Start initialization
+            if(document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initMessageForm);
+            } else {
+                initMessageForm();
+            }
+        </script>
     </div>
 {% endblock %}

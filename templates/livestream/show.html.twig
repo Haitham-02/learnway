@@ -1,0 +1,474 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ livestream.title }} - Live Session{% endblock %}
+
+{% block body %}
+<div style="display: flex; height: calc(100vh - 100px); gap: 1px; background-color: var(--m3-outline);">
+    
+    <!-- LEFT SIDE: VIDEO (70%) -->
+    <div style="flex: 0 0 70%; display: flex; flex-direction: column; background-color: #000;">
+        
+        <!-- Video Container -->
+        <div id="jitsi-container" style="
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #1a1a1a;
+            position: relative;
+        ">
+            <!-- Jitsi will be embedded here -->
+        </div>
+
+        <!-- Bottom Controls -->
+        <div style="
+            background-color: #2a2a2a;
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        ">
+            <button onclick="toggleMic()" id="mic-btn" style="
+                background-color: var(--m3-primary);
+                color: white;
+                border: none;
+                padding: 0.75rem 1.5rem;
+                border-radius: 50px;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 0.875rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                🎤 Mic On
+            </button>
+
+            <button onclick="toggleCamera()" id="camera-btn" style="
+                background-color: var(--m3-primary);
+                color: white;
+                border: none;
+                padding: 0.75rem 1.5rem;
+                border-radius: 50px;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 0.875rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                📹 Camera On
+            </button>
+
+            <button onclick="toggleScreenShare()" style="
+                background-color: var(--m3-secondary);
+                color: white;
+                border: none;
+                padding: 0.75rem 1.5rem;
+                border-radius: 50px;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 0.875rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                🖥️ Share Screen
+            </button>
+
+            {% if isTeacher %}
+                <button onclick="endSession()" style="
+                    background-color: #f44336;
+                    color: white;
+                    border: none;
+                    padding: 0.75rem 1.5rem;
+                    border-radius: 50px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    font-size: 0.875rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.backgroundColor='#da190b'" onmouseout="this.style.backgroundColor='#f44336'">
+                    🛑 End Session
+                </button>
+            {% else %}
+                <a href="{{ path('app_livestream_student_list') }}" style="
+                    background-color: #f44336;
+                    color: white;
+                    border: none;
+                    padding: 0.75rem 1.5rem;
+                    border-radius: 50px;
+                    text-decoration: none;
+                    text-align: center;
+                    font-weight: 600;
+                    font-size: 0.875rem;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                " onmouseover="this.style.backgroundColor='#da190b'" onmouseout="this.style.backgroundColor='#f44336'">
+                    👋 Leave
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- RIGHT SIDE: SIDEBAR (30%) -->
+    <div style="flex: 0 0 30%; display: flex; flex-direction: column; background-color: var(--m3-surface-container); border-left: 1px solid var(--m3-outline);">
+        
+        <!-- Tab Headers -->
+        <div style="display: flex; border-bottom: 1px solid var(--m3-outline); background-color: var(--m3-surface);">
+            <button onclick="switchSidebarTab('chat')" id="tab-chat" class="sidebar-tab" style="
+                flex: 1;
+                padding: 1rem;
+                border: none;
+                background: none;
+                cursor: pointer;
+                color: var(--m3-primary);
+                font-weight: 600;
+                border-bottom: 3px solid var(--m3-primary);
+                font-size: 0.875rem;
+                transition: all 0.3s ease;
+            ">
+                💬 Chat
+            </button>
+            <button onclick="switchSidebarTab('qa')" id="tab-qa" class="sidebar-tab" style="
+                flex: 1;
+                padding: 1rem;
+                border: none;
+                background: none;
+                cursor: pointer;
+                color: var(--m3-on-surface-variant);
+                font-weight: 600;
+                border-bottom: 3px solid transparent;
+                font-size: 0.875rem;
+                transition: all 0.3s ease;
+            ">
+                ❓ Q&A
+            </button>
+            <button onclick="switchSidebarTab('ai')" id="tab-ai" class="sidebar-tab" style="
+                flex: 1;
+                padding: 1rem;
+                border: none;
+                background: none;
+                cursor: pointer;
+                color: var(--m3-on-surface-variant);
+                font-weight: 600;
+                border-bottom: 3px solid transparent;
+                font-size: 0.875rem;
+                transition: all 0.3s ease;
+            ">
+                🤖 AI Tools
+            </button>
+        </div>
+
+        <!-- Tab Content Container -->
+        <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+
+            <!-- CHAT TAB -->
+            <div id="chat-panel" style="display: flex; flex-direction: column; height: 100%; overflow: hidden;">
+                <div id="chat-messages" style="
+                    flex: 1;
+                    overflow-y: auto;
+                    padding: 1rem;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.75rem;
+                ">
+                    {% for chat in chats %}
+                        <div style="
+                            padding: 0.75rem;
+                            background-color: var(--m3-surface);
+                            border-radius: 8px;
+                            display: flex;
+                            flex-direction: column;
+                        ">
+                            <p style="margin: 0 0 0.25rem 0; font-weight: 600; font-size: 0.875rem; color: var(--m3-primary);">
+                                {{ chat.user.firstName }} {{ chat.user.lastName }}
+                            </p>
+                            <p style="margin: 0; font-size: 0.875rem; color: var(--m3-on-surface);">{{ chat.message }}</p>
+                            <p style="margin: 0.25rem 0 0 0; font-size: 0.75rem; color: var(--m3-on-surface-variant);">
+                                {{ chat.createdAt|date('H:i') }}
+                            </p>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div style="padding: 1rem; border-top: 1px solid var(--m3-outline); background-color: var(--m3-surface);">
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="chat-input" placeholder="Type a message..." style="
+                            flex: 1;
+                            padding: 0.625rem;
+                            border: 1px solid var(--m3-outline);
+                            border-radius: 20px;
+                            font-size: 0.875rem;
+                            background-color: var(--m3-surface-container);
+                            color: var(--m3-on-surface);
+                        " />
+                        <button onclick="sendChat()" style="
+                            background-color: var(--m3-primary);
+                            color: white;
+                            border: none;
+                            padding: 0.625rem 1rem;
+                            border-radius: 20px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            transition: background-color 0.3s ease;
+                        " onmouseover="this.style.backgroundColor='var(--m3-primary-dark)'" onmouseout="this.style.backgroundColor='var(--m3-primary)'">
+                            Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q&A TAB -->
+            <div id="qa-panel" style="display: none; flex-direction: column; height: 100%; overflow: hidden;">
+                <div id="qa-questions" style="
+                    flex: 1;
+                    overflow-y: auto;
+                    padding: 1rem;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.75rem;
+                ">
+                    {% for question in questions %}
+                        <div style="
+                            padding: 1rem;
+                            background-color: var(--m3-surface);
+                            border-radius: 8px;
+                            border-left: 4px solid {{ question.isAnswered ? 'var(--m3-primary)' : '#ff9800' }};
+                        ">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div style="flex: 1;">
+                                    <p style="margin: 0 0 0.5rem 0; font-weight: 600; font-size: 0.875rem; color: var(--m3-primary);">
+                                        {{ question.student.firstName }} {{ question.student.lastName }}
+                                    </p>
+                                    <p style="margin: 0 0 0.75rem 0; font-size: 0.875rem; color: var(--m3-on-surface);">
+                                        {{ question.question }}
+                                    </p>
+                                    {% if question.isAnswered %}
+                                        <div style="
+                                            background-color: var(--m3-primary-container);
+                                            padding: 0.5rem;
+                                            border-radius: 6px;
+                                            font-size: 0.875rem;
+                                            color: var(--m3-on-primary-container);
+                                        ">
+                                            <p style="margin: 0 0 0.25rem 0; font-weight: 600;">Answered by {{ question.answeredBy.firstName }}</p>
+                                            <p style="margin: 0;">{{ question.answer }}</p>
+                                        </div>
+                                    {% elseif isTeacher %}
+                                        <form onsubmit="answerQuestion(event, {{ question.id }})">
+                                            <textarea placeholder="Type your answer..." style="
+                                                width: 100%;
+                                                padding: 0.5rem;
+                                                border: 1px solid var(--m3-outline);
+                                                border-radius: 6px;
+                                                font-size: 0.75rem;
+                                                min-height: 50px;
+                                                background-color: var(--m3-surface-container);
+                                                color: var(--m3-on-surface);
+                                                font-family: inherit;
+                                            " required></textarea>
+                                            <button type="submit" style="
+                                                background-color: var(--m3-primary);
+                                                color: white;
+                                                border: none;
+                                                padding: 0.5rem 1rem;
+                                                border-radius: 6px;
+                                                font-size: 0.75rem;
+                                                font-weight: 600;
+                                                cursor: pointer;
+                                                margin-top: 0.5rem;
+                                                width: 100%;
+                                            ">
+                                                Answer
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div style="padding: 1rem; border-top: 1px solid var(--m3-outline); background-color: var(--m3-surface);">
+                    <form onsubmit="askQuestion(event)">
+                        <textarea id="question-input" placeholder="Ask a question..." style="
+                            width: 100%;
+                            padding: 0.625rem;
+                            border: 1px solid var(--m3-outline);
+                            border-radius: 8px;
+                            font-size: 0.875rem;
+                            min-height: 60px;
+                            background-color: var(--m3-surface-container);
+                            color: var(--m3-on-surface);
+                            font-family: inherit;
+                        " required></textarea>
+                        <button type="submit" style="
+                            width: 100%;
+                            background-color: var(--m3-primary);
+                            color: white;
+                            border: none;
+                            padding: 0.625rem;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            margin-top: 0.5rem;
+                        ">
+                            ❓ Ask Question
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- AI TOOLS TAB -->
+            <div id="ai-panel" style="display: none; flex-direction: column; height: 100%; overflow-y: auto; padding: 1rem;">
+                
+                <!-- Facial Recognition Card -->
+                <div style="
+                    background-color: var(--m3-surface);
+                    padding: 1rem;
+                    border-radius: 8px;
+                    margin-bottom: 1rem;
+                    border: 2px solid var(--m3-primary);
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 style="margin: 0; color: var(--m3-primary);">😊 Facial Recognition</h4>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="facial-toggle" onchange="toggleFacialTracking()" />
+                            <span style="font-size: 0.75rem;">Enable</span>
+                        </label>
+                    </div>
+                    <div id="facial-status" style="
+                        background-color: var(--m3-surface-container);
+                        padding: 0.75rem;
+                        border-radius: 6px;
+                        font-size: 0.875rem;
+                        color: var(--m3-on-surface-variant);
+                        text-align: center;
+                    ">
+                        🔴 Disabled
+                    </div>
+                    <div id="emotion-display" style="
+                        margin-top: 0.75rem;
+                        padding: 0.75rem;
+                        background-color: var(--m3-primary-container);
+                        border-radius: 6px;
+                        text-align: center;
+                        font-weight: 600;
+                        color: var(--m3-on-primary-container);
+                        font-size: 0.875rem;
+                        display: none;
+                    ">
+                        Current Emotion: <strong id="emotion-text">-</strong>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                    <div style="
+                        background-color: var(--m3-surface);
+                        padding: 1rem;
+                        border-radius: 8px;
+                        text-align: center;
+                    ">
+                        <p style="margin: 0 0 0.5rem 0; font-size: 0.75rem; color: var(--m3-on-surface-variant);">Engagement</p>
+                        <p style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--m3-primary);" id="engagement-score">85%</p>
+                    </div>
+                    <div style="
+                        background-color: var(--m3-surface);
+                        padding: 1rem;
+                        border-radius: 8px;
+                        text-align: center;
+                    ">
+                        <p style="margin: 0 0 0.5rem 0; font-size: 0.75rem; color: var(--m3-on-surface-variant);">Attendance</p>
+                        <p style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--m3-primary);" id="attendance-count">12/25</p>
+                    </div>
+                    <div style="
+                        background-color: var(--m3-surface);
+                        padding: 1rem;
+                        border-radius: 8px;
+                        text-align: center;
+                    ">
+                        <p style="margin: 0 0 0.5rem 0; font-size: 0.75rem; color: var(--m3-on-surface-variant);">Questions</p>
+                        <p style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--m3-primary);" id="question-count">{{ questions|length }}</p>
+                    </div>
+                    <div style="
+                        background-color: var(--m3-surface);
+                        padding: 1rem;
+                        border-radius: 8px;
+                        text-align: center;
+                    ">
+                        <p style="margin: 0 0 0.5rem 0; font-size: 0.75rem; color: var(--m3-on-surface-variant);">Avg Response</p>
+                        <p style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--m3-primary);" id="response-time">2.3m</p>
+                    </div>
+                </div>
+
+                <!-- Participant Focus -->
+                <div style="
+                    background-color: var(--m3-surface);
+                    padding: 1rem;
+                    border-radius: 8px;
+                    margin-top: 1rem;
+                ">
+                    <p style="margin: 0 0 0.75rem 0; font-size: 0.875rem; font-weight: 600; color: var(--m3-on-surface);">Participant Focus</p>
+                    <div style="
+                        background-color: var(--m3-surface-container);
+                        height: 6px;
+                        border-radius: 3px;
+                        overflow: hidden;
+                    ">
+                        <div id="focus-bar" style="
+                            background: linear-gradient(90deg, #4caf50, #ff9800);
+                            height: 100%;
+                            width: 75%;
+                            transition: width 0.3s ease;
+                        "></div>
+                    </div>
+                    <p style="margin: 0.5rem 0 0 0; font-size: 0.75rem; color: var(--m3-on-surface-variant);">
+                        <span id="focus-percent">75%</span> Focused • <span id="distracted-percent">25%</span> Distracted
+                    </p>
+                </div>
+
+                <!-- AI Suggestions -->
+                <div style="
+                    background-color: var(--m3-tertiary-container);
+                    padding: 1rem;
+                    border-radius: 8px;
+                    margin-top: 1rem;
+                ">
+                    <p style="margin: 0 0 0.75rem 0; font-size: 0.875rem; font-weight: 600; color: var(--m3-on-tertiary-container);">💡 AI Suggestions</p>
+                    <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.75rem; color: var(--m3-on-tertiary-container);">
+                        <li>Students showing high engagement — consider increasing interaction pace</li>
+                        <li>3 unanswered questions in Q&A — prioritize responses</li>
+                        <li>Average response time higher than usual — consider shorter explanations</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://meet.jit.si/external_api.js"></script>
+<script src="{{ asset('js/livestream.js') }}"></script>
+
+<script>
+const livestreamId = {{ livestream.id }};
+const isTeacher = {{ isTeacher ? 'true' : 'false' }};
+const meetingRoom = '{{ livestream.meetingRoom }}';
+const userName = '{{ app.user.firstName }} {{ app.user.lastName }}';
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    initializeJitsi();
+});
+</script>
+{% endblock %}

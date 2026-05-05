@@ -1,5 +1,6 @@
 {% set isMine = app.user and message.user.id == app.user.id %}
 <div class="message-wrapper {% if isMine %}message-mine{% else %}message-theirs{% endif %}" 
+     data-message-id="{{ message.id }}"
      data-sender-id="{{ message.user.id }}"
      style="display: flex; flex-direction: column; align-items: {% if isMine %}flex-end{% else %}flex-start{% endif %}; max-width: 80%; width: 100%;">
     <div class="message-content" style="padding: 12px 20px; border-radius: 20px; font-size: 0.9375rem; line-height: 1.5; {% if isMine %}background: var(--m3-primary); color: white; border-bottom-right-radius: 4px;{% else %}background: var(--m3-surface-container-high); color: var(--m3-on-surface); border-bottom-left-radius: 4px;{% endif %}">

@@ -19,6 +19,11 @@
     <span style="flex-grow: 1;">Messages</span>
 </a>
 
+<a href="{{ path('app_livestream_student_list') }}" class="m3-sidebar-item {{ currentRoute starts with 'app_livestream_student_' or currentRoute == 'app_livestream_show' ? 'active' : '' }}">
+    <span style="font-size: 1.25rem;">🎥</span> 
+    <span style="flex-grow: 1;">Live Sessions</span>
+</a>
+
 {% if assignments|length > 0 %}
     <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--m3-primary); margin: 1.5rem 16px 8px; font-weight: 700; border-bottom: 1px solid var(--m3-outline); padding-bottom: 4px;">
         📚 My Subjects

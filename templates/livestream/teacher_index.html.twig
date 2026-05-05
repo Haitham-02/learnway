@@ -1,0 +1,197 @@
+    {% extends 'base.html.twig' %}
+
+    {% block title %}Livestreams — LearnWay{% endblock %}
+
+    {% block body %}
+    <div style="max-width: 1200px; margin: 0 auto; padding-bottom: 64px;">
+
+        {# ── HERO SECTION ── #}
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; background: linear-gradient(135deg, var(--m3-primary), var(--m3-primary-container)); padding: 48px; border-radius: var(--m3-radius-large); color: white; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <h1 style="margin: 0; font-size: 2.5rem; font-weight: 300;">📹 Manage <span style="font-weight: 600;">Livestreams</span></h1>
+                <p style="margin: 0; opacity: 0.9; font-size: 1.125rem;">Schedule and manage your live teaching sessions with students.</p>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <div style="background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: var(--m3-radius-full); font-size: 0.875rem; backdrop-filter: blur(8px);">
+                        {{ "now"|date("l, F jS") }}
+                    </div>
+                </div>
+            </div>
+            <div style="font-size: 5rem; opacity: 0.2; transform: rotate(-10deg);">🎥</div>
+        </div>
+
+        {# ── MAIN CONTENT & SIDEBAR ── #}
+        <div style="display: grid; grid-template-columns: 1fr 320px; gap: 40px; align-items: flex-start;">
+
+            {# ── LEFT: LIVESTREAMS ── #}
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <h2 style="margin: 0; font-size: 1.5rem; font-weight: 500; color: var(--m3-on-surface);">All Livestreams</h2>
+                    <a href="{{ path('app_livestream_teacher_create') }}" class="m3-button m3-button-filled" style="height: 40px; padding: 0 20px; border-radius: 8px; font-size: 0.875rem;">
+                        + New
+                    </a>
+                </div>
+
+                {% if livestreams is empty %}
+                    <div class="m3-card m3-card-outlined" style="text-align: center; padding: 80px; border-style: dashed; border-width: 2px;">
+                        <div style="font-size: 5rem; margin-bottom: 24px; filter: grayscale(1); opacity: 0.3;">📹</div>
+                        <h3 style="margin: 0 0 8px 0; font-size: 1.75rem; font-weight: 400; color: var(--m3-on-surface);">No livestreams yet</h3>
+                        <p style="margin: 0; color: var(--m3-on-surface-variant); font-size: 1.1rem;">Create your first livestream session to get started!</p>
+                        <div style="margin-top: 32px;">
+                            <a href="{{ path('app_livestream_teacher_create') }}" class="m3-button m3-button-filled" style="height: 48px; padding: 0 32px; border-radius: 12px;">
+                                Create Livestream
+                            </a>
+                        </div>
+                    </div>
+                {% else %}
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        {% for livestream in livestreams %}
+                            <div class="m3-card m3-card-elevated" style="padding: 20px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 2px rgba(0,0,0,0.3), 0 1px 3px 1px rgba(0,0,0,0.15)'">
+
+                                <!-- Header -->
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                                    <div style="flex: 1;">
+                                        <h3 style="margin: 0 0 4px 0; font-size: 1.125rem; font-weight: 600; color: var(--m3-on-surface);">{{ livestream.title }}</h3>
+                                        <p style="margin: 0; font-size: 0.8125rem; color: var(--m3-on-surface-variant);">{{ livestream.classe.name }}</p>
+                                    </div>
+                                    <span style="
+                                        padding: 4px 10px;
+                                        border-radius: 16px;
+                                        font-size: 0.7rem;
+                                        font-weight: 700;
+                                        text-transform: uppercase;
+                                        white-space: nowrap;
+                                        {% if livestream.status == 'LIVE' %}
+                                            background-color: #ffebee;
+                                            color: #d32f2f;
+                                        {% elseif livestream.status == 'SCHEDULED' %}
+                                            background-color: var(--m3-primary-container);
+                                            color: var(--m3-on-primary-container);
+                                        {% else %}
+                                            background-color: var(--m3-surface-container);
+                                            color: var(--m3-on-surface-variant);
+                                        {% endif %}
+                                    ">
+                                        {{ livestream.status }}
+                                    </span>
+                                </div>
+
+                                <!-- Details -->
+                                <div style="font-size: 0.875rem; color: var(--m3-on-surface-variant); margin-bottom: 12px;">
+                                    📅 {{ livestream.scheduledAt|date('M d, Y H:i') }}
+                                    {% if livestream.description %}
+                                        • {{ livestream.description|slice(0, 40) }}...
+                                    {% endif %}
+                                </div>
+
+                                <!-- Actions -->
+                                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto;">
+                                    {% if livestream.status == 'SCHEDULED' %}
+                                        <button onclick="startLivestream({{ livestream.id }})" class="m3-button m3-button-filled" style="flex: 1; min-width: 80px; height: 36px; font-size: 0.8125rem; padding: 0 12px;">
+                                            ▶️ Start
+                                        </button>
+                                        <a href="{{ path('app_livestream_teacher_edit', {id: livestream.id}) }}" class="m3-button m3-button-outlined" style="flex: 1; min-width: 80px; height: 36px; font-size: 0.8125rem; padding: 0 12px; text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center;">
+                                            ✏️ Edit
+                                        </a>
+                                        <button onclick="deleteLivestream({{ livestream.id }})" class="m3-button m3-button-outlined" style="flex: 1; min-width: 80px; height: 36px; font-size: 0.8125rem; padding: 0 12px; color: var(--m3-error); border-color: var(--m3-error);">
+                                            🗑️
+                                        </button>
+                                    {% elseif livestream.status == 'LIVE' %}
+                                        <a href="{{ path('app_livestream_show', {id: livestream.id}) }}" class="m3-button m3-button-filled" style="flex: 1;">
+                                            🎥 Join Now
+                                        </a>
+                                    {% else %}
+                                        <a href="{{ path('app_livestream_show', {id: livestream.id}) }}" class="m3-button m3-button-outlined" style="flex: 1;">
+                                            👁️ View
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            {# ── RIGHT: SIDEBAR ── #}
+            <aside style="display: flex; flex-direction: column; gap: 24px;">
+                <!-- Quick Stats -->
+                <div class="m3-card m3-card-filled" style="padding: 20px; background: var(--m3-surface-container-high);">
+                    <h3 style="margin: 0 0 14px 0; font-size: 1rem; font-weight: 600;">Summary</h3>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--m3-on-surface-variant); font-size: 0.875rem;">Total</span>
+                            <span style="font-weight: 700; color: var(--m3-primary); font-size: 1.25rem;">{{ livestreams|length }}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--m3-on-surface-variant); font-size: 0.875rem;">Live</span>
+                            <span style="font-weight: 700; color: #d32f2f; font-size: 1.25rem;">
+                                {% set liveCount = livestreams|filter(s => s.status == 'LIVE')|length %}
+                                {{ liveCount }}
+                            </span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--m3-on-surface-variant); font-size: 0.875rem;">Scheduled</span>
+                            <span style="font-weight: 700; color: var(--m3-primary); font-size: 1.25rem;">
+                                {% set scheduledCount = livestreams|filter(s => s.status == 'SCHEDULED')|length %}
+                                {{ scheduledCount }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Action -->
+                <div class="m3-card m3-card-outlined" style="padding: 20px;">
+                    <h3 style="margin: 0 0 12px 0; font-size: 1rem; font-weight: 600;">Quick Action</h3>
+                    <a href="{{ path('app_livestream_teacher_create') }}" class="m3-button m3-button-filled" style="width: 100%; padding: 12px;">
+                        + Schedule New
+                    </a>
+                </div>
+
+                <!-- Tips -->
+                <div class="m3-card m3-card-outlined" style="padding: 20px; background: var(--m3-secondary-container); border-color: var(--m3-secondary);">
+                    <h4 style="margin: 0 0 8px 0; color: var(--m3-on-secondary-container); font-weight: 600; font-size: 0.9375rem;">💡 Pro Tip</h4>
+                    <p style="margin: 0; font-size: 0.8125rem; color: var(--m3-on-secondary-container); line-height: 1.5;">
+                        Schedule livestreams in advance so students get notifications and can prepare!
+                    </p>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script>
+    function startLivestream(id) {
+        if (confirm('Start this livestream now?')) {
+            fetch(`/livestream/teacher/livestreams/${id}/start`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                alert('Livestream started!');
+                location.reload();
+            })
+            .catch(err => alert('Error: ' + err));
+        }
+    }
+
+    function deleteLivestream(id) {
+        if (confirm('Delete this livestream? This cannot be undone.')) {
+            fetch(`/livestream/teacher/livestreams/${id}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                alert('Livestream deleted!');
+                location.reload();
+            })
+            .catch(err => alert('Error: ' + err));
+        }
+    }
+    </script>
+    {% endblock %}
