@@ -5,38 +5,38 @@
 <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--m3-on-surface-variant); margin: 0 16px 8px; font-weight: 600;">Navigation</div>
 
 <a href="{{ path('app_dashboard') }}" class="m3-sidebar-item {{ currentRoute == 'app_dashboard' ? 'active' : '' }}">
-    <span style="font-size: 1.25rem;">🏠</span> 
+    <span class="material-symbols-rounded" style="font-size: 1.25rem;">dashboard</span> 
     <span style="flex-grow: 1;">Dashboard</span>
 </a>
 
 <a href="{{ path('app_forum_index') }}" class="m3-sidebar-item {{ currentRoute starts with 'app_forum_' ? 'active' : '' }}">
-    <span style="font-size: 1.25rem;">💬</span> 
+    <span class="material-symbols-rounded" style="font-size: 1.25rem;">forum</span> 
     <span style="flex-grow: 1;">Forum</span>
 </a>
 
 <a href="{{ path('app_messages_index') }}" class="m3-sidebar-item {{ currentRoute starts with 'app_messages_' ? 'active' : '' }}">
-    <span style="font-size: 1.25rem;">✉️</span> 
+    <span class="material-symbols-rounded" style="font-size: 1.25rem;">mail</span> 
     <span style="flex-grow: 1;">Messages</span>
 </a>
 
 <a href="{{ path('app_livestream_student_list') }}" class="m3-sidebar-item {{ currentRoute starts with 'app_livestream_student_' or currentRoute == 'app_livestream_show' ? 'active' : '' }}">
-    <span style="font-size: 1.25rem;">🎥</span> 
+    <span class="material-symbols-rounded" style="font-size: 1.25rem;">videocam</span> 
     <span style="flex-grow: 1;">Live Sessions</span>
 </a>
 
 <a href="{{ path('app_schedule_view') }}" class="m3-sidebar-item {{ currentRoute == 'app_schedule_view' ? 'active' : '' }}">
-    <span style="font-size: 1.25rem;">📅</span> 
+    <span class="material-symbols-rounded" style="font-size: 1.25rem;">calendar_month</span> 
     <span style="flex-grow: 1;">My Schedule</span>
 </a>
 
 {% if assignments|length > 0 %}
-    <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--m3-primary); margin: 1.5rem 16px 8px; font-weight: 700; border-bottom: 1px solid var(--m3-outline); padding-bottom: 4px;">
-        📚 My Subjects
+    <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--m3-primary); margin: 1.5rem 16px 8px; font-weight: 700; border-bottom: 1px solid var(--m3-outline); padding-bottom: 4px; display: flex; align-items: center; gap: 4px;">
+        <span class="material-symbols-rounded" style="font-size: 1rem;">menu_book</span> My Subjects
     </div>
 
     {% for ta in assignments %}
         <a href="{{ path('student_subject_chapters', {subjectId: ta.subject.id}) }}" class="m3-sidebar-item {{ currentSubjectId == ta.subject.id ? 'active' : '' }}">
-            <span style="font-size: 1.25rem;">📘</span> 
+            <span class="material-symbols-rounded" style="font-size: 1.25rem;">auto_stories</span> 
             <span style="flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ ta.subject.name }}</span>
         </a>
     {% endfor %}

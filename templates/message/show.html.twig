@@ -13,7 +13,7 @@
         <div style="display: flex; align-items: center; gap: 16px;">
             <div style="width: 40px; height: 40px; background: var(--m3-primary-container); color: var(--m3-on-primary-container); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; overflow: hidden; border: 1px solid var(--m3-outline-variant);">
                 {% if conversation.type == 'GROUP' %}
-                    👥
+                    <span class="material-symbols-rounded">group</span>
                 {% elseif recipient and recipient.profile_picture %}
                     <img src="{{ asset('uploads/profiles/' ~ recipient.profile_picture) }}" style="width: 100%; height: 100%; object-fit: cover;">
                 {% else %}
@@ -36,7 +36,7 @@
 
         {% if conversation.type == 'GROUP' %}
             <button onclick="openGroupInfoModal()" class="m3-button m3-button-tonal" style="height: 36px; padding: 0 16px; border-radius: 12px; display: flex; align-items: center; gap: 8px; background: #e0e2ec; color: #191c20; border: none; cursor: pointer; font-size: 0.8125rem;">
-                ℹ️ Group Info
+                <span class="material-symbols-rounded" style="font-size: 1.125rem;">info</span> Group Info
             </button>
         {% endif %}
     </div>
@@ -73,7 +73,7 @@
               style="display: flex; gap: 16px; align-items: center;">
             <input type="text" name="content" required placeholder="Type a message..." autocomplete="off" style="flex-grow: 1; height: 48px; border-radius: 24px; border: 1px solid var(--m3-outline); padding: 0 24px; font-size: 1rem; outline: none; background: var(--m3-surface-container-low);" onfocus="this.style.border='2px solid var(--m3-primary)'; this.style.padding='0 23px';" onblur="this.style.border='1px solid var(--m3-outline)'; this.style.padding='0 24px';">
             <button type="submit" class="m3-button m3-button-filled" style="width: 48px; height: 48px; border-radius: 50%; min-width: 48px; padding: 0; display: flex; align-items: center; justify-content: center;">
-                <span style="font-size: 1.5rem;">✈️</span>
+                <span class="material-symbols-rounded" style="font-size: 1.5rem;">send</span>
             </button>
         </form>
         <script>
@@ -196,7 +196,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <h2 style="margin: 0; font-size: 1.5rem; font-weight: 500;">{{ conversation.name }}</h2>
                 {% if isMod %}
-                    <button onclick="openRenameGroupModal()" class="m3-button m3-button-text" style="font-size: 0.8rem;">✏️ Rename</button>
+                    <button onclick="openRenameGroupModal()" class="m3-button m3-button-text" style="font-size: 0.8rem; display: flex; align-items: center; gap: 4px;"><span class="material-symbols-rounded" style="font-size: 1.125rem;">edit</span> Rename</button>
                 {% endif %}
             </div>
 
@@ -204,7 +204,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <h3 style="margin: 0; font-size: 1rem; font-weight: 600;">Members</h3>
                     {% if isMod %}
-                        <button onclick="openAddMemberModal()" class="m3-button m3-button-tonal" style="height: 32px; padding: 0 12px; font-size: 0.75rem; border-radius: 8px; background: #e0e2ec; color: #191c20; border: none; cursor: pointer;">➕ Add Member</button>
+                        <button onclick="openAddMemberModal()" class="m3-button m3-button-tonal" style="height: 32px; padding: 0 12px; font-size: 0.75rem; border-radius: 8px; background: #e0e2ec; color: #191c20; border: none; cursor: pointer; display: flex; align-items: center; gap: 4px;"><span class="material-symbols-rounded" style="font-size: 1rem;">person_add</span> Add Member</button>
                     {% endif %}
                 </div>
                 
@@ -230,11 +230,11 @@
 
             <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px; border-top: 1px solid var(--m3-outline-variant); padding-top: 24px;">
                 <form action="{{ path('app_messages_group_leave', {id: conversation.id}) }}" method="POST" onsubmit="return confirm('Are you sure you want to leave this group?')">
-                    <button type="submit" class="m3-button m3-button-tonal" style="width: 100%; height: 44px; border-radius: 12px; background: #fee2e2; color: #991b1b; border: none; cursor: pointer; font-weight: 600;">🚪 Leave Group</button>
+                    <button type="submit" class="m3-button m3-button-tonal" style="width: 100%; height: 44px; border-radius: 12px; background: #fee2e2; color: #991b1b; border: none; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;"><span class="material-symbols-rounded">logout</span> Leave Group</button>
                 </form>
                 {% if isMod %}
                     <form action="{{ path('app_messages_group_delete', {id: conversation.id}) }}" method="POST" onsubmit="return confirm('CRITICAL: This will delete the entire group and all messages. Proceed?')">
-                        <button type="submit" class="m3-button m3-button-filled" style="width: 100%; height: 44px; border-radius: 12px; background: var(--m3-error); color: white; border: none; cursor: pointer; font-weight: 600;">🗑️ Delete Group</button>
+                        <button type="submit" class="m3-button m3-button-filled" style="width: 100%; height: 44px; border-radius: 12px; background: var(--m3-error); color: white; border: none; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;"><span class="material-symbols-rounded">delete</span> Delete Group</button>
                     </form>
                 {% endif %}
             </div>
@@ -333,7 +333,7 @@
                         </div>
                         <form action="{{ path('app_messages_group_add_member', {id: conversation.id}) }}" method="POST">
                             <input type="hidden" name="user_id" value="${c.id}">
-                            <button type="submit" class="m3-button m3-button-text" style="font-size: 1.2rem;">➕</button>
+                            <button type="submit" class="m3-button m3-button-text" style="display: flex; align-items: center; justify-content: center;"><span class="material-symbols-rounded">add_circle</span></button>
                         </form>
                     `;
                     list.appendChild(item);

@@ -136,9 +136,9 @@ export default class extends Controller {
         const suggestions = this.suggestionsValue || [];
 
         this.suggestionsTarget.innerHTML = suggestions.map(s => `
-            <button class="copilot-suggestion" data-action="click->ai-assistant#useSuggestion" data-text="${s.text}">
-                <span class="suggestion-icon">${s.icon}</span>
-                <span>${s.text}</span>
+            <button class="copilot-suggestion" data-action="click->ai-assistant#useSuggestion" data-text="${this.escapeHtml(s.text)}">
+                <span class="suggestion-icon material-symbols-rounded">${s.icon}</span>
+                <span>${this.escapeHtml(s.text)}</span>
             </button>
         `).join('');
     }
@@ -180,11 +180,11 @@ export default class extends Controller {
                 this.chatId = data.chatId;
                 this.appendMessage(data.response, 'assistant');
             } else {
-                this.appendMessage('⚠️ ' + (data.error || 'Something went wrong.'), 'error');
+                this.appendMessage('[ICON:warning] ' + (data.error || 'Something went wrong.'), 'error');
             }
         } catch (err) {
             this.showTypingIndicator(false);
-            this.appendMessage('⚠️ Unable to reach Learnway AI. Please check your connection.', 'error');
+            this.appendMessage('[ICON:warning] Unable to reach Learnway AI. Please check your connection.', 'error');
         } finally {
             this.isTyping = false;
         }
@@ -195,9 +195,9 @@ export default class extends Controller {
         if (!file) return;
 
         const ext = file.name.split('.').pop().toUpperCase();
-        const icon = ext === 'PDF' ? '📕' : ext === 'DOCX' ? '📘' : '📄';
+        const icon = ext === 'PDF' ? '[ICON:picture_as_pdf]' : ext === 'DOCX' ? '[ICON:description]' : '[ICON:draft]';
 
-        this.appendMessage(`${icon} Uploading <strong>${file.name}</strong>...`, 'upload');
+        this.appendMessage(`${icon} Uploading **${file.name}**...`, 'upload');
         this.showTypingIndicator(true);
 
         const formData = new FormData();
@@ -209,13 +209,13 @@ export default class extends Controller {
             this.showTypingIndicator(false);
 
             if (data.status) {
-                this.appendMessage(data.summary || `✅ **${file.name}** has been indexed!`, 'assistant');
+                this.appendMessage(data.summary || `[ICON:check_circle_green] **${file.name}** has been indexed!`, 'assistant');
             } else {
-                this.appendMessage(`❌ Upload failed: ${data.error}`, 'error');
+                this.appendMessage(`[ICON:cancel] Upload failed: ${data.error}`, 'error');
             }
         } catch (err) {
             this.showTypingIndicator(false);
-            this.appendMessage('❌ Upload error. Please try again.', 'error');
+            this.appendMessage('[ICON:cancel] Upload error. Please try again.', 'error');
         } finally {
             event.target.value = '';
         }
@@ -237,7 +237,7 @@ export default class extends Controller {
                 </div>
             `;
         } else if (role === 'upload') {
-            wrap.innerHTML = `<div class="copilot-bubble copilot-bubble--upload">${text}</div>`;
+            wrap.innerHTML = `<div class="copilot-bubble copilot-bubble--upload">${this.renderMarkdown(text)}</div>`;
         } else {
             wrap.innerHTML = `<div class="copilot-bubble copilot-bubble--user">${this.escapeHtml(text)}</div>`;
         }
@@ -280,7 +280,9 @@ export default class extends Controller {
             .replace(/^[-•]\s(.+)$/gm, '<li>$1</li>')
             .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
             .replace(/\n\n/g, '</p><p>')
-            .replace(/\n/g, '<br>');
+            .replace(/\n/g, '<br>')
+            .replace(/\[ICON:check_circle_green\]/g, '<span class="material-symbols-rounded" style="vertical-align: middle; font-size: 1.2em; color: #4ade80;">check_circle</span>')
+            .replace(/\[ICON:([a-z_]+)\]/g, '<span class="material-symbols-rounded" style="vertical-align: middle; font-size: 1.2em;">$1</span>');
     }
 
     escapeHtml(text) {

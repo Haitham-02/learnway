@@ -109,7 +109,7 @@ class AiOrchestrationService
     {
         try {
             if (!$this->gemini) {
-                return "✅ **$filename** has been indexed. (Summarization unavailable offline)";
+                return "[ICON:check_circle_green] **$filename** has been indexed. (Summarization unavailable offline)";
             }
 
             $prompt = "You are Learnway AI. The user just uploaded a document named '$filename'. 
@@ -123,10 +123,10 @@ class AiOrchestrationService
             $model = $this->gemini->generativeModel(model: 'models/gemini-3.1-flash-lite');
             $result = $model->generateContent($prompt);
             
-            return "✅ **$filename** has been indexed into your knowledge base!\n\n**Quick Summary:**\n" . $result->text();
+            return "[ICON:check_circle_green] **$filename** has been indexed into your knowledge base!\n\n**Quick Summary:**\n" . $result->text();
         } catch (\Exception $e) {
             $this->logger->error('Summarization Error: ' . $e->getMessage());
-            return "✅ **$filename** has been indexed. (Summarization failed: " . $e->getMessage() . ")";
+            return "[ICON:cancel] **$filename** has been indexed. (Summarization failed: " . $e->getMessage() . ")";
         }
     }
 }
