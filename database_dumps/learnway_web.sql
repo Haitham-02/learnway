@@ -1,3 +1,7 @@
+SET FOREIGN_KEY_CHECKS=0;
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET NAMES utf8mb4;
+
 DROP TABLE IF EXISTS academic_years;
 
 CREATE TABLE `academic_years` (
@@ -77,56 +81,56 @@ CREATE TABLE `ai_messages` (
   CONSTRAINT `FK_C4E498F61A9A7125` FOREIGN KEY (`chat_id`) REFERENCES `ai_chats` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-INSERT INTO ai_messages VALUES("1","user","WHAT CLASS I AM IN ,","","2026-05-10 00:13:42","3");
-INSERT INTO ai_messages VALUES("2","assistant","Based on the provided context, you have **26 authorized classes**, but the specific names of these classes are not listed. Therefore, I do not know the exact names of the classes you are in.","","2026-05-10 00:13:42","3");
-INSERT INTO ai_messages VALUES("3","user","what class i am in ?","","2026-05-10 00:15:06","4");
-INSERT INTO ai_messages VALUES("4","assistant","You are in class 3A2.","","2026-05-10 00:15:06","4");
-INSERT INTO ai_messages VALUES("5","user","what is the latest live stream published","","2026-05-10 00:15:22","4");
-INSERT INTO ai_messages VALUES("6","assistant","I don\'t know. The provided context does not contain information about live streams.","","2026-05-10 00:15:22","4");
-INSERT INTO ai_messages VALUES("7","user","what are the subjects i have in my class ?","","2026-05-10 00:17:09","4");
-INSERT INTO ai_messages VALUES("8","assistant","Based on the provided context for your class **3A2**, the subject mentioned is:\n\n*   **Math Algebra** (identified from the \"Math Algebra Livestream for 3A2\").","","2026-05-10 00:17:09","4");
-INSERT INTO ai_messages VALUES("9","user","any other subjects ?","","2026-05-10 00:17:33","4");
-INSERT INTO ai_messages VALUES("10","assistant","Based on the provided context, the only specific subject mentioned is **Math Algebra**, which is associated with a livestream for class 3A2. There are no other subjects listed in your authorized classes or scheduled livestreams.","","2026-05-10 00:17:33","4");
-INSERT INTO ai_messages VALUES("11","user","HI","","2026-05-10 01:45:19","7");
-INSERT INTO ai_messages VALUES("12","assistant","Hello Zrafi Student! I am Learnway AI, your intelligent educational assistant. How can I help you with your studies in class 3A2 today?\n\nI see that there are several active livestreams for your class, including a **Math Algebra Livestream**. Let me know if you have questions about your classes or any of the recent messages!","","2026-05-10 01:45:19","7");
-INSERT INTO ai_messages VALUES("13","user","What are my current lessons?","","2026-05-10 01:51:37","8");
-INSERT INTO ai_messages VALUES("14","assistant","Based on the provided context, there are no specific lessons or subjects listed for your class (3A2).","","2026-05-10 01:51:37","8");
-INSERT INTO ai_messages VALUES("15","user","Any announcements for me?","","2026-05-10 01:54:35","9");
-INSERT INTO ai_messages VALUES("16","assistant","There are currently no formal announcements listed for you. However, you have three active livestreams for your class **3A2**:\n\n*   **Math Algebra Livestream for 3A2** (Started: 2026-05-05)\n*   **test** (Started: 2026-05-06)\n*   **test jitsi** (Started: 2026-05-09)","","2026-05-10 01:54:35","9");
-INSERT INTO ai_messages VALUES("17","user","any resume","","2026-05-10 01:55:13","9");
-INSERT INTO ai_messages VALUES("18","assistant","I\'m sorry, but I don\'t have any summaries or resumes available in the current context. Your \"Lessons & Subjects\" and \"Announcements\" sections are currently empty. \n\nHowever, I can see that there is a **Math Algebra Livestream** for your class (3A2) currently marked as LIVE. You may want to check that for current lesson content!","","2026-05-10 01:55:13","9");
-INSERT INTO ai_messages VALUES("19","user","what is my class","","2026-05-10 02:01:51","10");
-INSERT INTO ai_messages VALUES("20","assistant","Based on your dashboard data, your authorized class is **3A2**.","","2026-05-10 02:01:51","10");
-INSERT INTO ai_messages VALUES("21","user","what is my name","","2026-05-10 02:02:00","10");
-INSERT INTO ai_messages VALUES("22","assistant","Your name is Zrafi Student.","","2026-05-10 02:02:00","10");
-INSERT INTO ai_messages VALUES("23","user","what is my latests messages","","2026-05-10 02:05:39","10");
-INSERT INTO ai_messages VALUES("24","assistant","Based on your recent message history, here are your latest messages:\n\n*   **From Zrafi:** \"aqsq\"\n*   **From Zrafi:** \"aa\"\n*   **From You:** \"annn\"\n*   **From You:** \"test\"\n*   **From You:** \"hello\"","","2026-05-10 02:05:39","10");
-INSERT INTO ai_messages VALUES("25","user","whats the lasst forum post and what is it about","","2026-05-10 02:06:03","10");
-INSERT INTO ai_messages VALUES("26","assistant","I don\'t know, as there are no forum posts listed in your dashboard data at the moment.","","2026-05-10 02:06:03","10");
-INSERT INTO ai_messages VALUES("27","user","any forum posts in community forum ?","","2026-05-10 02:06:36","11");
-INSERT INTO ai_messages VALUES("28","assistant","Based on the information available in your dashboard, there are currently no forum posts in the community forum.","","2026-05-10 02:06:36","11");
-INSERT INTO ai_messages VALUES("29","user","can u summerize a file ?","","2026-05-10 02:07:35","11");
-INSERT INTO ai_messages VALUES("30","assistant","Hello Zrafi Student!\n\nYes, I am capable of summarizing files and documents that have been uploaded to the Learnway platform and are part of your authorized class materials (Class 3A2).\n\nHowever, based on the current context provided, there are no specific documents or PDF contents listed for me to summarize right now. If you have a specific lesson or document in mind, please let me know the name of the subject or chapter, and I will check the available materials to provide a summary for you!","","2026-05-10 02:07:35","11");
-INSERT INTO ai_messages VALUES("31","user","uploads ?","","2026-05-10 02:07:55","11");
-INSERT INTO ai_messages VALUES("32","assistant","Based on the information available in your dashboard, there are no records of uploaded documents, PDFs, or files at this time.","","2026-05-10 02:07:55","11");
-INSERT INTO ai_messages VALUES("33","user","summerize ?","","2026-05-10 02:08:18","11");
-INSERT INTO ai_messages VALUES("34","assistant","Hello Zrafi Student! Based on your Learnway dashboard for class **3A2**, here is a summary of your current activity:\n\n*   **Livestreams:** There are currently three active sessions marked as **LIVE**:\n    *   **Math Algebra Livestream for 3A2** (Started: 2026-05-05)\n    *   **test** (Started: 2026-05-06)\n    *   **test jitsi** (Started: 2026-05-09)\n    *   Additionally, one \"test livestream\" has already ended.\n*   **Messages:** There is a history of short recent messages between you and the system, including greetings like \"hello\" and \"test.\"\n*   **Lessons & Assignments:** There are currently no specific lessons, subjects, or upcoming assignments listed in your profile.\n*   **Announcements & Forums:** No recent announcements or forum posts have been recorded.\n\nWould you like me to help you join one of the live Math sessions?","","2026-05-10 02:08:18","11");
-INSERT INTO ai_messages VALUES("35","user","yes","","2026-05-10 02:08:44","11");
-INSERT INTO ai_messages VALUES("36","assistant","Hello Zrafi! How can I help you today? \n\nI see you\'re currently in class **3A2** and there are a few active livestreams, including a **Math Algebra Livestream**. Would you like more details on those, or do you need help with your lessons or assignments?","","2026-05-10 02:08:44","11");
-INSERT INTO ai_messages VALUES("37","user","can you tell me about the content of forum post test forum","","2026-05-10 02:10:25","12");
-INSERT INTO ai_messages VALUES("38","assistant","I\'m sorry, but I don\'t have any information regarding a forum post titled \"test forum.\" Based on the current data available to me, the forum posts section is empty.","","2026-05-10 02:10:25","12");
-INSERT INTO ai_messages VALUES("39","user","What are my current lessons?","","2026-05-10 02:20:12","13");
-INSERT INTO ai_messages VALUES("40","assistant","Based on your dashboard data, there are currently no lessons listed for your authorized subjects.","","2026-05-10 02:20:12","13");
-INSERT INTO ai_messages VALUES("41","user","any forum post ?","","2026-05-10 02:24:04","14");
-INSERT INTO ai_messages VALUES("42","assistant","Yes, there are a couple of forum posts:\n\n*   **[PENDING] test copilot** by Zrafi (May 10): \"testing copilot reach\"\n*   **[APPROVED] Test Forum** by Haitham (Apr 28): \"TestTestTestTestTest\"\n    *   Comments:\n        *   Test (Apr 28): \"gg\"\n        *   Zrafi (May 04): \"gg\"","","2026-05-10 02:24:04","14");
-INSERT INTO ai_messages VALUES("43","user","How many active students do we have?","","2026-05-10 03:23:07","15");
-INSERT INTO ai_messages VALUES("44","assistant","I\'m sorry, I don\'t know the exact number of active students. My current data indicates there are 7 total users on the platform.","","2026-05-10 03:23:07","15");
-INSERT INTO ai_messages VALUES("45","user","Are there any forum posts pending approval?","","2026-05-10 03:23:39","16");
-INSERT INTO ai_messages VALUES("46","assistant","Yes, there is currently one forum post pending approval:\n\n*   **Post:** \"test copilot\" by Zrafi (Date: May 10)","","2026-05-10 03:23:39","16");
-INSERT INTO ai_messages VALUES("47","user","overall analystics","","2026-05-10 03:24:11","16");
-INSERT INTO ai_messages VALUES("48","assistant","Hello Zrafi Abdeslem. Here is the high-level analytical overview for the Learnway platform:\n\n### **Platform Health & Engagement**\n*   **Total Users:** 7\n*   **Total Classes:** 12\n*   **Student Engagement/Mood:**\n    *   **Absent:** 149\n    *   **Neutral:** 20\n    *   **Happy:** 1\n\n### **System Moderation**\n*   **Pending Forum Posts:** There is 1 post awaiting your moderation:\n    *   *test copilot* by Zrafi (May 10).\n\n### **Academic Activity**\n*   **Active Livestreams:**\n    *   *test jitsi* (Class: 3A2) - Currently LIVE.\n    *   *test* (Class: 3A2) - Currently LIVE.\n    *   *Math Algebra Livestream* (Class: 3A2) - Currently LIVE.\n*   **Upcoming Assignments:**\n    *   **Quiz #1 (Introduction to Algebra):** Due 2026-04-27\n    *   **Quiz #1 (Introduction to Science):** Due 2026-04-28\n    *   **Quiz #1 (First Chapter):** Due 2026-04-29\n\n### **Recent Announcements**\n*   Test Grade Announcement (Grade visibility/CRUD test)\n*   Test Grade Announcement (Grades posted)\n*   Welcome to LearnWay (Global)\n\nPlease let me know if you need specific details on any of these categories.","","2026-05-10 03:24:11","16");
-INSERT INTO ai_messages VALUES("49","user","Who are the most active teachers?","","2026-05-10 03:47:11","17");
-INSERT INTO ai_messages VALUES("50","assistant","I\'m sorry, but I don\'t have information regarding the most active teachers in the provided data.","","2026-05-10 03:47:11","17");
+INSERT INTO ai_messages VALUES("1","user","WHAT CLASS I AM IN ,",NULL,"2026-05-10 00:13:42","3");
+INSERT INTO ai_messages VALUES("2","assistant","Based on the provided context, you have **26 authorized classes**, but the specific names of these classes are not listed. Therefore, I do not know the exact names of the classes you are in.",NULL,"2026-05-10 00:13:42","3");
+INSERT INTO ai_messages VALUES("3","user","what class i am in ?",NULL,"2026-05-10 00:15:06","4");
+INSERT INTO ai_messages VALUES("4","assistant","You are in class 3A2.",NULL,"2026-05-10 00:15:06","4");
+INSERT INTO ai_messages VALUES("5","user","what is the latest live stream published",NULL,"2026-05-10 00:15:22","4");
+INSERT INTO ai_messages VALUES("6","assistant","I don\'t know. The provided context does not contain information about live streams.",NULL,"2026-05-10 00:15:22","4");
+INSERT INTO ai_messages VALUES("7","user","what are the subjects i have in my class ?",NULL,"2026-05-10 00:17:09","4");
+INSERT INTO ai_messages VALUES("8","assistant","Based on the provided context for your class **3A2**, the subject mentioned is:\n\n*   **Math Algebra** (identified from the \"Math Algebra Livestream for 3A2\").",NULL,"2026-05-10 00:17:09","4");
+INSERT INTO ai_messages VALUES("9","user","any other subjects ?",NULL,"2026-05-10 00:17:33","4");
+INSERT INTO ai_messages VALUES("10","assistant","Based on the provided context, the only specific subject mentioned is **Math Algebra**, which is associated with a livestream for class 3A2. There are no other subjects listed in your authorized classes or scheduled livestreams.",NULL,"2026-05-10 00:17:33","4");
+INSERT INTO ai_messages VALUES("11","user","HI",NULL,"2026-05-10 01:45:19","7");
+INSERT INTO ai_messages VALUES("12","assistant","Hello Zrafi Student! I am Learnway AI, your intelligent educational assistant. How can I help you with your studies in class 3A2 today?\n\nI see that there are several active livestreams for your class, including a **Math Algebra Livestream**. Let me know if you have questions about your classes or any of the recent messages!",NULL,"2026-05-10 01:45:19","7");
+INSERT INTO ai_messages VALUES("13","user","What are my current lessons?",NULL,"2026-05-10 01:51:37","8");
+INSERT INTO ai_messages VALUES("14","assistant","Based on the provided context, there are no specific lessons or subjects listed for your class (3A2).",NULL,"2026-05-10 01:51:37","8");
+INSERT INTO ai_messages VALUES("15","user","Any announcements for me?",NULL,"2026-05-10 01:54:35","9");
+INSERT INTO ai_messages VALUES("16","assistant","There are currently no formal announcements listed for you. However, you have three active livestreams for your class **3A2**:\n\n*   **Math Algebra Livestream for 3A2** (Started: 2026-05-05)\n*   **test** (Started: 2026-05-06)\n*   **test jitsi** (Started: 2026-05-09)",NULL,"2026-05-10 01:54:35","9");
+INSERT INTO ai_messages VALUES("17","user","any resume",NULL,"2026-05-10 01:55:13","9");
+INSERT INTO ai_messages VALUES("18","assistant","I\'m sorry, but I don\'t have any summaries or resumes available in the current context. Your \"Lessons & Subjects\" and \"Announcements\" sections are currently empty. \n\nHowever, I can see that there is a **Math Algebra Livestream** for your class (3A2) currently marked as LIVE. You may want to check that for current lesson content!",NULL,"2026-05-10 01:55:13","9");
+INSERT INTO ai_messages VALUES("19","user","what is my class",NULL,"2026-05-10 02:01:51","10");
+INSERT INTO ai_messages VALUES("20","assistant","Based on your dashboard data, your authorized class is **3A2**.",NULL,"2026-05-10 02:01:51","10");
+INSERT INTO ai_messages VALUES("21","user","what is my name",NULL,"2026-05-10 02:02:00","10");
+INSERT INTO ai_messages VALUES("22","assistant","Your name is Zrafi Student.",NULL,"2026-05-10 02:02:00","10");
+INSERT INTO ai_messages VALUES("23","user","what is my latests messages",NULL,"2026-05-10 02:05:39","10");
+INSERT INTO ai_messages VALUES("24","assistant","Based on your recent message history, here are your latest messages:\n\n*   **From Zrafi:** \"aqsq\"\n*   **From Zrafi:** \"aa\"\n*   **From You:** \"annn\"\n*   **From You:** \"test\"\n*   **From You:** \"hello\"",NULL,"2026-05-10 02:05:39","10");
+INSERT INTO ai_messages VALUES("25","user","whats the lasst forum post and what is it about",NULL,"2026-05-10 02:06:03","10");
+INSERT INTO ai_messages VALUES("26","assistant","I don\'t know, as there are no forum posts listed in your dashboard data at the moment.",NULL,"2026-05-10 02:06:03","10");
+INSERT INTO ai_messages VALUES("27","user","any forum posts in community forum ?",NULL,"2026-05-10 02:06:36","11");
+INSERT INTO ai_messages VALUES("28","assistant","Based on the information available in your dashboard, there are currently no forum posts in the community forum.",NULL,"2026-05-10 02:06:36","11");
+INSERT INTO ai_messages VALUES("29","user","can u summerize a file ?",NULL,"2026-05-10 02:07:35","11");
+INSERT INTO ai_messages VALUES("30","assistant","Hello Zrafi Student!\n\nYes, I am capable of summarizing files and documents that have been uploaded to the Learnway platform and are part of your authorized class materials (Class 3A2).\n\nHowever, based on the current context provided, there are no specific documents or PDF contents listed for me to summarize right now. If you have a specific lesson or document in mind, please let me know the name of the subject or chapter, and I will check the available materials to provide a summary for you!",NULL,"2026-05-10 02:07:35","11");
+INSERT INTO ai_messages VALUES("31","user","uploads ?",NULL,"2026-05-10 02:07:55","11");
+INSERT INTO ai_messages VALUES("32","assistant","Based on the information available in your dashboard, there are no records of uploaded documents, PDFs, or files at this time.",NULL,"2026-05-10 02:07:55","11");
+INSERT INTO ai_messages VALUES("33","user","summerize ?",NULL,"2026-05-10 02:08:18","11");
+INSERT INTO ai_messages VALUES("34","assistant","Hello Zrafi Student! Based on your Learnway dashboard for class **3A2**, here is a summary of your current activity:\n\n*   **Livestreams:** There are currently three active sessions marked as **LIVE**:\n    *   **Math Algebra Livestream for 3A2** (Started: 2026-05-05)\n    *   **test** (Started: 2026-05-06)\n    *   **test jitsi** (Started: 2026-05-09)\n    *   Additionally, one \"test livestream\" has already ended.\n*   **Messages:** There is a history of short recent messages between you and the system, including greetings like \"hello\" and \"test.\"\n*   **Lessons & Assignments:** There are currently no specific lessons, subjects, or upcoming assignments listed in your profile.\n*   **Announcements & Forums:** No recent announcements or forum posts have been recorded.\n\nWould you like me to help you join one of the live Math sessions?",NULL,"2026-05-10 02:08:18","11");
+INSERT INTO ai_messages VALUES("35","user","yes",NULL,"2026-05-10 02:08:44","11");
+INSERT INTO ai_messages VALUES("36","assistant","Hello Zrafi! How can I help you today? \n\nI see you\'re currently in class **3A2** and there are a few active livestreams, including a **Math Algebra Livestream**. Would you like more details on those, or do you need help with your lessons or assignments?",NULL,"2026-05-10 02:08:44","11");
+INSERT INTO ai_messages VALUES("37","user","can you tell me about the content of forum post test forum",NULL,"2026-05-10 02:10:25","12");
+INSERT INTO ai_messages VALUES("38","assistant","I\'m sorry, but I don\'t have any information regarding a forum post titled \"test forum.\" Based on the current data available to me, the forum posts section is empty.",NULL,"2026-05-10 02:10:25","12");
+INSERT INTO ai_messages VALUES("39","user","What are my current lessons?",NULL,"2026-05-10 02:20:12","13");
+INSERT INTO ai_messages VALUES("40","assistant","Based on your dashboard data, there are currently no lessons listed for your authorized subjects.",NULL,"2026-05-10 02:20:12","13");
+INSERT INTO ai_messages VALUES("41","user","any forum post ?",NULL,"2026-05-10 02:24:04","14");
+INSERT INTO ai_messages VALUES("42","assistant","Yes, there are a couple of forum posts:\n\n*   **[PENDING] test copilot** by Zrafi (May 10): \"testing copilot reach\"\n*   **[APPROVED] Test Forum** by Haitham (Apr 28): \"TestTestTestTestTest\"\n    *   Comments:\n        *   Test (Apr 28): \"gg\"\n        *   Zrafi (May 04): \"gg\"",NULL,"2026-05-10 02:24:04","14");
+INSERT INTO ai_messages VALUES("43","user","How many active students do we have?",NULL,"2026-05-10 03:23:07","15");
+INSERT INTO ai_messages VALUES("44","assistant","I\'m sorry, I don\'t know the exact number of active students. My current data indicates there are 7 total users on the platform.",NULL,"2026-05-10 03:23:07","15");
+INSERT INTO ai_messages VALUES("45","user","Are there any forum posts pending approval?",NULL,"2026-05-10 03:23:39","16");
+INSERT INTO ai_messages VALUES("46","assistant","Yes, there is currently one forum post pending approval:\n\n*   **Post:** \"test copilot\" by Zrafi (Date: May 10)",NULL,"2026-05-10 03:23:39","16");
+INSERT INTO ai_messages VALUES("47","user","overall analystics",NULL,"2026-05-10 03:24:11","16");
+INSERT INTO ai_messages VALUES("48","assistant","Hello Zrafi Abdeslem. Here is the high-level analytical overview for the Learnway platform:\n\n### **Platform Health & Engagement**\n*   **Total Users:** 7\n*   **Total Classes:** 12\n*   **Student Engagement/Mood:**\n    *   **Absent:** 149\n    *   **Neutral:** 20\n    *   **Happy:** 1\n\n### **System Moderation**\n*   **Pending Forum Posts:** There is 1 post awaiting your moderation:\n    *   *test copilot* by Zrafi (May 10).\n\n### **Academic Activity**\n*   **Active Livestreams:**\n    *   *test jitsi* (Class: 3A2) - Currently LIVE.\n    *   *test* (Class: 3A2) - Currently LIVE.\n    *   *Math Algebra Livestream* (Class: 3A2) - Currently LIVE.\n*   **Upcoming Assignments:**\n    *   **Quiz #1 (Introduction to Algebra):** Due 2026-04-27\n    *   **Quiz #1 (Introduction to Science):** Due 2026-04-28\n    *   **Quiz #1 (First Chapter):** Due 2026-04-29\n\n### **Recent Announcements**\n*   Test Grade Announcement (Grade visibility/CRUD test)\n*   Test Grade Announcement (Grades posted)\n*   Welcome to LearnWay (Global)\n\nPlease let me know if you need specific details on any of these categories.",NULL,"2026-05-10 03:24:11","16");
+INSERT INTO ai_messages VALUES("49","user","Who are the most active teachers?",NULL,"2026-05-10 03:47:11","17");
+INSERT INTO ai_messages VALUES("50","assistant","I\'m sorry, but I don\'t have information regarding the most active teachers in the provided data.",NULL,"2026-05-10 03:47:11","17");
 
 
 
@@ -821,10 +825,10 @@ CREATE TABLE `livestreams` (
   CONSTRAINT `FK_LIVESTREAMS_TEACHER` FOREIGN KEY (`teacher_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-INSERT INTO livestreams VALUES("1","18","26","Math Algebra Livestream for 3A2","livestream for math subject chapter algebra for 3A2","lw_a07bebcc0405aa16","2026-05-05 23:17:00","2026-05-05 22:17:28","","LIVE","","2026-05-05 22:17:14","2026-05-05 23:17:28","","");
-INSERT INTO livestreams VALUES("2","18","26","test ","test live","lw_2961797aeb306bba","2026-05-06 08:42:00","2026-05-06 07:42:55","","LIVE","","2026-05-06 07:42:36","2026-05-06 08:42:55","","");
-INSERT INTO livestreams VALUES("3","18","26","test livestream","test","lw_e024b71d1bca3d25","2026-05-06 17:06:00","2026-05-06 16:07:04","2026-05-09 20:12:40","ENDED","","2026-05-06 16:06:57","2026-05-09 21:12:40","","");
-INSERT INTO livestreams VALUES("4","18","26","test jitsi","test","lw_1f311f84bbeecffa","2026-05-09 21:14:00","2026-05-09 20:14:31","","LIVE","","2026-05-09 20:14:15","2026-05-09 21:14:31","","");
+INSERT INTO livestreams VALUES("1","18","26","Math Algebra Livestream for 3A2","livestream for math subject chapter algebra for 3A2","lw_a07bebcc0405aa16","2026-05-05 23:17:00","2026-05-05 22:17:28","","LIVE","","2026-05-05 22:17:14","2026-05-05 23:17:28",NULL,NULL);
+INSERT INTO livestreams VALUES("2","18","26","test ","test live","lw_2961797aeb306bba","2026-05-06 08:42:00","2026-05-06 07:42:55","","LIVE","","2026-05-06 07:42:36","2026-05-06 08:42:55",NULL,NULL);
+INSERT INTO livestreams VALUES("3","18","26","test livestream","test","lw_e024b71d1bca3d25","2026-05-06 17:06:00","2026-05-06 16:07:04","2026-05-09 20:12:40","ENDED","","2026-05-06 16:06:57","2026-05-09 21:12:40",NULL,NULL);
+INSERT INTO livestreams VALUES("4","18","26","test jitsi","test","lw_1f311f84bbeecffa","2026-05-09 21:14:00","2026-05-09 20:14:31","","LIVE","","2026-05-09 20:14:15","2026-05-09 21:14:31",NULL,NULL);
 
 
 
@@ -1182,6 +1186,8 @@ INSERT INTO users VALUES("15","3","student2@learnway.com","$2y$13$vM1DHmktFY6ZFm
 INSERT INTO users VALUES("16","1","zrafiabdeslem@gmail.com","$2y$13$Grft3uUSaNZY5O.Kzuyk3O215pcxau.tU0jeruvMwYPn88A3L.A.K","Zrafi","Abdeslem","esprim-logo-69fffe82da168.png","","","","","","1","","2026-05-04 21:12:27");
 INSERT INTO users VALUES("17","3","zrafistudent@gmail.com","$2y$13$hFEQY6QvuO.jmoKyL/Fy6ufD4uC8.2hqmfIubUUY1DkNUaURDksDi","Zrafi","Student","z2-69fff70bc4746.jpg","","","","","","1","","2026-05-04 21:26:40");
 INSERT INTO users VALUES("18","2","zrafiteacher@gmail.com","$2y$13$p2u1/k8Uc5BQELJMt60HnOju6LxykYq9DLk0FVu2FSqB1okhy/C4G","Zrafi","teacher","","","","","","","1","","2026-05-04 21:27:11");
+
+SET FOREIGN_KEY_CHECKS=1;
 
 
 

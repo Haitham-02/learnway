@@ -52,15 +52,9 @@ export default class extends Controller {
 
             console.log('SocketController: Inserting message from other user (ID:', messageId, ')');
 
-            // Adjust styling for messages from other users
-            messageWrapper.style.alignItems = 'flex-start';
-            messageWrapper.classList.remove('message-mine');
-            messageWrapper.classList.add('message-theirs');
-            const content = messageWrapper.querySelector('.message-content');
-            content.style.background = 'var(--m3-surface-container-high)';
-            content.style.color = 'var(--m3-on-surface)';
-            content.style.borderBottomRightRadius = '20px';
-            content.style.borderBottomLeftRadius = '4px';
+            // No need to manually adjust styling anymore!
+            // The server now renders the broadcasted HTML with `forceTheirs=true`
+            // so it arrives perfectly styled as a received message.
 
             this.element.insertAdjacentHTML('beforeend', messageWrapper.outerHTML);
             this.element.scrollTop = this.element.scrollHeight;

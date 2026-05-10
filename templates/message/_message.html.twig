@@ -1,8 +1,10 @@
-{% set isMine = app.user and message.user.id == app.user.id %}
+{% set forceTheirs = forceTheirs|default(false) %}
+{% set isMine = not forceTheirs and app.user and message.user.id == app.user.id %}
 {% set isGroup = message.conversation.type == 'group' %}
 
 <div class="message-wrapper {% if isMine %}message-mine{% else %}message-theirs{% endif %}" 
      data-message-id="{{ message.id }}"
+     data-sender-id="{{ message.user.id }}"
      style="display: flex; gap: 8px; align-items: flex-end; margin-bottom: 8px; {% if isMine %}flex-direction: row-reverse;{% endif %} max-width: 85%;">
     
     {# ── SENDER AVATAR ── #}
