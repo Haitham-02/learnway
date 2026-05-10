@@ -161,6 +161,7 @@ class MessageController extends AbstractController
                         'room' => 'conversation_' . $conversation->getId(),
                         'html' => $this->renderView('message/_message.html.twig', [
                             'message' => $message,
+                            'forceTheirs' => true,
                         ])
                     ]);
                     $redis->publish('chat-messages', $messageData);

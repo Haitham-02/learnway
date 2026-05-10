@@ -78,7 +78,7 @@ class AiAssistantController extends AbstractController
             'original_name' => $originalName
         ]);
 
-        $summary = "✅ File indexed successfully.";
+        $summary = "[ICON:check_circle_green] File indexed successfully.";
         if (!empty($extractedText)) {
             $summary = $this->orchestrationService->summarizeDocument($user, $originalName, $extractedText);
         }

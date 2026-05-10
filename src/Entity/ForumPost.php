@@ -35,7 +35,15 @@ class ForumPost
 
     public function getClasse(): ?Classe
     {
-        return $this->classe;
+        try {
+            if ($this->classe !== null) {
+                // Trigger proxy initialization by accessing a mapped field
+                $this->classe->getName();
+            }
+            return $this->classe;
+        } catch (\Doctrine\ORM\EntityNotFoundException $e) {
+            return null;
+        }
     }
 
     public function setClasse(?Classe $classe): self

@@ -4,29 +4,29 @@
 
 {% if role == 'admin' %}
     {% set suggestions = [
-        { icon: '📊', text: 'How many active students do we have?' },
-        { icon: '🛡️', text: 'Are there any forum posts pending approval?' },
-        { icon: '📢', text: 'Show me an overview of recent announcements.' },
-        { icon: '🧑‍🏫', text: 'Who are the most active teachers?' }
+        { icon: 'bar_chart', text: 'How many active students do we have?' },
+        { icon: 'admin_panel_settings', text: 'Are there any forum posts pending approval?' },
+        { icon: 'campaign', text: 'Show me an overview of recent announcements.' },
+        { icon: 'person_play', text: 'Who are the most active teachers?' }
     ] %}
-    {% set welcome_msg = "👋 Hi **" ~ app.user.first_name ~ "**! I'm your **Learnway Copilot**.<br><br>As an **Admin**, I can help you monitor student activity, manage forum moderation, and track platform engagement. How can I assist you today?" %}
+    {% set welcome_msg = "<span class=\"material-symbols-rounded\" style=\"vertical-align: middle;\">&#xe766;</span> Hi <strong>" ~ app.user.first_name ~ "</strong>! I'm your <strong>Learnway Copilot</strong>.<br><br>As an <strong>Admin</strong>, I can help you monitor student activity, manage forum moderation, and track platform engagement. How can I assist you today?" %}
 {% elseif role == 'teacher' %}
     {% set suggestions = [
-        { icon: '📅', text: 'Show me my upcoming classes.' },
-        { icon: '📝', text: 'Are there any new assignment submissions?' },
-        { icon: '💬', text: "What's the engagement in my forum topics?" },
-        { icon: '📢', text: 'Help me draft an announcement for my students.' }
+        { icon: 'calendar_month', text: 'Show me my upcoming classes.' },
+        { icon: 'assignment', text: 'Are there any new assignment submissions?' },
+        { icon: 'forum', text: "What's the engagement in my forum topics?" },
+        { icon: 'campaign', text: 'Help me draft an announcement for my students.' }
     ] %}
-    {% set welcome_msg = "👋 Hi **" ~ app.user.first_name ~ "**! I'm your **Learnway Copilot**.<br><br>As a **Teacher**, I'm here to help you manage your classes, track student progress, and facilitate forum discussions. What's on your agenda?" %}
+    {% set welcome_msg = "<span class=\"material-symbols-rounded\" style=\"vertical-align: middle;\">&#xe766;</span> Hi <strong>" ~ app.user.first_name ~ "</strong>! I'm your <strong>Learnway Copilot</strong>.<br><br>As a <strong>Teacher</strong>, I'm here to help you manage your classes, track student progress, and facilitate forum discussions. What's on your agenda?" %}
 {% else %}
     {% set suggestions = [
-        { icon: '📚', text: 'What are my current lessons?' },
-        { icon: '📋', text: 'Show my upcoming assignments' },
-        { icon: '📡', text: 'Any upcoming livestreams?' },
-        { icon: '💬', text: "What's new in the forum?" },
-        { icon: '📢', text: 'Any announcements for me?' }
+        { icon: 'menu_book', text: 'What are my current lessons?' },
+        { icon: 'assignment', text: 'Show my upcoming assignments' },
+        { icon: 'videocam', text: 'Any upcoming livestreams?' },
+        { icon: 'forum', text: "What's new in the forum?" },
+        { icon: 'campaign', text: 'Any announcements for me?' }
     ] %}
-    {% set welcome_msg = "👋 Hi **" ~ app.user.first_name ~ "**! I'm your **Learnway Copilot**.<br><br>I have full access to your classes, assignments, lessons, livestreams, forum, and messages. Ask me anything!" %}
+    {% set welcome_msg = "<span class=\"material-symbols-rounded\" style=\"vertical-align: middle;\">&#xe766;</span> Hi <strong>" ~ app.user.first_name ~ "</strong>! I'm your <strong>Learnway Copilot</strong>.<br><br>I have full access to your classes, assignments, lessons, livestreams, forum, and messages. Ask me anything!" %}
 {% endif %}
 
 <div id="learnway-copilot"
@@ -234,7 +234,7 @@
 .copilot-bubble--ai {
     background: rgba(42, 68, 148, 0.18);
     border: 1px solid rgba(78, 165, 217, 0.2);
-    color: #e0f2fe;
+    color: white;
     border-radius: 16px 16px 16px 4px;
 }
 .copilot-bubble--ai code {
@@ -244,8 +244,8 @@
 }
 .copilot-bubble--ai ul { margin: 6px 0; padding-left: 18px; }
 .copilot-bubble--ai li { margin-bottom: 3px; }
-.copilot-bubble--ai strong { color: #7dd3fc; }
-.copilot-heading { font-weight: 600; color: #4ea5d9; font-size: 14px; margin: 6px 0 2px; }
+.copilot-bubble--ai strong { font-weight: 600; }
+.copilot-heading { font-weight: 600; font-size: 14px; margin: 6px 0 2px; }
 .copilot-bubble--user {
     background: linear-gradient(135deg, #224870, #2a4494);
     color: white; border-radius: 16px 16px 4px 16px;
