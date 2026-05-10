@@ -17,7 +17,7 @@
             <div style="width: 240px; margin: 0 auto 24px auto;">
                 <img src="{{ asset('images/LearnWay logo full.png') }}" alt="LearnWay Logo" style="width: 100%; height: auto; display: block;">
             </div>
-            <h1 style="margin: 0; font-size: 1.75rem; font-weight: 500; color: #122c34;">Welcome to LearnWay</h1>
+            <h1 style="margin: 0; font-size: 1.75rem; font-weight: 500; color: #122c34;">Welcome</h1>
             <p style="margin: 8px 0 0; color: #4b636e; font-size: 0.9375rem;">Sign in to manage your academy</p>
         </div>
 
@@ -34,7 +34,7 @@
             <div style="display: flex; flex-direction: column; gap: 8px;">
                 <label for="email" style="font-size: 0.75rem; font-weight: 600; color: #224870; letter-spacing: 0.5px;">EMAIL ADDRESS</label>
                 <input type="email" id="email" name="email" value="{{ last_username }}" required autofocus 
-                       style="width: 100%; height: 56px; padding: 0 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 1rem; color: #1e293b; outline: none; transition: all 0.2s;"
+                       style="width: 100%; height: 56px; padding: 0 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 1rem; color: #1e293b; outline: none; transition: all 0.2s; box-sizing: border-box;"
                        onfocus="this.style.borderColor='#224870'; this.style.boxShadow='0 0 0 3px rgba(34, 72, 112, 0.1)'; this.style.background='#ffffff'"
                        onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'; this.style.background='#f8fafc'"
                        placeholder="haitham@learnway.com">
@@ -84,6 +84,11 @@
         
         <div style="margin-top: 40px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 24px;">
             <p style="font-size: 0.875rem; color: #64748b;">Don't have an account? <a href="#" style="color: #224870; text-decoration: none; font-weight: 600;">Contact Administrator</a></p>
+            <a href="{{ path('app_home') }}" style="display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 0.875rem; color: #64748b; text-decoration: none; transition: color 0.2s;"
+               onmouseover="this.style.color='#224870'" onmouseout="this.style.color='#64748b'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+                Back to Home
+            </a>
         </div>
     </div>
 </div>

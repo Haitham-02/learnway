@@ -12,9 +12,8 @@
 
     <!-- Navbar -->
     <nav>
-        <a href="/" class="logo" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
-            <img src="{{ asset('images/LearnWay logo.png') }}" alt="LearnWay Logo" style="height: 40px; width: auto;">
-            <span class="brand-text" style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">LearnWay</span>
+        <a href="/" class="logo" style="text-decoration: none;">
+            <img src="{{ asset('images/LearnWay logo full.png') }}" alt="LearnWay Logo" style="height: 50px; width: auto; display: block;">
         </a>
         <ul class="nav-links">
             <li><a href="#features">Features</a></li>
@@ -28,16 +27,144 @@
     </nav>
 
     <!-- Hero Section -->
-    <header class="hero">
-        <div class="hero-content fade-in">
-            <h1>Unlock Your Potential with <span>LearnWay</span></h1>
-            <p>The all-in-one platform for modern education. Empowering teachers and students through real-time collaboration and intuitive learning tools.</p>
+    <header class="hero" style="background: linear-gradient(135deg, #0d1b2a 0%, #122c34 55%, #1a3a5e 100%); position: relative; overflow: hidden; margin-top: 0; padding-top: 90px;">
+        <!-- Glow blobs -->
+        <div style="position: absolute; top: -100px; right: 5%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(78,165,217,0.12) 0%, transparent 70%); pointer-events: none;"></div>
+        <div style="position: absolute; bottom: -80px; left: 5%; width: 350px; height: 350px; background: radial-gradient(circle, rgba(68,207,203,0.09) 0%, transparent 70%); pointer-events: none;"></div>
+
+        <div class="hero-content fade-in" style="position: relative; z-index: 1;">
+            <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(78,165,217,0.12); border: 1px solid rgba(78,165,217,0.25); border-radius: 50px; padding: 6px 16px; margin-bottom: 1.5rem;">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: #44cfcb; display: inline-block; animation: pulse-dot 1.5s infinite;"></span>
+                <span style="font-size: 0.8rem; font-weight: 600; color: #4ea5d9; letter-spacing: 0.05em;">ALL-IN-ONE ACADEMY PLATFORM</span>
+            </div>
+            <h1 style="color: #f0f9ff;">Unlock Your Potential with <span style="background: linear-gradient(90deg, #4ea5d9, #44cfcb); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">LearnWay</span></h1>
+            <p style="color: rgba(186,230,253,0.8);">The all-in-one platform for modern education. Empowering teachers and students through real-time collaboration and intuitive learning tools.</p>
             <div class="hero-btns">
-                <a href="{{ path('app_login') }}" class="btn btn-register">Start Learning Now</a>
+                <a href="{{ path('app_login') }}" class="btn" style="background: linear-gradient(135deg, #4ea5d9, #44cfcb); color: #0d1b2a; font-weight: 700; border-radius: 50px; padding: 0.9rem 2.2rem; box-shadow: 0 8px 28px rgba(68,207,203,0.35); transition: all 0.25s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 14px 36px rgba(68,207,203,0.5)';" onmouseout="this.style.transform=''; this.style.boxShadow='0 8px 28px rgba(68,207,203,0.35)';">Start Learning Now</a>
             </div>
         </div>
-        <div class="hero-image">
-            <img src="{{ asset('images/landing_hero.png') }}" alt="LearnWay Hero Illustration">
+
+        <!-- Hero Visual: Platform Dashboard Mockup (Admin, 1.5x) -->
+        <div class="hero-image" style="animation: float 4s ease-in-out infinite; position: relative; z-index: 1;">
+            <div style="background: #0d1b2a; border: 1px solid rgba(78,165,217,0.2); border-radius: 20px; overflow: hidden; box-shadow: 0 32px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(78,165,217,0.12); width: 100%; max-width: 720px;">
+
+                <!-- Window bar -->
+                <div style="background: linear-gradient(135deg, #0f2338, #162d4a); padding: 14px 20px; border-bottom: 1px solid rgba(78,165,217,0.12); display: flex; align-items: center; gap: 8px;">
+                    <span style="width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; display: inline-block;"></span>
+                    <span style="width: 12px; height: 12px; border-radius: 50%; background: #febc2e; display: inline-block;"></span>
+                    <span style="width: 12px; height: 12px; border-radius: 50%; background: #28c840; display: inline-block;"></span>
+                    <span style="flex: 1; background: rgba(78,165,217,0.08); border-radius: 6px; height: 26px; margin-left: 10px; display: flex; align-items: center; padding: 0 14px;">
+                        <span style="font-size: 12px; color: rgba(186,230,253,0.4);">learnway.academy / admin / dashboard</span>
+                    </span>
+                </div>
+
+                <!-- Dashboard body -->
+                <div style="display: flex; height: 480px;">
+                    <!-- Sidebar -->
+                    <div style="width: 78px; background: rgba(15,35,56,0.8); border-right: 1px solid rgba(78,165,217,0.1); display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 20px 0;">
+                        <img src="{{ asset('images/LearnWay logo.png') }}" style="width: 36px; height: 36px; object-fit: contain; margin-bottom: 6px;">
+                        <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(78,165,217,0.2); display: flex; align-items: center; justify-content: center; font-size: 18px;" title="Dashboard">🏠</div>
+                        <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(42,68,148,0.4); display: flex; align-items: center; justify-content: center; font-size: 18px;" title="Users">👥</div>
+                        <div style="width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; opacity: 0.5;" title="Schedule">📅</div>
+                        <div style="width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; opacity: 0.5;" title="Forum">💬</div>
+                        <div style="width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; opacity: 0.5;" title="Announcements">📢</div>
+                        <div style="width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; opacity: 0.5;" title="Curriculum">📚</div>
+                    </div>
+
+                    <!-- Main content -->
+                    <div style="flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 14px; overflow: hidden;">
+
+                        <!-- Welcome bar -->
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-size: 16px; font-weight: 700; color: #e0f2fe;">Good morning, Admin 👋</div>
+                                <div style="font-size: 11px; color: rgba(186,230,253,0.5);">Sunday · LearnWay Control Center</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="background: rgba(68,207,203,0.12); border: 1px solid rgba(68,207,203,0.3); border-radius: 20px; padding: 3px 10px; font-size: 10px; color: #44cfcb; font-weight: 600;">● SYSTEM ONLINE</div>
+                                <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #224870, #4ea5d9); display: flex; align-items: center; justify-content: center; font-size: 13px; color: white; font-weight: 700;">A</div>
+                            </div>
+                        </div>
+
+                        <!-- Stat cards — admin metrics -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px;">
+                            <div style="background: rgba(42,68,148,0.25); border: 1px solid rgba(78,165,217,0.15); border-radius: 12px; padding: 14px 10px; text-align: center;">
+                                <div style="font-size: 1.5rem; font-weight: 800; color: #44cfcb;">248</div>
+                                <div style="font-size: 10px; color: rgba(186,230,253,0.6); margin-top: 2px;">Students</div>
+                            </div>
+                            <div style="background: rgba(42,68,148,0.25); border: 1px solid rgba(78,165,217,0.15); border-radius: 12px; padding: 14px 10px; text-align: center;">
+                                <div style="font-size: 1.5rem; font-weight: 800; color: #4ea5d9;">32</div>
+                                <div style="font-size: 10px; color: rgba(186,230,253,0.6); margin-top: 2px;">Teachers</div>
+                            </div>
+                            <div style="background: rgba(42,68,148,0.25); border: 1px solid rgba(78,165,217,0.15); border-radius: 12px; padding: 14px 10px; text-align: center;">
+                                <div style="font-size: 1.5rem; font-weight: 800; color: #7dd3fc;">18</div>
+                                <div style="font-size: 10px; color: rgba(186,230,253,0.6); margin-top: 2px;">Classes Today</div>
+                            </div>
+                            <div style="background: rgba(42,68,148,0.25); border: 1px solid rgba(78,165,217,0.15); border-radius: 12px; padding: 14px 10px; text-align: center;">
+                                <div style="font-size: 1.5rem; font-weight: 800; color: #f0f9ff;">5</div>
+                                <div style="font-size: 10px; color: rgba(186,230,253,0.6); margin-top: 2px;">Pending Posts</div>
+                            </div>
+                        </div>
+
+                        <!-- Two column layout -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; overflow: hidden;">
+
+                            <!-- Recent Activity -->
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <div style="font-size: 10px; font-weight: 600; color: rgba(186,230,253,0.5); letter-spacing: 0.06em; text-transform: uppercase;">Recent Activity</div>
+                                <div style="display: flex; flex-direction: column; gap: 6px;">
+                                    <div style="background: rgba(78,165,217,0.1); border: 1px solid rgba(78,165,217,0.15); border-radius: 8px; padding: 9px 12px; display: flex; align-items: center; gap: 8px;">
+                                        <span style="font-size: 13px;">👤</span>
+                                        <div>
+                                            <div style="font-size: 11px; color: #e0f2fe; font-weight: 500;">New student enrolled</div>
+                                            <div style="font-size: 9px; color: rgba(186,230,253,0.4);">Class 10-B · 2 mins ago</div>
+                                        </div>
+                                    </div>
+                                    <div style="background: rgba(42,68,148,0.15); border: 1px solid rgba(78,165,217,0.1); border-radius: 8px; padding: 9px 12px; display: flex; align-items: center; gap: 8px;">
+                                        <span style="font-size: 13px;">🛡️</span>
+                                        <div>
+                                            <div style="font-size: 11px; color: #e0f2fe; font-weight: 500;">Forum post flagged</div>
+                                            <div style="font-size: 9px; color: rgba(186,230,253,0.4);">Awaiting review · 15 mins ago</div>
+                                        </div>
+                                    </div>
+                                    <div style="background: rgba(42,68,148,0.15); border: 1px solid rgba(78,165,217,0.1); border-radius: 8px; padding: 9px 12px; display: flex; align-items: center; gap: 8px;">
+                                        <span style="font-size: 13px;">📢</span>
+                                        <div>
+                                            <div style="font-size: 11px; color: #e0f2fe; font-weight: 500;">Announcement published</div>
+                                            <div style="font-size: 9px; color: rgba(186,230,253,0.4);">All students · 1 hr ago</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Platform status -->
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <div style="font-size: 10px; font-weight: 600; color: rgba(186,230,253,0.5); letter-spacing: 0.06em; text-transform: uppercase;">Platform Status</div>
+                                <div style="display: flex; flex-direction: column; gap: 6px;">
+                                    <div style="background: rgba(42,68,148,0.15); border: 1px solid rgba(78,165,217,0.1); border-radius: 8px; padding: 9px 12px; display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-size: 11px; color: rgba(186,230,253,0.8);">📡 Live Streams</span>
+                                        <span style="background: rgba(68,207,203,0.15); color: #44cfcb; font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 20px;">4 ACTIVE</span>
+                                    </div>
+                                    <div style="background: rgba(42,68,148,0.15); border: 1px solid rgba(78,165,217,0.1); border-radius: 8px; padding: 9px 12px; display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-size: 11px; color: rgba(186,230,253,0.8);">💬 Forum Posts</span>
+                                        <span style="color: #7dd3fc; font-size: 11px; font-weight: 700;">128</span>
+                                    </div>
+                                    <div style="background: rgba(42,68,148,0.15); border: 1px solid rgba(78,165,217,0.1); border-radius: 8px; padding: 9px 12px; display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-size: 11px; color: rgba(186,230,253,0.8);">📚 Courses Active</span>
+                                        <span style="color: #7dd3fc; font-size: 11px; font-weight: 700;">47</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Copilot mini -->
+                        <div style="background: linear-gradient(135deg, rgba(42,68,148,0.3), rgba(78,165,217,0.1)); border: 1px solid rgba(78,165,217,0.2); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 12px; margin-top: auto;">
+                            <img src="{{ asset('images/LearnWay logo.png') }}" style="width: 22px; height: 22px; object-fit: contain; flex-shrink: 0;">
+                            <span style="font-size: 12px; color: rgba(186,230,253,0.8);">Copilot: <em style="color: #7dd3fc;">"5 forum posts are pending review. 4 livestreams running now."</em></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -45,55 +172,375 @@
     <section id="features" class="features">
         <div class="section-header">
             <h2>Everything You Need to Succeed</h2>
+            <p style="color: #64748b; font-size: 1.1rem; margin-top: 0.75rem;">One platform. Every tool your academy needs.</p>
         </div>
-        <div class="feature-grid">
+
+        <!-- Logo Banner -->
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <img src="{{ asset('images/LearnWay logo full.png') }}" alt="LearnWay" style="height: 90px; width: auto; display: inline-block; filter: drop-shadow(0 8px 24px rgba(42,68,148,0.18));">
+        </div>
+
+        <div class="feature-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
             <div class="feature-card">
                 <span class="feature-icon">💬</span>
-                <h3>Real-Time Discussion</h3>
-                <p>Engage with your peers and instructors instantly through our integrated messaging and forum systems.</p>
+                <h3>Community Forum</h3>
+                <p>Engage with peers and instructors through threaded discussions, upvotes, and real-time community interaction.</p>
             </div>
             <div class="feature-card">
                 <span class="feature-icon">📊</span>
                 <h3>Progress Tracking</h3>
-                <p>Stay on top of your studies with detailed analytics and progress reports for every course.</p>
+                <p>Stay on top of your studies with detailed analytics, chapter completion, and performance reports.</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">📅</span>
+                <h3>Smart Scheduling</h3>
+                <p>Automated academic timetables for students and teachers, with PDF export and conflict detection.</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">✉️</span>
+                <h3>Messaging</h3>
+                <p>Private direct messaging between students and teachers — fast, secure, and fully integrated.</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">📡</span>
+                <h3>Live Streaming</h3>
+                <p>Teachers can go live anytime. Students join real-time video classes directly from the platform.</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">📢</span>
+                <h3>Announcements</h3>
+                <p>Instant broadcast announcements from admins or teachers, visible to the right audience immediately.</p>
             </div>
             <div class="feature-card">
                 <span class="feature-icon">📁</span>
                 <h3>Smart Resources</h3>
-                <p>Access all your course materials, assignments, and announcements in one organized place.</p>
+                <p>All course materials, chapters, and assignments organized in one clean, searchable place.</p>
             </div>
             <div class="feature-card">
                 <span class="feature-icon">🛡️</span>
-                <h3>Secure Environment</h3>
-                <p>A safe and dedicated space for academic growth with role-based access and moderation.</p>
+                <h3>Role-Based Access</h3>
+                <p>Separate dashboards and controls for Admins, Teachers, and Students — safe and structured by design.</p>
             </div>
         </div>
     </section>
 
-    <!-- Stats Section -->
-    <section id="stats" class="stats">
-        <div class="stat-item">
-            <h3>10k+</h3>
-            <p>Active Students</p>
-        </div>
-        <div class="stat-item">
-            <h3>500+</h3>
-            <p>Expert Teachers</p>
-        </div>
-        <div class="stat-item">
-            <h3>100+</h3>
-            <p>Premium Courses</p>
+    <!-- AI Copilot Spotlight -->
+    <section style="padding: 100px 10%; background: linear-gradient(135deg, #0d1b2a 0%, #122c34 50%, #1a3a5e 100%); position: relative; overflow: hidden;">
+        <!-- Decorative glow blobs -->
+        <div style="position: absolute; top: -80px; right: -80px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(78,165,217,0.15) 0%, transparent 70%); pointer-events: none;"></div>
+        <div style="position: absolute; bottom: -60px; left: -60px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(68,207,203,0.1) 0%, transparent 70%); pointer-events: none;"></div>
+
+        <div style="display: flex; align-items: center; gap: 5rem; flex-wrap: wrap;">
+            <!-- Left: Text -->
+            <div style="flex: 1; min-width: 280px;">
+                <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(78,165,217,0.12); border: 1px solid rgba(78,165,217,0.25); border-radius: 50px; padding: 6px 16px; margin-bottom: 1.5rem;">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: #44cfcb; display: inline-block; animation: pulse-dot 1.5s infinite;"></span>
+                    <span style="font-size: 0.8rem; font-weight: 600; color: #4ea5d9; letter-spacing: 0.05em;">AI-POWERED</span>
+                </div>
+                <h2 style="font-size: 2.8rem; font-weight: 800; color: #f0f9ff; line-height: 1.15; margin-bottom: 1.25rem;">Meet Your<br><span style="background: linear-gradient(90deg, #4ea5d9, #44cfcb); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">LearnWay Copilot</span></h2>
+                <p style="color: rgba(186,230,253,0.8); font-size: 1.1rem; line-height: 1.7; margin-bottom: 2rem;">Your intelligent AI assistant lives right inside the platform. Ask about your schedule, get help with lessons, check announcements, or draft communications — all in natural language.</p>
+                <div style="display: flex; flex-direction: column; gap: 0.9rem;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(78,165,217,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">✅</div>
+                        <span style="color: rgba(186,230,253,0.9); font-size: 0.95rem;">Role-aware — different experience for Admin, Teacher & Student</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(78,165,217,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">✅</div>
+                        <span style="color: rgba(186,230,253,0.9); font-size: 0.95rem;">Context-aware using RAG — grounded in your real academy data</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(78,165,217,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">✅</div>
+                        <span style="color: rgba(186,230,253,0.9); font-size: 0.95rem;">Upload documents and ask questions from them instantly</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Right: Mockup Card -->
+            <div style="flex: 1; min-width: 280px; max-width: 420px;">
+                <div style="background: #0d1b2a; border: 1px solid rgba(78,165,217,0.2); border-radius: 20px; overflow: hidden; box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(78,165,217,0.15);">
+                    <!-- Header -->
+                    <div style="padding: 14px 16px; background: linear-gradient(135deg,#0f2338,#162d4a); border-bottom: 1px solid rgba(78,165,217,0.12); display: flex; align-items: center; gap: 10px;">
+                        <img src="{{ asset('images/LearnWay logo.png') }}" style="width: 26px; height: 26px; object-fit: contain;">
+                        <div>
+                            <div style="font-size: 13px; font-weight: 600; color: #e0f2fe;">Learnway Copilot</div>
+                            <div style="font-size: 11px; color: rgba(186,230,253,0.5);">Your AI-powered study assistant</div>
+                        </div>
+                    </div>
+                    <!-- Messages -->
+                    <div style="padding: 18px 16px; display: flex; flex-direction: column; gap: 14px;">
+                        <div style="display: flex; gap: 8px; align-items: flex-end;">
+                            <div style="width: 28px; height: 28px; border-radius: 10px; background: rgba(42,68,148,0.4); display: flex; align-items: center; justify-content: center; flex-shrink:0;">
+                                <img src="{{ asset('images/LearnWay logo.png') }}" style="width: 16px; height: 16px; object-fit: contain;">
+                            </div>
+                            <div style="background: rgba(42,68,148,0.18); border: 1px solid rgba(78,165,217,0.2); color: #e0f2fe; padding: 10px 14px; border-radius: 16px 16px 16px 4px; font-size: 13px; line-height: 1.5; max-width: 82%;">
+                                👋 Hi <strong style="color:#7dd3fc;">Zrafi</strong>! I'm your Learnway Copilot.<br><br>I have access to your classes, schedule, and forum. How can I help?
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: flex-end;">
+                            <div style="background: linear-gradient(135deg,#224870,#2a4494); color: white; padding: 10px 14px; border-radius: 16px 16px 4px 16px; font-size: 13px; max-width: 82%;">
+                                What classes do I have tomorrow?
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: flex-end;">
+                            <div style="width: 28px; height: 28px; border-radius: 10px; background: rgba(42,68,148,0.4); display: flex; align-items: center; justify-content: center; flex-shrink:0;">
+                                <img src="{{ asset('images/LearnWay logo.png') }}" style="width: 16px; height: 16px; object-fit: contain;">
+                            </div>
+                            <div style="background: rgba(42,68,148,0.18); border: 1px solid rgba(78,165,217,0.2); color: #e0f2fe; padding: 10px 14px; border-radius: 16px 16px 16px 4px; font-size: 13px; line-height: 1.5; max-width: 82%;">
+                                📅 You have <strong style="color:#7dd3fc;">3 classes</strong> tomorrow:<br>• Math – 08:00<br>• Physics – 10:30<br>• English – 13:00
+                            </div>
+                        </div>
+                        <!-- Typing dots -->
+                        <div style="display: flex; gap: 8px; align-items: flex-end;">
+                            <div style="width: 28px; height: 28px; border-radius: 10px; background: rgba(42,68,148,0.4); display: flex; align-items: center; justify-content: center; flex-shrink:0;">
+                                <img src="{{ asset('images/LearnWay logo.png') }}" style="width: 16px; height: 16px; object-fit: contain;">
+                            </div>
+                            <div style="background: rgba(42,68,148,0.18); border: 1px solid rgba(78,165,217,0.2); padding: 12px 16px; border-radius: 16px 16px 16px 4px; display: flex; gap: 5px; align-items: center;">
+                                <span style="width:6px;height:6px;border-radius:50%;background:#4ea5d9;display:inline-block;animation:bounce-dot 1.2s infinite;"></span>
+                                <span style="width:6px;height:6px;border-radius:50%;background:#4ea5d9;display:inline-block;animation:bounce-dot 1.2s 0.2s infinite;"></span>
+                                <span style="width:6px;height:6px;border-radius:50%;background:#4ea5d9;display:inline-block;animation:bounce-dot 1.2s 0.4s infinite;"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="cta">
-        <div class="cta-box">
-            <h2>Ready to transform your education?</h2>
-            <p>Join thousands of students and educators today on LearnWay.</p>
-            <a href="{{ path('app_login') }}" class="btn btn-register" style="background: white; color: var(--primary);">Join LearnWay Today</a>
+    <!-- Platform Modules Strip -->
+    <section style="padding: 80px 10%; background: #f8fafc;">
+        <div class="section-header">
+            <h2 style="font-size: 2.2rem;">One Ecosystem. Endless Possibilities.</h2>
+            <p style="color: #64748b; margin-top: 0.75rem; font-size: 1.05rem;">From scheduling to livestreaming — everything works together, seamlessly.</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-top: 3rem;">
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.75rem 1.5rem; text-align: center; transition: all 0.25s; cursor: default;" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 16px 40px rgba(42,68,148,0.12)'; this.style.borderColor='#4ea5d9';" onmouseout="this.style.transform=''; this.style.boxShadow=''; this.style.borderColor='#e2e8f0';">
+                <div style="font-size: 2rem; margin-bottom: 0.75rem;">🤖</div>
+                <div style="font-weight: 700; color: #122c34; margin-bottom: 0.25rem;">AI Copilot</div>
+                <div style="font-size: 0.8rem; color: #94a3b8;">Smart assistant for every role</div>
+            </div>
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.75rem 1.5rem; text-align: center; transition: all 0.25s; cursor: default;" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 16px 40px rgba(42,68,148,0.12)'; this.style.borderColor='#4ea5d9';" onmouseout="this.style.transform=''; this.style.boxShadow=''; this.style.borderColor='#e2e8f0';">
+                <div style="font-size: 2rem; margin-bottom: 0.75rem;">📅</div>
+                <div style="font-weight: 700; color: #122c34; margin-bottom: 0.25rem;">Timetable</div>
+                <div style="font-size: 0.8rem; color: #94a3b8;">Auto-generated + PDF export</div>
+            </div>
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.75rem 1.5rem; text-align: center; transition: all 0.25s; cursor: default;" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 16px 40px rgba(42,68,148,0.12)'; this.style.borderColor='#4ea5d9';" onmouseout="this.style.transform=''; this.style.boxShadow=''; this.style.borderColor='#e2e8f0';">
+                <div style="font-size: 2rem; margin-bottom: 0.75rem;">📡</div>
+                <div style="font-weight: 700; color: #122c34; margin-bottom: 0.25rem;">Livestreams</div>
+                <div style="font-size: 0.8rem; color: #94a3b8;">Real-time video classes</div>
+            </div>
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.75rem 1.5rem; text-align: center; transition: all 0.25s; cursor: default;" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 16px 40px rgba(42,68,148,0.12)'; this.style.borderColor='#4ea5d9';" onmouseout="this.style.transform=''; this.style.boxShadow=''; this.style.borderColor='#e2e8f0';">
+                <div style="font-size: 2rem; margin-bottom: 0.75rem;">💬</div>
+                <div style="font-weight: 700; color: #122c34; margin-bottom: 0.25rem;">Forum</div>
+                <div style="font-size: 0.8rem; color: #94a3b8;">Moderated community space</div>
+            </div>
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.75rem 1.5rem; text-align: center; transition: all 0.25s; cursor: default;" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 16px 40px rgba(42,68,148,0.12)'; this.style.borderColor='#4ea5d9';" onmouseout="this.style.transform=''; this.style.boxShadow=''; this.style.borderColor='#e2e8f0';">
+                <div style="font-size: 2rem; margin-bottom: 0.75rem;">✉️</div>
+                <div style="font-weight: 700; color: #122c34; margin-bottom: 0.25rem;">Messaging</div>
+                <div style="font-size: 0.8rem; color: #94a3b8;">Private direct messages</div>
+            </div>
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.75rem 1.5rem; text-align: center; transition: all 0.25s; cursor: default;" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 16px 40px rgba(42,68,148,0.12)'; this.style.borderColor='#4ea5d9';" onmouseout="this.style.transform=''; this.style.boxShadow=''; this.style.borderColor='#e2e8f0';">
+                <div style="font-size: 2rem; margin-bottom: 0.75rem;">📚</div>
+                <div style="font-weight: 700; color: #122c34; margin-bottom: 0.25rem;">Curriculum</div>
+                <div style="font-size: 0.8rem; color: #94a3b8;">Subjects, chapters & lessons</div>
+            </div>
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.75rem 1.5rem; text-align: center; transition: all 0.25s; cursor: default;" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 16px 40px rgba(42,68,148,0.12)'; this.style.borderColor='#4ea5d9';" onmouseout="this.style.transform=''; this.style.boxShadow=''; this.style.borderColor='#e2e8f0';">
+                <div style="font-size: 2rem; margin-bottom: 0.75rem;">📝</div>
+                <div style="font-weight: 700; color: #122c34; margin-bottom: 0.25rem;">Assignments</div>
+                <div style="font-size: 0.8rem; color: #94a3b8;">Homework, quizzes & exams</div>
+            </div>
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.75rem 1.5rem; text-align: center; transition: all 0.25s; cursor: default;" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 16px 40px rgba(42,68,148,0.12)'; this.style.borderColor='#4ea5d9';" onmouseout="this.style.transform=''; this.style.boxShadow=''; this.style.borderColor='#e2e8f0';">
+                <div style="font-size: 2rem; margin-bottom: 0.75rem;">📢</div>
+                <div style="font-weight: 700; color: #122c34; margin-bottom: 0.25rem;">Announcements</div>
+                <div style="font-size: 0.8rem; color: #94a3b8;">Instant broadcasts by role</div>
+            </div>
         </div>
     </section>
+
+    <!-- Impact Section -->
+    <section id="stats" style="padding: 90px 10%; background: linear-gradient(135deg, #0d1b2a 0%, #122c34 50%, #1a3a5e 100%); position: relative; overflow: hidden;">
+        <div style="position: absolute; top: -80px; right: -80px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(78,165,217,0.12) 0%, transparent 70%); pointer-events: none;"></div>
+        <div style="position: absolute; bottom: -60px; left: -60px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(68,207,203,0.08) 0%, transparent 70%); pointer-events: none;"></div>
+        <div style="text-align: center; margin-bottom: 3.5rem;">
+            <h2 style="font-size: 2.2rem; color: white; font-weight: 800;">Built for Real Academies</h2>
+            <p style="color: rgba(255,255,255,0.7); margin-top: 0.75rem; font-size: 1.05rem;">Every feature was designed around how real teachers, students, and admins actually work.</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem;">
+            <div style="background: rgba(42,68,148,0.18); border: 1px solid rgba(78,165,217,0.2); border-radius: 20px; padding: 2rem 1.5rem; text-align: center; backdrop-filter: blur(10px); transition: all 0.25s;" onmouseover="this.style.background='rgba(78,165,217,0.15)'; this.style.borderColor='rgba(68,207,203,0.4)';" onmouseout="this.style.background='rgba(42,68,148,0.18)'; this.style.borderColor='rgba(78,165,217,0.2)';" >
+                <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">🤖</div>
+                <div style="font-size: 1.6rem; font-weight: 800; color: #44cfcb; margin-bottom: 0.3rem;">AI Copilot</div>
+                <div style="font-size: 0.9rem; color: rgba(186,230,253,0.8); line-height: 1.5;">Role-aware assistant powered by RAG — knows your academy's real data</div>
+            </div>
+            <div style="background: rgba(42,68,148,0.18); border: 1px solid rgba(78,165,217,0.2); border-radius: 20px; padding: 2rem 1.5rem; text-align: center; backdrop-filter: blur(10px); transition: all 0.25s;" onmouseover="this.style.background='rgba(78,165,217,0.15)'; this.style.borderColor='rgba(68,207,203,0.4)';" onmouseout="this.style.background='rgba(42,68,148,0.18)'; this.style.borderColor='rgba(78,165,217,0.2)';">
+                <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">📡</div>
+                <div style="font-size: 1.6rem; font-weight: 800; color: #44cfcb; margin-bottom: 0.3rem;">Live Classes</div>
+                <div style="font-size: 0.9rem; color: rgba(186,230,253,0.8); line-height: 1.5;">Real-time livestreaming so no lesson is ever missed, regardless of location</div>
+            </div>
+            <div style="background: rgba(42,68,148,0.18); border: 1px solid rgba(78,165,217,0.2); border-radius: 20px; padding: 2rem 1.5rem; text-align: center; backdrop-filter: blur(10px); transition: all 0.25s;" onmouseover="this.style.background='rgba(78,165,217,0.15)'; this.style.borderColor='rgba(68,207,203,0.4)';" onmouseout="this.style.background='rgba(42,68,148,0.18)'; this.style.borderColor='rgba(78,165,217,0.2)';">
+                <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">📅</div>
+                <div style="font-size: 1.6rem; font-weight: 800; color: #44cfcb; margin-bottom: 0.3rem;">Smart Schedule</div>
+                <div style="font-size: 0.9rem; color: rgba(186,230,253,0.8); line-height: 1.5;">Auto-generated timetables with PDF export — no manual planning needed</div>
+            </div>
+            <div style="background: rgba(42,68,148,0.18); border: 1px solid rgba(78,165,217,0.2); border-radius: 20px; padding: 2rem 1.5rem; text-align: center; backdrop-filter: blur(10px); transition: all 0.25s;" onmouseover="this.style.background='rgba(78,165,217,0.15)'; this.style.borderColor='rgba(68,207,203,0.4)';" onmouseout="this.style.background='rgba(42,68,148,0.18)'; this.style.borderColor='rgba(78,165,217,0.2)';">
+                <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">🔐</div>
+                <div style="font-size: 1.6rem; font-weight: 800; color: #44cfcb; margin-bottom: 0.3rem;">3 Role System</div>
+                <div style="font-size: 0.9rem; color: rgba(186,230,253,0.8); line-height: 1.5;">Admin, Teacher, and Student each get a tailored, secure dashboard experience</div>
+            </div>
+            <div style="background: rgba(42,68,148,0.18); border: 1px solid rgba(78,165,217,0.2); border-radius: 20px; padding: 2rem 1.5rem; text-align: center; backdrop-filter: blur(10px); transition: all 0.25s;" onmouseover="this.style.background='rgba(78,165,217,0.15)'; this.style.borderColor='rgba(68,207,203,0.4)';" onmouseout="this.style.background='rgba(42,68,148,0.18)'; this.style.borderColor='rgba(78,165,217,0.2)';">
+                <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">💬</div>
+                <div style="font-size: 1.6rem; font-weight: 800; color: #44cfcb; margin-bottom: 0.3rem;">Full Forum</div>
+                <div style="font-size: 0.9rem; color: rgba(186,230,253,0.8); line-height: 1.5;">Moderated community forum with profanity filter, threads, and upvoting</div>
+            </div>
+            <div style="background: rgba(42,68,148,0.18); border: 1px solid rgba(78,165,217,0.2); border-radius: 20px; padding: 2rem 1.5rem; text-align: center; backdrop-filter: blur(10px); transition: all 0.25s;" onmouseover="this.style.background='rgba(78,165,217,0.15)'; this.style.borderColor='rgba(68,207,203,0.4)';" onmouseout="this.style.background='rgba(42,68,148,0.18)'; this.style.borderColor='rgba(78,165,217,0.2)';">
+                <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">📊</div>
+                <div style="font-size: 1.6rem; font-weight: 800; color: #44cfcb; margin-bottom: 0.3rem;">8+ Modules</div>
+                <div style="font-size: 0.9rem; color: rgba(186,230,253,0.8); line-height: 1.5;">Messaging, Curriculum, Announcements, Assignments, Enrollments &amp; more</div>
+            </div>
+        </div>
+    </section>
+    <!-- Dev Team Section -->
+    <section style="padding: 100px 10%; background: #f8fafc; position: relative; overflow: hidden;">
+        <!-- Subtle background decoration -->
+        <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #4ea5d9, #44cfcb, #4ea5d9); background-size: 200% 100%; animation: shimmer 3s linear infinite;"></div>
+
+        <div style="text-align: center; margin-bottom: 4rem;">
+            <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(42,68,148,0.08); border: 1px solid rgba(42,68,148,0.15); border-radius: 50px; padding: 6px 18px; margin-bottom: 1.25rem;">
+                <span style="font-size: 0.85rem; font-weight: 700; color: #224870; letter-spacing: 0.05em;">👨‍💻 THE TEAM BEHIND LEARNWAY</span>
+            </div>
+            <h2 style="font-size: 2.4rem; font-weight: 800; color: #122c34; margin-bottom: 0.75rem;">Built with Passion,<br><span style="background: linear-gradient(90deg, #224870, #4ea5d9); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Shipped with Pride</span></h2>
+            <p style="color: #64748b; font-size: 1.05rem; max-width: 520px; margin: 0 auto;">Four developers. One vision. A platform that changes how academies work.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 2rem; max-width: 1200px; margin: 0 auto;">
+
+            <!-- Zrafi -->
+            <div style="background: white; border-radius: 28px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; transition: all 0.35s; cursor: default; position: relative;"
+                 onmouseover="this.style.transform='translateY(-12px)'; this.style.boxShadow='0 24px 60px rgba(34,72,112,0.18)'; this.style.borderColor='#4ea5d9';"
+                 onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 24px rgba(0,0,0,0.06)'; this.style.borderColor='#e2e8f0';">
+                <!-- Color band -->
+                <div style="height: 6px; background: linear-gradient(90deg, #224870, #4ea5d9);"></div>
+                <!-- Photo -->
+                <div style="padding: 2rem 2rem 1rem; text-align: center;">
+                    <div style="width: 140px; height: 180px; border-radius: 16px; overflow: hidden; margin: 0 auto 1.25rem; border: 3px solid #e2e8f0; box-shadow: 0 8px 24px rgba(34,72,112,0.15);">
+                        <img src="{{ asset('images/Zrafi portrait.png') }}" alt="Zrafi Abdeslem" style="width: 100%; height: 100%; object-fit: cover; object-position: center top;">
+                    </div>
+                    <h3 style="font-size: 1.2rem; font-weight: 800; color: #122c34; margin: 0 0 0.25rem;">Zrafi Abdeslem</h3>
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(34,72,112,0.08); border-radius: 20px; padding: 4px 14px; margin-bottom: 1rem;">
+                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #4ea5d9; display: inline-block;"></span>
+                        <span style="font-size: 0.75rem; font-weight: 700; color: #224870; letter-spacing: 0.04em;">AI & CORE SYSTEMS</span>
+                    </div>
+                    <p style="font-size: 0.875rem; color: #64748b; line-height: 1.65; margin: 0;">Built the intelligent Copilot, the automated scheduling engine, and integrated livestreaming with advanced AI facial recognition.</p>
+                </div>
+                <!-- Tech stack -->
+                <div style="padding: 0 2rem 1.75rem; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;">
+                    <span style="background: #f1f5f9; color: #334155; font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;">Gemini AI</span>
+                    <span style="background: #f1f5f9; color: #334155; font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;">RAG Architecture</span>
+                    <span style="background: #f1f5f9; color: #334155; font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;">Qdrant</span>
+                    <span style="background: #f1f5f9; color: #334155; font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;">Jitsi</span>
+                    <span style="background: #f1f5f9; color: #334155; font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;">Symfony</span>
+                </div>
+            </div>
+
+            <!-- Yassine -->
+            <div style="background: white; border-radius: 28px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; transition: all 0.35s; cursor: default; position: relative;"
+                 onmouseover="this.style.transform='translateY(-12px)'; this.style.boxShadow='0 24px 60px rgba(34,72,112,0.18)'; this.style.borderColor='#4ea5d9';"
+                 onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 24px rgba(0,0,0,0.06)'; this.style.borderColor='#e2e8f0';">
+                <div style="height: 6px; background: linear-gradient(90deg, #4ea5d9, #44cfcb);"></div>
+                <div style="padding: 2rem 2rem 1rem; text-align: center;">
+                    <div style="width: 140px; height: 180px; border-radius: 16px; overflow: hidden; margin: 0 auto 1.25rem; border: 3px solid #e2e8f0; box-shadow: 0 8px 24px rgba(34,72,112,0.15);">
+                        <img src="{{ asset('images/Yassine portrait.png') }}" alt="Besbes Yassine" style="width: 100%; height: 100%; object-fit: cover; object-position: center top;">
+                    </div>
+                    <h3 style="font-size: 1.2rem; font-weight: 800; color: #122c34; margin: 0 0 0.25rem;">Besbes Yassine</h3>
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(78,165,217,0.1); border-radius: 20px; padding: 4px 14px; margin-bottom: 1rem;">
+                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #44cfcb; display: inline-block;"></span>
+                        <span style="font-size: 0.75rem; font-weight: 700; color: #2a6e8f; letter-spacing: 0.04em;">COMMUNICATION & SECURITY</span>
+                    </div>
+                    <p style="font-size: 0.875rem; color: #64748b; line-height: 1.65; margin: 0;">Developed the real-time messaging system and architected the robust authentication and role-based user management engine.</p>
+                </div>
+                <div style="padding: 0 2rem 1.75rem; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;">
+                    <span style="background: #f1f5f9; color: #334155; font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;">WebSockets</span>
+                    <span style="background: #f1f5f9; color: #334155; font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;">Security</span>
+                    <span style="background: #f1f5f9; color: #334155; font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;">HTMX</span>
+                    <span style="background: #f1f5f9; color: #334155; font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;">Redis</span>
+                </div>
+            </div>
+
+            <!-- Haithem -->
+            <div style="background: white; border-radius: 28px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; transition: all 0.35s; cursor: default; position: relative;"
+                 onmouseover="this.style.transform='translateY(-12px)'; this.style.boxShadow='0 24px 60px rgba(34,72,112,0.18)'; this.style.borderColor='#4ea5d9';"
+                 onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 24px rgba(0,0,0,0.06)'; this.style.borderColor='#e2e8f0';">
+                <div style="height: 6px; background: linear-gradient(90deg, #44cfcb, #224870);"></div>
+                <div style="padding: 2rem 2rem 1rem; text-align: center;">
+                    <div style="width: 140px; height: 180px; border-radius: 16px; overflow: hidden; margin: 0 auto 1.25rem; border: 3px solid #e2e8f0; box-shadow: 0 8px 24px rgba(34,72,112,0.15);">
+                        <img src="{{ asset('images/Haithem portrait.png') }}" alt="Harzallah Haithem" style="width: 100%; height: 100%; object-fit: cover; object-position: center top;">
+                    </div>
+                    <h3 style="font-size: 1.2rem; font-weight: 800; color: #122c34; margin: 0 0 0.25rem;">Harzallah Haithem</h3>
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(68,207,203,0.1); border-radius: 20px; padding: 4px 14px; margin-bottom: 1rem;">
+                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #224870; display: inline-block;"></span>
+                        <span style="font-size: 0.75rem; font-weight: 700; color: #1a5f5c; letter-spacing: 0.04em;">ACADEMIC & UX ENGINEER</span>
+                    </div>
+                    <p style="font-size: 0.875rem; color: #64748b; line-height: 1.65; margin: 0;">Created the curriculum management (subjects, lessons, assignments), the dynamic home page, the edit profile system, and the academic setup wizard.</p>
+                </div>
+                <div style="padding: 0 2rem 1.75rem; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;">
+                    <span style="background: #f1f5f9; color: #334155; font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;">Doctrine ORM</span>
+                    <span style="background: #f1f5f9; color: #334155; font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;">Twig</span>
+                    <span style="background: #f1f5f9; color: #334155; font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;">UI/UX</span>
+                    <span style="background: #f1f5f9; color: #334155; font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;">CSS</span>
+                </div>
+            </div>
+
+            <!-- Ali -->
+            <div style="background: white; border-radius: 28px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; transition: all 0.35s; cursor: default; position: relative;"
+                 onmouseover="this.style.transform='translateY(-12px)'; this.style.boxShadow='0 24px 60px rgba(34,72,112,0.18)'; this.style.borderColor='#4ea5d9';"
+                 onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 24px rgba(0,0,0,0.06)'; this.style.borderColor='#e2e8f0';">
+                <div style="height: 6px; background: linear-gradient(90deg, #122c34, #4ea5d9);"></div>
+                <div style="padding: 2rem 2rem 1rem; text-align: center;">
+                    <div style="width: 140px; height: 180px; border-radius: 16px; overflow: hidden; margin: 0 auto 1.25rem; border: 3px solid #e2e8f0; box-shadow: 0 8px 24px rgba(34,72,112,0.15);">
+                        <img src="{{ asset('images/Ali portrait.png') }}" alt="Zili Ali" style="width: 100%; height: 100%; object-fit: cover; object-position: center top;">
+                    </div>
+                    <h3 style="font-size: 1.2rem; font-weight: 800; color: #122c34; margin: 0 0 0.25rem;">Zili Ali</h3>
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(78,165,217,0.1); border-radius: 20px; padding: 4px 14px; margin-bottom: 1rem;">
+                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #4ea5d9; display: inline-block;"></span>
+                        <span style="font-size: 0.75rem; font-weight: 700; color: #122c34; letter-spacing: 0.04em;">COMMUNITY ENGINEER</span>
+                    </div>
+                    <p style="font-size: 0.875rem; color: #64748b; line-height: 1.65; margin: 0;">Designed and developed the interactive community forum, including the robust commenting, threaded discussions, and review systems.</p>
+                </div>
+                <div style="padding: 0 2rem 1.75rem; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;">
+                    <span style="background: #f1f5f9; color: #334155; font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;">MySQL</span>
+                    <span style="background: #f1f5f9; color: #334155; font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;">JavaScript</span>
+                    <span style="background: #f1f5f9; color: #334155; font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;">HTMX</span>
+                    <span style="background: #f1f5f9; color: #334155; font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;">Symfony</span>
+                </div>
+            </div>
+
+        </div>
+
+        <style>
+            @keyframes shimmer {
+                0% { background-position: -200% 0; }
+                100% { background-position: 200% 0; }
+            }
+        </style>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta" style="background: linear-gradient(135deg, #0d1b2a 0%, #122c34 50%, #1a3a5e 100%); position: relative; overflow: hidden;">
+        <div style="position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 600px; height: 300px; background: radial-gradient(circle, rgba(78,165,217,0.1) 0%, transparent 70%); pointer-events: none;"></div>
+        <div class="cta-box" style="background: rgba(42,68,148,0.2); border: 1px solid rgba(78,165,217,0.25); backdrop-filter: blur(12px); box-shadow: 0 32px 80px rgba(0,0,0,0.4);">
+            <h2 style="color: #f0f9ff;">Ready to transform your education?</h2>
+            <p style="color: rgba(186,230,253,0.8);">Join thousands of students and educators today on LearnWay.</p>
+            <a href="{{ path('app_login') }}" class="btn" style="background: linear-gradient(135deg, #4ea5d9, #44cfcb); color: #0d1b2a; font-weight: 700; border-radius: 50px; padding: 0.9rem 2.2rem; box-shadow: 0 8px 28px rgba(68,207,203,0.35); transition: all 0.25s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 14px 36px rgba(68,207,203,0.5)';" onmouseout="this.style.transform=''; this.style.boxShadow='0 8px 28px rgba(68,207,203,0.35)';">Join LearnWay Today</a>
+        </div>
+    </section>
+
+    <style>
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+        @keyframes bounce-dot {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-5px); opacity: 1; }
+        }
+    </style>
 
     <!-- Footer -->
     <footer>
