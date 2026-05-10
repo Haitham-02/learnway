@@ -39,9 +39,8 @@
 {# ── ADMIN SIDEBAR ── #}
 {% if app.user and is_granted('ROLE_ADMIN') and isAdminRoute %}
 <aside style="width: 280px; flex-shrink: 0; background-color: var(--m3-surface-container); color: var(--m3-on-surface); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; z-index: 40; border-right: 1px solid var(--m3-outline); transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
-    <div style="padding: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
-        <img src="{{ asset('images/LearnWay logo.png') }}" alt="LearnWay Logo" style="height: 40px; width: auto;">
-        <span class="brand-text" style="font-size: 1.5rem; font-weight: 700; color: var(--m3-primary); letter-spacing: -0.025em;">LearnWay</span>
+    <div style="padding: 1.5rem; text-align: center;">
+        <img src="{{ asset('images/LearnWay logo full.png') }}" alt="LearnWay Logo" style="width: 180px; height: auto; display: inline-block;">
     </div>
     <div style="display: flex; flex-direction: column; gap: 0.25rem; padding: 0 12px;">
         <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--m3-on-surface-variant); margin: 0 16px 8px; font-weight: 600;">Main Menu</div>
@@ -140,9 +139,8 @@
 {# ── TEACHER SIDEBAR ── #}
 {% if app.user and is_granted('ROLE_TEACHER') and isTeacherRoute %}
 <aside style="width: 280px; flex-shrink: 0; background-color: var(--m3-surface-container); color: var(--m3-on-surface); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; z-index: 40; border-right: 1px solid var(--m3-outline); transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
-    <div style="padding: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
-        <img src="{{ asset('images/LearnWay logo.png') }}" alt="LearnWay Logo" style="height: 40px; width: auto;">
-        <span class="brand-text" style="font-size: 1.5rem; font-weight: 700; color: var(--m3-primary); letter-spacing: -0.025em;">LearnWay</span>
+    <div style="padding: 1.5rem; text-align: center;">
+        <img src="{{ asset('images/LearnWay logo full.png') }}" alt="LearnWay Logo" style="width: 180px; height: auto; display: inline-block;">
     </div>
     <div style="display: flex; flex-direction: column; gap: 0.25rem; padding: 0 12px;">
         {{ render(controller('App\\Controller\\Teacher\\TeacherNavController::sidebarNav')) }}
@@ -179,9 +177,8 @@
 {# ── STUDENT SIDEBAR ── #}
 {% if app.user and is_granted('ROLE_STUDENT') and isStudentRoute %}
 <aside style="width: 280px; flex-shrink: 0; background-color: var(--m3-surface-container); color: var(--m3-on-surface); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; z-index: 40; border-right: 1px solid var(--m3-outline); transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
-    <div style="padding: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
-        <img src="{{ asset('images/LearnWay logo.png') }}" alt="LearnWay Logo" style="height: 40px; width: auto;">
-        <span class="brand-text" style="font-size: 1.5rem; font-weight: 700; color: var(--m3-primary); letter-spacing: -0.025em;">LearnWay</span>
+    <div style="padding: 1.5rem; text-align: center;">
+        <img src="{{ asset('images/LearnWay logo full.png') }}" alt="LearnWay Logo" style="width: 180px; height: auto; display: inline-block;">
     </div>
     <div style="display: flex; flex-direction: column; gap: 0.25rem; padding: 0 12px;">
         {{ render(controller('App\\Controller\\Student\\StudentNavController::sidebarNav')) }}
