@@ -6,13 +6,22 @@
 <div style="display: flex; height: calc(100vh - 112px); margin: -24px; background: var(--m3-surface);">
     {# ── LEFT SIDEBAR: CONVERSATIONS ── #}
     <div style="width: 360px; border-right: 1px solid var(--m3-outline-variant); background: var(--m3-surface-container-low); display: flex; flex-direction: column;">
-        <div style="padding: 24px; border-bottom: 1px solid var(--m3-outline-variant); display: flex; align-items: center; justify-content: space-between;">
+        <div style="padding: 24px; border-bottom: 1px solid var(--m3-outline-variant); display: flex; flex-direction: column; gap: 16px;">
             <h1 style="margin: 0; font-size: 1.5rem; font-weight: 600; color: var(--m3-on-surface);">Messages</h1>
-            {% if not is_granted('ROLE_ADMIN') %}
-                <a href="{{ path('app_messages_contact_admin') }}" class="m3-button m3-button-tonal" style="height: 32px; padding: 0 12px; font-size: 0.75rem; border-radius: 8px;">
-                    🛡️ Admin
-                </a>
-            {% endif %}
+            
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <button onclick="openNewMessageModal()" class="m3-button m3-button-tonal" style="width: 100%; height: 36px; padding: 0 16px; font-size: 0.8125rem; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; background: #e0e2ec; color: #191c20; border: none; cursor: pointer; font-family: inherit; font-weight: 500;">
+                    New Conversation
+                </button>
+                <button onclick="openNewGroupModal()" class="m3-button m3-button-tonal" style="width: 100%; height: 36px; padding: 0 16px; font-size: 0.8125rem; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; background: #e0e2ec; color: #191c20; border: none; cursor: pointer; font-family: inherit; font-weight: 500;">
+                    Create Group Chat
+                </button>
+                {% if not is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_messages_contact_admin') }}" class="m3-button m3-button-tonal" style="height: 36px; padding: 0 16px; font-size: 0.8125rem; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; background: #e0e2ec; color: #191c20; font-weight: 500;">
+                        🛡️ Support Admin
+                    </a>
+                {% endif %}
+            </div>
         </div>
         
         <div style="flex-grow: 1; overflow-y: auto;">
@@ -25,16 +34,25 @@
                 {% endfor %}
                 
                 <a href="{{ path('app_messages_show', {id: conv.id}) }}" style="display: flex; align-items: center; gap: 16px; padding: 16px 24px; text-decoration: none; color: inherit; transition: background 0.2s; {% if conversation is defined and conversation.id == conv.id %}background: var(--m3-secondary-container); color: var(--m3-on-secondary-container);{% endif %}" onmouseover="this.style.background='var(--m3-surface-container-high)'" onmouseout="this.style.background='{% if conversation is defined and conversation.id == conv.id %}var(--m3-secondary-container){% else %}transparent{% endif %}'">
-                    <div style="width: 48px; height: 48px; background: var(--m3-primary-container); color: var(--m3-on-primary-container); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.25rem;">
-                        {{ otherMember ? otherMember.firstName|first : '?' }}
+                    <div style="width: 48px; height: 48px; background: var(--m3-primary-container); color: var(--m3-on-primary-container); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.25rem; overflow: hidden; border: 1px solid var(--m3-outline-variant);">
+                        {% if otherMember and otherMember.profile_picture %}
+                            <img src="{{ asset('uploads/profiles/' ~ otherMember.profile_picture) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            {{ otherMember ? otherMember.firstName|first|upper : '?' }}
+                        {% endif %}
                     </div>
                     <div style="flex-grow: 1; overflow: hidden;">
                         <div style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                            {{ otherMember ? otherMember.firstName ~ ' ' ~ otherMember.lastName : 'Unknown' }}
+                            {% if conv.type == 'GROUP' %}
+                                {{ conv.name }}
+                            {% else %}
+                                {{ otherMember ? otherMember.firstName ~ ' ' ~ otherMember.lastName : 'Unknown' }}
+                            {% endif %}
                         </div>
                         <div style="font-size: 0.8125rem; color: var(--m3-on-surface-variant); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                             {% if conv.messages|length > 0 %}
-                                {{ conv.messages|last.content }}
+                                {% set lastMsg = conv.messages|last %}
+                                {{ lastMsg.user == app.user ? 'You: ' : lastMsg.user.firstName ~ ': ' }}{{ lastMsg.content }}
                             {% else %}
                                 No messages yet
                             {% endif %}
@@ -66,4 +84,132 @@
         {% endblock %}
     </div>
 </div>
+
+{# ── MODALS ── #}
+<div id="modal-container" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center;">
+    {# New Message Modal #}
+    <div id="new-message-modal" class="m3-card m3-card-elevated" style="display: none; width: 100%; max-width: 480px; background: white; border-radius: 28px; padding: 32px; flex-direction: column; gap: 24px;">
+        <h2 style="margin: 0; font-size: 1.5rem; font-weight: 500;">New Message</h2>
+        <input type="text" id="contact-search" placeholder="Search students or teachers..." style="width: 100%; height: 56px; border-radius: 16px; border: 1px solid var(--m3-outline); padding: 0 20px; outline: none; font-size: 1rem; box-sizing: border-box;">
+        <div id="contacts-list" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;">
+            <!-- Contacts will be loaded here -->
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 12px;">
+            <button onclick="closeModals()" class="m3-button m3-button-text">Cancel</button>
+        </div>
+    </div>
+
+    {# New Group Modal #}
+    <div id="new-group-modal" class="m3-card m3-card-elevated" style="display: none; width: 100%; max-width: 480px; background: white; border-radius: 28px; padding: 32px; flex-direction: column; gap: 24px;">
+        <h2 style="margin: 0; font-size: 1.5rem; font-weight: 500;">Create Group</h2>
+        <form action="{{ path('app_messages_group_create') }}" method="POST" style="display: flex; flex-direction: column; gap: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-size: 0.75rem; font-weight: 600; color: var(--m3-primary);">GROUP NAME</label>
+                <input type="text" name="name" required placeholder="Project Team X..." style="width: 100%; height: 56px; border-radius: 16px; border: 1px solid var(--m3-outline); padding: 0 20px; outline: none; font-size: 1rem; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-size: 0.75rem; font-weight: 600; color: var(--m3-primary);">SELECT MEMBERS</label>
+                <div id="group-contacts-list" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; border: 1px solid var(--m3-outline-variant); border-radius: 12px; padding: 8px;">
+                    <!-- Contacts will be loaded here -->
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px;">
+                <button type="button" onclick="closeModals()" class="m3-button m3-button-text">Cancel</button>
+                <button type="submit" class="m3-button m3-button-filled">Create Group</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let allContacts = [];
+
+    async function fetchContacts() {
+        try {
+            const response = await fetch('{{ path('app_messages_api_contacts') }}');
+            allContacts = await response.json();
+            renderContacts('');
+        } catch (e) {
+            console.error('Failed to fetch contacts', e);
+        }
+    }
+
+    function renderContacts(search) {
+        const list = document.getElementById('contacts-list');
+        const groupList = document.getElementById('group-contacts-list');
+        list.innerHTML = '';
+        groupList.innerHTML = '';
+
+        const filtered = allContacts.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
+
+        filtered.forEach(c => {
+            const formattedRole = c.role.replace('ROLE_', '').toLowerCase();
+            
+            // For New Message
+            const item = document.createElement('a');
+            item.href = `/messages/start/${c.id}`;
+            item.style.display = 'flex';
+            item.style.alignItems = 'center';
+            item.style.gap = '12px';
+            item.style.padding = '12px';
+            item.style.textDecoration = 'none';
+            item.style.color = 'inherit';
+            item.style.borderRadius = '12px';
+            item.onmouseover = () => item.style.background = 'var(--m3-surface-container-high)';
+            item.onmouseout = () => item.style.background = 'transparent';
+            item.innerHTML = `
+                <div style="width: 32px; height: 32px; background: var(--m3-primary-container); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; overflow: hidden;">
+                    ${c.avatar ? `<img src="${c.avatar}" style="width:100%;height:100%;object-fit:cover;">` : c.name.charAt(0)}
+                </div>
+                <div>
+                    <div style="font-weight: 500;">${c.name}</div>
+                    <div style="font-size: 0.7rem; color: var(--m3-on-surface-variant);">${formattedRole}</div>
+                </div>
+            `;
+            list.appendChild(item);
+
+            // For Group Create
+            const groupItem = document.createElement('label');
+            groupItem.style.display = 'flex';
+            groupItem.style.alignItems = 'center';
+            groupItem.style.gap = '12px';
+            groupItem.style.padding = '8px';
+            groupItem.style.cursor = 'pointer';
+            groupItem.style.borderRadius = '8px';
+            groupItem.onmouseover = () => groupItem.style.background = 'var(--m3-surface-container-high)';
+            groupItem.onmouseout = () => groupItem.style.background = 'transparent';
+            groupItem.innerHTML = `
+                <input type="checkbox" name="users[]" value="${c.id}" style="width: 18px; height: 18px;">
+                <div style="font-size: 0.9rem; font-weight: 500;">${c.name}</div>
+                <div style="font-size: 0.7rem; color: var(--m3-on-surface-variant); margin-left: auto;">${formattedRole}</div>
+            `;
+            groupList.appendChild(groupItem);
+        });
+    }
+
+    document.getElementById('contact-search').addEventListener('input', (e) => renderContacts(e.target.value));
+
+    function openNewMessageModal() {
+        document.getElementById('modal-container').style.display = 'flex';
+        document.getElementById('new-message-modal').style.display = 'flex';
+        document.getElementById('new-group-modal').style.display = 'none';
+        fetchContacts();
+    }
+
+    function openNewGroupModal() {
+        document.getElementById('modal-container').style.display = 'flex';
+        document.getElementById('new-group-modal').style.display = 'flex';
+        document.getElementById('new-message-modal').style.display = 'none';
+        fetchContacts();
+    }
+
+    function closeModals() {
+        document.getElementById('modal-container').style.display = 'none';
+    }
+
+    // Close on backdrop click
+    document.getElementById('modal-container').addEventListener('click', (e) => {
+        if (e.target.id === 'modal-container') closeModals();
+    });
+</script>
 {% endblock %}

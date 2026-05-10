@@ -93,6 +93,15 @@
 
         {# RIGHT: SIDEBAR #}
         <aside style="display: flex; flex-direction: column; gap: 24px;">
+            {% if chart is defined %}
+            <div class="m3-card m3-card-filled" style="padding: 24px; background: var(--m3-surface-container-high); margin-bottom: 24px;">
+                <h3 style="margin: 0 0 20px 0; font-size: 1.125rem; font-weight: 500;">Learning Mix</h3>
+                <div style="height: 250px;">
+                    {{ render_chart(chart) }}
+                </div>
+            </div>
+            {% endif %}
+
             <div class="m3-card m3-card-filled" style="padding: 24px; background: var(--m3-surface-container-high);">
                 <h3 style="margin: 0 0 16px 0; font-size: 1.125rem; font-weight: 500;">Upcoming</h3>
                 <div style="display: flex; flex-direction: column; gap: 12px;">

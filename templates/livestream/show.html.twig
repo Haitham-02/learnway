@@ -3,7 +3,23 @@
 {% block title %}{{ livestream.title }} - Live Session{% endblock %}
 
 {% block body %}
-<div style="display: flex; height: calc(100vh - 100px); gap: 1px; background-color: var(--m3-outline);">
+<div id="livestream-session"
+     data-controller="livestream-socket ai-livestream"
+     data-livestream-socket-url-value="http://localhost:3001"
+     data-livestream-socket-livestream-id-value="{{ livestream.id }}"
+     data-livestream-socket-current-user-id-value="{{ app.user.id }}"
+     data-livestream-socket-current-user-name-value="{{ app.user.firstName }} {{ app.user.lastName }}"
+     data-ai-livestream-livestream-id-value="{{ livestream.id }}"
+     data-ai-livestream-is-teacher-value="{{ isTeacher ? 'true' : 'false' }}"
+     data-ai-livestream-api-url-value="{{ path('app_livestream_api_facial_data') }}"
+     data-ai-livestream-models-url-value="{{ asset('models/') }}"
+     data-livestream-id="{{ livestream.id }}"
+     data-livestream-is-teacher="{{ isTeacher ? 'true' : 'false' }}"
+     data-livestream-meeting-room="{{ livestream.meetingRoom }}"
+     data-livestream-user-name="{{ app.user.firstName }} {{ app.user.lastName }}"
+     data-livestream-teacher-end-url="{{ path('app_livestream_teacher_end', {id: livestream.id}) }}"
+     data-livestream-teacher-list-url="{{ path('app_livestream_teacher_list') }}"
+     style="display: flex; height: calc(100vh - 100px); gap: 1px; background-color: var(--m3-outline);">
     
     <!-- LEFT SIDE: VIDEO (70%) -->
     <div style="flex: 0 0 70%; display: flex; flex-direction: column; background-color: #000;">
@@ -153,20 +169,23 @@
             ">
                 ❓ Q&A
             </button>
-            <button onclick="switchSidebarTab('ai')" id="tab-ai" class="sidebar-tab" style="
-                flex: 1;
-                padding: 1rem;
-                border: none;
-                background: none;
-                cursor: pointer;
-                color: var(--m3-on-surface-variant);
-                font-weight: 600;
-                border-bottom: 3px solid transparent;
-                font-size: 0.875rem;
-                transition: all 0.3s ease;
-            ">
-                🤖 AI Tools
-            </button>
+            {# Only show AI Tools tab to teachers #}
+            {% if isTeacher %}
+                <button onclick="switchSidebarTab('ai')" id="tab-ai" class="sidebar-tab" style="
+                    flex: 1;
+                    padding: 1rem;
+                    border: none;
+                    background: none;
+                    cursor: pointer;
+                    color: var(--m3-on-surface-variant);
+                    font-weight: 600;
+                    border-bottom: 3px solid transparent;
+                    font-size: 0.875rem;
+                    transition: all 0.3s ease;
+                ">
+                    🤖 AI Tools
+                </button>
+            {% endif %}
         </div>
 
         <!-- Tab Content Container -->
@@ -174,7 +193,9 @@
 
             <!-- CHAT TAB -->
             <div id="chat-panel" style="display: flex; flex-direction: column; height: 100%; overflow: hidden;">
-                <div id="chat-messages" style="
+                <div id="chat-messages" 
+                     hx-on::after-settle="this.scrollTop = this.scrollHeight"
+                     style="
                     flex: 1;
                     overflow-y: auto;
                     padding: 1rem;
@@ -183,26 +204,23 @@
                     gap: 0.75rem;
                 ">
                     {% for chat in chats %}
-                        <div style="
-                            padding: 0.75rem;
-                            background-color: var(--m3-surface);
-                            border-radius: 8px;
-                            display: flex;
-                            flex-direction: column;
-                        ">
-                            <p style="margin: 0 0 0.25rem 0; font-weight: 600; font-size: 0.875rem; color: var(--m3-primary);">
-                                {{ chat.user.firstName }} {{ chat.user.lastName }}
-                            </p>
-                            <p style="margin: 0; font-size: 0.875rem; color: var(--m3-on-surface);">{{ chat.message }}</p>
-                            <p style="margin: 0.25rem 0 0 0; font-size: 0.75rem; color: var(--m3-on-surface-variant);">
-                                {{ chat.createdAt|date('H:i') }}
-                            </p>
-                        </div>
+                        {% include 'livestream/_chat_message.html.twig' with {'chat': chat} %}
                     {% endfor %}
                 </div>
                 <div style="padding: 1rem; border-top: 1px solid var(--m3-outline); background-color: var(--m3-surface);">
-                    <div style="display: flex; gap: 0.5rem;">
-                        <input type="text" id="chat-input" placeholder="Type a message..." style="
+                    <form id="chat-form"
+                          hx-post="{{ path('app_livestream_api_send_chat', {id: livestream.id}) }}"
+                          hx-target="#chat-messages"
+                          hx-swap="beforeend"
+                          hx-on::after-request="
+                            var input = document.getElementById('chat-form').querySelector('input[name=message]');
+                            if(input) input.value = '';
+                            var container = document.getElementById('chat-messages');
+                            if(container) container.scrollTop = container.scrollHeight;
+                          "
+                          hx-on::response-error="console.error('Chat error:', event.detail.xhr.status, event.detail.xhr.responseText)"
+                          style="display: flex; gap: 0.5rem;">
+                        <input type="text" name="message" placeholder="Type a message..." required autocomplete="off" style="
                             flex: 1;
                             padding: 0.625rem;
                             border: 1px solid var(--m3-outline);
@@ -211,7 +229,7 @@
                             background-color: var(--m3-surface-container);
                             color: var(--m3-on-surface);
                         " />
-                        <button onclick="sendChat()" style="
+                        <button type="submit" style="
                             background-color: var(--m3-primary);
                             color: white;
                             border: none;
@@ -223,13 +241,15 @@
                         " onmouseover="this.style.backgroundColor='var(--m3-primary-dark)'" onmouseout="this.style.backgroundColor='var(--m3-primary)'">
                             Send
                         </button>
-                    </div>
+                    </form>
                 </div>
             </div>
 
             <!-- Q&A TAB -->
-            <div id="qa-panel" style="display: none; flex-direction: column; height: 100%; overflow: hidden;">
-                <div id="qa-questions" style="
+            <div id="qa-panel" style="display: none; flex-direction: column; height: 100%; overflow: hidden; flex: 1;">
+                <div id="qa-questions" 
+                     hx-on::after-settle="this.scrollTop = this.scrollHeight"
+                     style="
                     flex: 1;
                     overflow-y: auto;
                     padding: 1rem;
@@ -238,68 +258,22 @@
                     gap: 0.75rem;
                 ">
                     {% for question in questions %}
-                        <div style="
-                            padding: 1rem;
-                            background-color: var(--m3-surface);
-                            border-radius: 8px;
-                            border-left: 4px solid {{ question.isAnswered ? 'var(--m3-primary)' : '#ff9800' }};
-                        ">
-                            <div style="display: flex; justify-content: space-between; align-items: start;">
-                                <div style="flex: 1;">
-                                    <p style="margin: 0 0 0.5rem 0; font-weight: 600; font-size: 0.875rem; color: var(--m3-primary);">
-                                        {{ question.student.firstName }} {{ question.student.lastName }}
-                                    </p>
-                                    <p style="margin: 0 0 0.75rem 0; font-size: 0.875rem; color: var(--m3-on-surface);">
-                                        {{ question.question }}
-                                    </p>
-                                    {% if question.isAnswered %}
-                                        <div style="
-                                            background-color: var(--m3-primary-container);
-                                            padding: 0.5rem;
-                                            border-radius: 6px;
-                                            font-size: 0.875rem;
-                                            color: var(--m3-on-primary-container);
-                                        ">
-                                            <p style="margin: 0 0 0.25rem 0; font-weight: 600;">Answered by {{ question.answeredBy.firstName }}</p>
-                                            <p style="margin: 0;">{{ question.answer }}</p>
-                                        </div>
-                                    {% elseif isTeacher %}
-                                        <form onsubmit="answerQuestion(event, {{ question.id }})">
-                                            <textarea placeholder="Type your answer..." style="
-                                                width: 100%;
-                                                padding: 0.5rem;
-                                                border: 1px solid var(--m3-outline);
-                                                border-radius: 6px;
-                                                font-size: 0.75rem;
-                                                min-height: 50px;
-                                                background-color: var(--m3-surface-container);
-                                                color: var(--m3-on-surface);
-                                                font-family: inherit;
-                                            " required></textarea>
-                                            <button type="submit" style="
-                                                background-color: var(--m3-primary);
-                                                color: white;
-                                                border: none;
-                                                padding: 0.5rem 1rem;
-                                                border-radius: 6px;
-                                                font-size: 0.75rem;
-                                                font-weight: 600;
-                                                cursor: pointer;
-                                                margin-top: 0.5rem;
-                                                width: 100%;
-                                            ">
-                                                Answer
-                                            </button>
-                                        </form>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
+                        {% include 'livestream/_qa_question.html.twig' with {'question': question, 'isTeacher': isTeacher} %}
                     {% endfor %}
                 </div>
                 <div style="padding: 1rem; border-top: 1px solid var(--m3-outline); background-color: var(--m3-surface);">
-                    <form onsubmit="askQuestion(event)">
-                        <textarea id="question-input" placeholder="Ask a question..." style="
+                    <form id="qa-form"
+                          hx-post="{{ path('app_livestream_api_ask_question', {id: livestream.id}) }}"
+                          hx-target="#qa-questions"
+                          hx-swap="beforeend"
+                          hx-on::after-request="
+                            var textarea = document.getElementById('qa-form').querySelector('textarea[name=question]');
+                            if(textarea) textarea.value = '';
+                            var container = document.getElementById('qa-questions');
+                            if(container) container.scrollTop = container.scrollHeight;
+                          "
+                          hx-on::response-error="console.error('Q&A error:', event.detail.xhr.status, event.detail.xhr.responseText)">
+                        <textarea name="question" placeholder="Ask a question..." required style="
                             width: 100%;
                             padding: 0.625rem;
                             border: 1px solid var(--m3-outline);
@@ -309,7 +283,7 @@
                             background-color: var(--m3-surface-container);
                             color: var(--m3-on-surface);
                             font-family: inherit;
-                        " required></textarea>
+                        "></textarea>
                         <button type="submit" style="
                             width: 100%;
                             background-color: var(--m3-primary);
@@ -327,148 +301,199 @@
                 </div>
             </div>
 
-            <!-- AI TOOLS TAB -->
+            <!-- AI TOOLS TAB (Teachers Only) -->
+            {% if isTeacher %}
             <div id="ai-panel" style="display: none; flex-direction: column; height: 100%; overflow-y: auto; padding: 1rem;">
-                
-                <!-- Facial Recognition Card -->
-                <div style="
-                    background-color: var(--m3-surface);
-                    padding: 1rem;
-                    border-radius: 8px;
-                    margin-bottom: 1rem;
-                    border: 2px solid var(--m3-primary);
-                ">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <h4 style="margin: 0; color: var(--m3-primary);">😊 Facial Recognition</h4>
-                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                            <input type="checkbox" id="facial-toggle" onchange="toggleFacialTracking()" />
-                            <span style="font-size: 0.75rem;">Enable</span>
-                        </label>
-                    </div>
-                    <div id="facial-status" style="
-                        background-color: var(--m3-surface-container);
-                        padding: 0.75rem;
-                        border-radius: 6px;
-                        font-size: 0.875rem;
-                        color: var(--m3-on-surface-variant);
-                        text-align: center;
-                    ">
-                        🔴 Disabled
-                    </div>
-                    <div id="emotion-display" style="
-                        margin-top: 0.75rem;
-                        padding: 0.75rem;
-                        background-color: var(--m3-primary-container);
-                        border-radius: 6px;
-                        text-align: center;
-                        font-weight: 600;
-                        color: var(--m3-on-primary-container);
-                        font-size: 0.875rem;
-                        display: none;
-                    ">
-                        Current Emotion: <strong id="emotion-text">-</strong>
-                    </div>
-                </div>
 
-                <!-- Stats Cards -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                    <div style="
-                        background-color: var(--m3-surface);
-                        padding: 1rem;
-                        border-radius: 8px;
-                        text-align: center;
-                    ">
-                        <p style="margin: 0 0 0.5rem 0; font-size: 0.75rem; color: var(--m3-on-surface-variant);">Engagement</p>
-                        <p style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--m3-primary);" id="engagement-score">85%</p>
-                    </div>
-                    <div style="
-                        background-color: var(--m3-surface);
-                        padding: 1rem;
-                        border-radius: 8px;
-                        text-align: center;
-                    ">
-                        <p style="margin: 0 0 0.5rem 0; font-size: 0.75rem; color: var(--m3-on-surface-variant);">Attendance</p>
-                        <p style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--m3-primary);" id="attendance-count">12/25</p>
-                    </div>
-                    <div style="
-                        background-color: var(--m3-surface);
-                        padding: 1rem;
-                        border-radius: 8px;
-                        text-align: center;
-                    ">
-                        <p style="margin: 0 0 0.5rem 0; font-size: 0.75rem; color: var(--m3-on-surface-variant);">Questions</p>
-                        <p style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--m3-primary);" id="question-count">{{ questions|length }}</p>
-                    </div>
-                    <div style="
-                        background-color: var(--m3-surface);
-                        padding: 1rem;
-                        border-radius: 8px;
-                        text-align: center;
-                    ">
-                        <p style="margin: 0 0 0.5rem 0; font-size: 0.75rem; color: var(--m3-on-surface-variant);">Avg Response</p>
-                        <p style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--m3-primary);" id="response-time">2.3m</p>
-                    </div>
-                </div>
-
-                <!-- Participant Focus -->
-                <div style="
-                    background-color: var(--m3-surface);
-                    padding: 1rem;
-                    border-radius: 8px;
-                    margin-top: 1rem;
-                ">
-                    <p style="margin: 0 0 0.75rem 0; font-size: 0.875rem; font-weight: 600; color: var(--m3-on-surface);">Participant Focus</p>
-                    <div style="
-                        background-color: var(--m3-surface-container);
-                        height: 6px;
-                        border-radius: 3px;
-                        overflow: hidden;
-                    ">
-                        <div id="focus-bar" style="
-                            background: linear-gradient(90deg, #4caf50, #ff9800);
-                            height: 100%;
-                            width: 75%;
-                            transition: width 0.3s ease;
-                        "></div>
-                    </div>
-                    <p style="margin: 0.5rem 0 0 0; font-size: 0.75rem; color: var(--m3-on-surface-variant);">
-                        <span id="focus-percent">75%</span> Focused • <span id="distracted-percent">25%</span> Distracted
-                    </p>
-                </div>
-
-                <!-- AI Suggestions -->
-                <div style="
-                    background-color: var(--m3-tertiary-container);
-                    padding: 1rem;
-                    border-radius: 8px;
-                    margin-top: 1rem;
-                ">
-                    <p style="margin: 0 0 0.75rem 0; font-size: 0.875rem; font-weight: 600; color: var(--m3-on-tertiary-container);">💡 AI Suggestions</p>
-                    <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.75rem; color: var(--m3-on-tertiary-container);">
-                        <li>Students showing high engagement — consider increasing interaction pace</li>
-                        <li>3 unanswered questions in Q&A — prioritize responses</li>
-                        <li>Average response time higher than usual — consider shorter explanations</li>
-                    </ul>
+            <!-- Facial Recognition Monitoring -->
+            <div style="
+                background-color: var(--m3-surface);
+                padding: 1rem;
+                border-radius: 8px;
+                margin-bottom: 1rem;
+                border: 2px solid var(--m3-primary);
+            ">
+                <h4 style="margin: 0 0 1rem 0; color: var(--m3-primary);">📈 Live Engagement Analytics</h4>
+                <div id="ai-monitoring-list" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 200px; overflow-y: auto;">
+                    <p style="font-size: 0.75rem; color: var(--m3-on-surface-variant); text-align: center;">Waiting for student data...</p>
                 </div>
             </div>
 
-        </div>
-    </div>
-</div>
+            <!-- Stats Cards -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div style="
+                    background-color: var(--m3-surface);
+                    padding: 1rem;
+                    border-radius: 8px;
+                    text-align: center;
+                ">
+                    <p style="margin: 0 0 0.5rem 0; font-size: 0.75rem; color: var(--m3-on-surface-variant);">Current Emotion</p>
+                    <p style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--m3-primary);" id="engagement-score">Waiting...</p>
+                </div>
+                <div style="
+                    background-color: var(--m3-surface);
+                    padding: 1rem;
+                    border-radius: 8px;
+                    text-align: center;
+                ">
+                    <p style="margin: 0 0 0.5rem 0; font-size: 0.75rem; color: var(--m3-on-surface-variant);">Students Active</p>
+                    <p style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--m3-primary);" id="attendance-count">0</p>
+                </div>
+            </div>
 
+            <!-- Participant Focus -->
+            <div style="
+                background-color: var(--m3-surface);
+                padding: 1rem;
+                border-radius: 8px;
+                margin-top: 1rem;
+            ">
+                <p style="margin: 0 0 0.75rem 0; font-size: 0.875rem; font-weight: 600; color: var(--m3-on-surface);">Class Engagement Level</p>
+                <div style="
+                    background-color: var(--m3-surface-container);
+                    height: 6px;
+                    border-radius: 3px;
+                    overflow: hidden;
+                ">
+                    <div id="focus-bar" style="
+                        background: linear-gradient(90deg, #4caf50, #ff9800);
+                        height: 100%;
+                        width: 0%;
+                        transition: width 0.3s ease;
+                    "></div>
+                </div>
+                <p style="margin: 0.5rem 0 0 0; font-size: 0.75rem; color: var(--m3-on-surface-variant);">
+                    <span id="focus-percent">0%</span> Focused • <span id="distracted-percent">0%</span> Distracted
+                </p>
+            </div>            {% endif %}
+
+            </div>
+            </div>
+            </div>
+
+            {# Hidden elements for student AI processing #}
+            {% if not isTeacher %}
+            <div id="student-ai-status" style="
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(4px);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            ">
+            <span class="pulse-icon" style="width: 8px; height: 8px; background: #4caf50; border-radius: 50%;"></span>
+            AI Engagement Detection Active
+            </div>
+            <style>
+            .pulse-icon { animation: pulse 2s infinite; }
+            @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
+            </style>
+            {% endif %}
 <!-- Scripts -->
 <script src="https://meet.jit.si/external_api.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+<script>
+window.livestreamEndSessionUrl = '{{ path('app_livestream_teacher_end', {id: livestream.id}) }}';
+window.livestreamTeacherListUrl = '{{ path('app_livestream_teacher_list') }}';
+const livestreamId = {{ livestream.id }};
+const isTeacher = {{ isTeacher ? 'true' : 'false' }};
+const meetingRoom = '{{ livestream.meetingRoom|escape('js') }}';
+const userName = '{{ (app.user.firstName ~ ' ' ~ app.user.lastName)|escape('js') }}';
+</script>
+
 <script src="{{ asset('js/livestream.js') }}"></script>
 
 <script>
-const livestreamId = {{ livestream.id }};
-const isTeacher = {{ isTeacher ? 'true' : 'false' }};
-const meetingRoom = '{{ livestream.meetingRoom }}';
-const userName = '{{ app.user.firstName }} {{ app.user.lastName }}';
+// ========== SIDEBAR TAB SWITCHING ==========
+function switchSidebarTab(tab) {
+    console.log('🔄 Switching to tab: ' + tab);
+    
+    // Prevent non-teachers from accessing AI tab
+    if (tab === 'ai' && !isTeacher) {
+        console.warn('⚠️ Access denied: AI features are only available to teachers');
+        return;
+    }
 
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    initializeJitsi();
-});
+    // Hide all panels first
+    const chatPanel = document.getElementById('chat-panel');
+    const qaPanel = document.getElementById('qa-panel');
+    const aiPanel = document.getElementById('ai-panel');
+
+    if (chatPanel) chatPanel.style.display = 'none';
+    if (qaPanel) qaPanel.style.display = 'none';
+    if (aiPanel) aiPanel.style.display = 'none';
+
+    // Show selected panel
+    if (tab === 'chat' && chatPanel) {
+        chatPanel.style.display = 'flex';
+        console.log('✓ Showing chat panel');
+    } else if (tab === 'qa' && qaPanel) {
+        qaPanel.style.display = 'flex';
+        console.log('✓ Showing Q&A panel');
+    } else if (tab === 'ai' && aiPanel) {
+        aiPanel.style.display = 'flex';
+        console.log('✓ Showing AI panel');
+    }
+
+    // Update tab styling
+    const chatTab = document.getElementById('tab-chat');
+    const qaTab = document.getElementById('tab-qa');
+    const aiTab = document.getElementById('tab-ai');
+
+    // Reset all tabs
+    if (chatTab) {
+        chatTab.style.color = tab === 'chat' ? 'var(--m3-primary)' : 'var(--m3-on-surface-variant)';
+        chatTab.style.borderBottomColor = tab === 'chat' ? 'var(--m3-primary)' : 'transparent';
+    }
+    if (qaTab) {
+        qaTab.style.color = tab === 'qa' ? 'var(--m3-primary)' : 'var(--m3-on-surface-variant)';
+        qaTab.style.borderBottomColor = tab === 'qa' ? 'var(--m3-primary)' : 'transparent';
+    }
+    if (aiTab) {
+        aiTab.style.color = tab === 'ai' ? 'var(--m3-primary)' : 'var(--m3-on-surface-variant)';
+        aiTab.style.borderBottomColor = tab === 'ai' ? 'var(--m3-primary)' : 'transparent';
+    }
+}
+
+// Initialize with improved timing
+console.log('📺 Livestream page loaded, scheduling Jitsi initialization...');
+console.log('Meeting room: ' + meetingRoom);
+console.log('User: ' + userName);
+
+// Wait for DOM and Jitsi external API to be ready
+function waitForJitsiAndInitialize() {
+    console.log('📋 Checking if we can initialize Jitsi...');
+    console.log('  - Document ready state: ' + document.readyState);
+    console.log('  - JitsiMeetExternalAPI defined: ' + (typeof JitsiMeetExternalAPI !== 'undefined'));
+    
+    // Check if DOM is interactive
+    if (document.readyState === 'loading') {
+        console.log('⏳ Waiting for DOM to load...');
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✓ DOM ready, checking for Jitsi API...');
+            // Give external API script time to load
+            setTimeout(initializeJitsi, 300);
+        });
+    } else {
+        // DOM is already ready
+        console.log('✓ DOM already ready, waiting for Jitsi API...');
+        // Give external API script time to load
+        setTimeout(initializeJitsi, 300);
+    }
+}
+
+// Start initialization immediately
+waitForJitsiAndInitialize();
 </script>
 {% endblock %}

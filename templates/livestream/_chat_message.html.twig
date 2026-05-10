@@ -1,0 +1,19 @@
+{% set isMine = app.user and chat.user.id == app.user.id %}
+<div id="chat-{{ chat.id }}" 
+     data-message-id="{{ chat.id }}"
+     data-sender-id="{{ chat.user.id }}"
+     style="
+        padding: 0.75rem;
+        background-color: var(--m3-surface);
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+    ">
+    <p style="margin: 0 0 0.25rem 0; font-weight: 600; font-size: 0.875rem; color: var(--m3-primary);">
+        {{ chat.user.firstName }} {{ chat.user.lastName }}
+    </p>
+    <p style="margin: 0; font-size: 0.875rem; color: var(--m3-on-surface);">{{ chat.message }}</p>
+    <p style="margin: 0.25rem 0 0 0; font-size: 0.75rem; color: var(--m3-on-surface-variant);">
+        {{ chat.createdAt|date('H:i') }}
+    </p>
+</div>

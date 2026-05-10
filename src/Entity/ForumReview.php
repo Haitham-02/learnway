@@ -29,8 +29,8 @@ class ForumReview
         return $this;
     }
 
-    #[ORM\OneToOne(targetEntity: ForumPost::class, inversedBy: 'forumReview')]
-    #[ORM\JoinColumn(name: 'post_id', referencedColumnName: 'id', unique: true)]
+    #[ORM\ManyToOne(targetEntity: ForumPost::class, inversedBy: 'forumReviews')]
+    #[ORM\JoinColumn(name: 'post_id', referencedColumnName: 'id')]
     private ?ForumPost $forumPost = null;
 
     public function getForumPost(): ?ForumPost
@@ -45,7 +45,7 @@ class ForumReview
     }
 
     #[ORM\OneToOne(targetEntity: User::class, inversedBy: 'forumReview')]
-    #[ORM\JoinColumn(name: 'student_id', referencedColumnName: 'id', unique: true)]
+    #[ORM\JoinColumn(name: 'student_id', referencedColumnName: 'id')]
     private ?User $user = null;
 
     public function getUser(): ?User

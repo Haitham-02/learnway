@@ -1,12 +1,74 @@
 {% set isMine = app.user and message.user.id == app.user.id %}
+{% set isGroup = message.conversation.type == 'group' %}
+
 <div class="message-wrapper {% if isMine %}message-mine{% else %}message-theirs{% endif %}" 
      data-message-id="{{ message.id }}"
-     data-sender-id="{{ message.user.id }}"
-     style="display: flex; flex-direction: column; align-items: {% if isMine %}flex-end{% else %}flex-start{% endif %}; max-width: 80%; width: 100%;">
-    <div class="message-content" style="padding: 12px 20px; border-radius: 20px; font-size: 0.9375rem; line-height: 1.5; {% if isMine %}background: var(--m3-primary); color: white; border-bottom-right-radius: 4px;{% else %}background: var(--m3-surface-container-high); color: var(--m3-on-surface); border-bottom-left-radius: 4px;{% endif %}">
-        {{ message.content }}
+     style="display: flex; gap: 8px; align-items: flex-end; margin-bottom: 8px; {% if isMine %}flex-direction: row-reverse;{% endif %} max-width: 85%;">
+    
+    {# ── SENDER AVATAR ── #}
+    <div style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; overflow: hidden; background: var(--m3-surface-container-high); border: 1px solid var(--m3-outline-variant); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--m3-primary);">
+        {% if message.user.profilePicture %}
+            <img src="{{ asset('uploads/profiles/' ~ message.user.profilePicture) }}" style="width: 100%; height: 100%; object-fit: cover;">
+        {% else %}
+            {{ message.user.firstName|slice(0, 1)|upper }}{{ message.user.lastName|slice(0, 1)|upper }}
+        {% endif %}
     </div>
-    <div style="font-size: 0.6875rem; color: var(--m3-on-surface-variant); margin-top: 4px; padding: 0 4px;">
-        {{ message.sentAt|date('H:i') }}
+
+    <div style="display: flex; flex-direction: column; align-items: {% if isMine %}flex-end{% else %}flex-start{% endif %}; min-width: 0;">
+        {% if isGroup and not isMine %}
+            <span style="font-size: 0.75rem; font-weight: 600; color: var(--m3-primary); margin-bottom: 2px; margin-left: 12px;">
+                {{ message.user.firstName }} {{ message.user.lastName }}
+            </span>
+        {% endif %}
+
+        {% if message.isForwarded %}
+            <div style="font-size: 0.65rem; color: var(--m3-on-surface-variant); font-style: italic; margin-bottom: 2px; display: flex; align-items: center; gap: 4px; margin-left: {% if not isMine %}12px{% else %}0{% endif %};">
+                <span>↪️ Forwarded</span>
+            </div>
+        {% endif %}
+
+        <div style="position: relative; max-width: 100%;">
+            <div class="message-content" style="padding: 10px 16px; border-radius: 18px; font-size: 0.9375rem; line-height: 1.45; {% if message.isDeleted %}background: var(--m3-surface-container-low); color: var(--m3-on-surface-variant); font-style: italic; border: 1px dashed var(--m3-outline-variant);{% elseif isMine %}background: var(--m3-primary); color: white; border-bottom-right-radius: 4px;{% else %}background: white; color: var(--m3-on-surface); border: 1px solid var(--m3-outline-variant); border-bottom-left-radius: 4px;{% endif %}">
+                {% if message.isDeleted %}
+                    🚫 This message was deleted
+                {% else %}
+                    {{ message.content }}
+                {% endif %}
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 4px; margin-top: 4px; justify-content: {% if isMine %}flex-end{% else %}flex-start{% endif %}; padding: 0 4px;">
+                <span style="font-size: 0.65rem; color: var(--m3-on-surface-variant); opacity: 0.8;">{{ message.sentAt|date('H:i') }}</span>
+                
+                {% if isMine %}
+                    <div class="read-receipts" style="display: flex; align-items: center;">
+                        {% if message.seenAt %}
+                            <span style="color: #34b7f1; font-size: 0.9rem; line-height: 1;">✓✓</span>
+                        {% elseif message.deliveredAt %}
+                            <span style="color: var(--m3-on-surface-variant); font-size: 0.9rem; line-height: 1;">✓✓</span>
+                        {% else %}
+                            <span style="color: var(--m3-on-surface-variant); font-size: 0.9rem; line-height: 1;">✓</span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                {% if isGroup and message.getUsers()|length > 0 %}
+                    <div class="seen-by-trigger" style="position: relative; cursor: pointer; display: flex; align-items: center;">
+                        <span style="font-size: 0.65rem; color: var(--m3-primary); font-weight: 600;">• Seen by {{ message.getUsers()|length }}</span>
+                        <div class="seen-by-list" style="display: none; position: absolute; bottom: 100%; right: 0; background: white; padding: 8px 12px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid var(--m3-outline-variant); z-index: 10; white-space: nowrap; font-size: 0.7rem; color: var(--m3-on-surface);">
+                            <div style="font-weight: 800; border-bottom: 1px solid var(--m3-outline-variant); margin-bottom: 4px; padding-bottom: 4px;">Seen by:</div>
+                            {% for reader in message.getUsers() %}
+                                <div>{{ reader.firstName }} {{ reader.lastName }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+.seen-by-trigger:hover .seen-by-list {
+    display: block !important;
+}
+</style>

@@ -15,6 +15,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 #[Route('/forum', name: 'app_forum_')]
 #[IsGranted('ROLE_USER')]
@@ -38,7 +41,8 @@ class ForumController extends AbstractController
         EntityManagerInterface $em,
         ProfanityFilterService $profanityFilter,
         StudentEnrollmentRepository $enrollmentRepo,
-        TeacherAssignmentRepository $taRepo
+        TeacherAssignmentRepository $taRepo,
+        SluggerInterface $slugger
     ): Response {
         $errors = [];
         $user = $this->getUser();
@@ -67,6 +71,25 @@ class ForumController extends AbstractController
                     $enrollment = $enrollmentRepo->findOneBy(['user' => $user], ['id' => 'DESC']);
                     if ($enrollment) {
                         $post->setClasse($enrollment->getClasse());
+                    }
+                }
+
+                // Handle File Upload
+                /** @var UploadedFile $imageFile */
+                $imageFile = $request->files->get('featured_image');
+                if ($imageFile) {
+                    $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                    $safeFilename = $slugger->slug($originalFilename);
+                    $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+
+                    try {
+                        $imageFile->move(
+                            $this->getParameter('kernel.project_dir') . '/public/uploads/forum',
+                            $newFilename
+                        );
+                        $post->setFeaturedImage($newFilename);
+                    } catch (FileException $e) {
+                        // ... handle exception if needed
                     }
                 }
 
@@ -101,7 +124,8 @@ class ForumController extends AbstractController
         ForumPost $post,
         Request $request,
         EntityManagerInterface $em,
-        ProfanityFilterService $profanityFilter
+        ProfanityFilterService $profanityFilter,
+        SluggerInterface $slugger
     ): Response {
         $user = $this->getUser();
 
@@ -122,6 +146,32 @@ class ForumController extends AbstractController
                 $post->setTitle($profanityFilter->filter($title));
                 $post->setContent($profanityFilter->filter($content));
                 $post->setStatus('PENDING');
+
+                // Handle File Upload
+                /** @var UploadedFile $imageFile */
+                $imageFile = $request->files->get('featured_image');
+                if ($imageFile) {
+                    $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                    $safeFilename = $slugger->slug($originalFilename);
+                    $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+
+                    try {
+                        $imageFile->move(
+                            $this->getParameter('kernel.project_dir') . '/public/uploads/forum',
+                            $newFilename
+                        );
+                        // Delete old image if it exists
+                        if ($post->getFeaturedImage()) {
+                            $oldFilePath = $this->getParameter('kernel.project_dir') . '/public/uploads/forum/' . $post->getFeaturedImage();
+                            if (file_exists($oldFilePath)) {
+                                unlink($oldFilePath);
+                            }
+                        }
+                        $post->setFeaturedImage($newFilename);
+                    } catch (FileException $e) {
+                        // ... handle exception if needed
+                    }
+                }
 
                 $em->flush();
 
@@ -168,6 +218,8 @@ class ForumController extends AbstractController
         ProfanityFilterService $profanityFilter
     ): Response {
         $content = trim($request->request->get('content', ''));
+        $parentId = $request->request->get('parent_id');
+
         if ($content === '') {
             $this->addFlash('error', 'Comment content cannot be empty.');
             return $this->redirectToRoute('app_forum_show', ['id' => $post->getId()]);
@@ -180,10 +232,114 @@ class ForumController extends AbstractController
         $comment->setCreatedAt(new \DateTime());
         $comment->setStatus('APPROVED'); // Comments are approved by default after filtering
 
+        if ($parentId) {
+            $parent = $em->getRepository(ForumComment::class)->find($parentId);
+            if ($parent && $parent->getForumPost() === $post) {
+                $comment->setForumComment($parent);
+            }
+        }
+
         $em->persist($comment);
         $em->flush();
 
         $this->addFlash('success', 'Your comment has been posted.');
+        return $this->redirectToRoute('app_forum_show', ['id' => $post->getId()]);
+    }
+
+    #[Route('/comment/{id}/edit', name: 'comment_edit', methods: ['POST'])]
+    public function editComment(
+        ForumComment $comment,
+        Request $request,
+        EntityManagerInterface $em,
+        ProfanityFilterService $profanityFilter
+    ): Response {
+        if ($comment->getUser() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('You can only edit your own comments.');
+        }
+
+        $content = trim($request->request->get('content', ''));
+        if ($content !== '') {
+            $comment->setContent($profanityFilter->filter($content));
+            $em->flush();
+            $this->addFlash('success', 'Comment updated successfully.');
+        }
+
+        return $this->redirectToRoute('app_forum_show', ['id' => $comment->getForumPost()->getId()]);
+    }
+
+    #[Route('/comment/{id}/delete', name: 'comment_delete', methods: ['POST'])]
+    public function deleteComment(
+        ForumComment $comment,
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        if ($comment->getUser() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('You can only delete your own comments.');
+        }
+
+        $postId = $comment->getForumPost()->getId();
+
+        if ($this->isCsrfTokenValid('delete_comment_' . $comment->getId(), $request->request->get('_token'))) {
+            $this->removeCommentRecursively($em, $comment);
+            $em->flush();
+            $this->addFlash('success', 'Comment deleted successfully.');
+        } else {
+            $this->addFlash('error', 'Invalid CSRF token.');
+        }
+
+        return $this->redirectToRoute('app_forum_show', ['id' => $postId]);
+    }
+
+    private function removeCommentRecursively(EntityManagerInterface $em, ForumComment $comment): void
+    {
+        foreach ($comment->getForumComments() as $child) {
+            $this->removeCommentRecursively($em, $child);
+        }
+        $em->remove($comment);
+    }
+
+    #[Route('/{id}/review', name: 'review', methods: ['POST'])]
+    public function review(
+        ForumPost $post,
+        Request $request,
+        EntityManagerInterface $em,
+        ProfanityFilterService $profanityFilter
+    ): Response {
+        $user = $this->getUser();
+        $rating = (int) $request->request->get('rating', 0);
+        $reviewText = trim($request->request->get('review_text', ''));
+
+        if ($rating < 1 || $rating > 5) {
+            $this->addFlash('error', 'Please provide a valid rating between 1 and 5 stars.');
+            return $this->redirectToRoute('app_forum_show', ['id' => $post->getId()]);
+        }
+
+        $existingReview = $em->getRepository(\App\Entity\ForumReview::class)->findOneBy([
+            'forumPost' => $post,
+            'user' => $user
+        ]);
+
+        if ($existingReview) {
+            $existingReview->setRating($rating);
+            $existingReview->setReview_text($profanityFilter->filter($reviewText));
+            $this->addFlash('success', 'Your review has been updated.');
+        } else {
+            $review = new \App\Entity\ForumReview();
+            $review->setForumPost($post);
+            $review->setUser($user);
+            $review->setRating($rating);
+            $review->setReview_text($profanityFilter->filter($reviewText));
+            $review->setCreated_at(new \DateTime());
+            $em->persist($review);
+            $this->addFlash('success', 'Your review has been submitted.');
+        }
+
+        try {
+            $em->flush();
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'An error occurred while saving your review.');
+        }
+
         return $this->redirectToRoute('app_forum_show', ['id' => $post->getId()]);
     }
 }

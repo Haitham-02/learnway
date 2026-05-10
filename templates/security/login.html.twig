@@ -3,12 +3,19 @@
 {% block title %}Sign In — LearnWay{% endblock %}
 
 {% block body %}
-<div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background-color: var(--m3-surface-container-low); font-family: 'Roboto', sans-serif;">
-    <div class="m3-card m3-card-elevated" style="width: 100%; max-width: 440px; padding: 48px; background: #ffffff; border-radius: 28px; box-shadow: 0 12px 48px rgba(0,0,0,0.08);">
+<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden;">
+    <video autoplay muted loop playsinline style="min-width: 100%; min-height: 100%; width: auto; height: auto; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); object-fit: cover;">
+        <source src="{{ asset('videos/LearnWay video.mp4') }}" type="video/mp4">
+    </video>
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(18, 44, 52, 0.6); backdrop-filter: blur(4px);"></div>
+</div>
+
+<div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: 'Roboto', sans-serif; position: relative; z-index: 1;">
+    <div class="m3-card m3-card-elevated" style="width: 100%; max-width: 440px; padding: 48px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 28px; box-shadow: 0 24px 64px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2);">
         
         <div style="text-align: center; margin-bottom: 40px;">
-            <div style="width: 64px; height: 64px; background: #224870; color: #ffffff; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 24px; box-shadow: 0 8px 16px rgba(34, 72, 112, 0.2);">
-                🎓
+            <div style="width: 80px; height: 80px; background: transparent; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+                <img src="{{ asset('images/LearnWay logo.png') }}" alt="LearnWay Logo" style="width: 100%; height: auto;">
             </div>
             <h1 style="margin: 0; font-size: 1.75rem; font-weight: 500; color: #122c34;">Welcome to LearnWay</h1>
             <p style="margin: 8px 0 0; color: #4b636e; font-size: 0.9375rem;">Sign in to manage your academy</p>
@@ -33,16 +40,38 @@
                        placeholder="haitham@learnway.com">
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; flex-direction: column; gap: 8px; position: relative;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <label for="password" style="font-size: 0.75rem; font-weight: 600; color: #224870; letter-spacing: 0.5px;">PASSWORD</label>
                     <a href="#" style="font-size: 0.75rem; color: #224870; text-decoration: none; font-weight: 500;">Forgot?</a>
                 </div>
-                <input type="password" id="password" name="password" required 
-                       style="width: 100%; height: 56px; padding: 0 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 1rem; color: #1e293b; outline: none; transition: all 0.2s;"
-                       onfocus="this.style.borderColor='#224870'; this.style.boxShadow='0 0 0 3px rgba(34, 72, 112, 0.1)'; this.style.background='#ffffff'"
-                       onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'; this.style.background='#f8fafc'"
-                       placeholder="••••••••">
+                <div style="position: relative; display: flex; align-items: center;">
+                    <input type="password" id="password" name="password" required 
+                           style="width: 100%; height: 56px; padding: 0 48px 0 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 1rem; color: #1e293b; outline: none; transition: all 0.2s;"
+                           onfocus="this.style.borderColor='#224870'; this.style.boxShadow='0 0 0 3px rgba(34, 72, 112, 0.1)'; this.style.background='#ffffff'"
+                           onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'; this.style.background='#f8fafc'"
+                           placeholder="••••••••">
+                    <button type="button" onclick="togglePassword()" style="position: absolute; right: 16px; background: none; border: none; cursor: pointer; color: #64748b; padding: 0; display: flex; align-items: center; justify-content: center; transition: color 0.2s;" onmouseover="this.style.color='#1e293b'" onmouseout="this.style.color='#64748b'">
+                        <svg id="eye-show" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        <svg id="eye-hide" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                    </button>
+                </div>
+                <script>
+                    function togglePassword() {
+                        const passwordInput = document.getElementById('password');
+                        const eyeShow = document.getElementById('eye-show');
+                        const eyeHide = document.getElementById('eye-hide');
+                        if (passwordInput.type === 'password') {
+                            passwordInput.type = 'text';
+                            eyeShow.style.display = 'none';
+                            eyeHide.style.display = 'block';
+                        } else {
+                            passwordInput.type = 'password';
+                            eyeShow.style.display = 'block';
+                            eyeHide.style.display = 'none';
+                        }
+                    }
+                </script>
             </div>
 
             <button type="submit" class="m3-button m3-button-filled" 

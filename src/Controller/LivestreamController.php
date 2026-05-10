@@ -8,9 +8,11 @@ use App\Entity\LivestreamQA;
 use App\Entity\FacialAnalysis;
 use App\Entity\LivestreamChat;
 use App\Entity\Classe;
+use App\Entity\User;
 use App\Repository\LivestreamRepository;
 use App\Repository\ClasseRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Predis\Client as RedisClient;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,11 +24,19 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class LivestreamController extends AbstractController
 {
+    private $redis;
+
     public function __construct(
         private EntityManagerInterface $em,
         private LivestreamRepository $livestreamRepo,
-        private ClasseRepository $classeRepo
-    ) {}
+        private ClasseRepository $classeRepo,
+        private \App\Repository\TeacherAssignmentRepository $taRepo,
+        private \App\Repository\SubjectRepository $subjectRepo
+    ) {
+        // Connect to Redis for real-time events
+        $redisHost = $_ENV['REDIS_HOST'] ?? 'localhost';
+        $this->redis = new RedisClient(['host' => $redisHost]);
+    }
 
     // ============= TEACHER ROUTES =============
 
@@ -42,28 +52,30 @@ class LivestreamController extends AbstractController
         ]);
     }
 
-    #[Route('/teacher/livestreams/create', name: 'teacher_create')]
+    #[Route('/teacher/livestreams/create', name: 'teacher_create', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_TEACHER')]
     public function teacherCreate(Request $request): Response
     {
-        $classes = $this->classeRepo->findAll();
+        $user = $this->getUser();
+        $assignments = $this->taRepo->findBy(['teacher' => $user]);
 
         if ($request->isMethod('POST')) {
             $title = $request->request->get('title');
-            $classId = $request->request->get('class_id');
+            $assignmentId = $request->request->get('assignment_id'); // We'll use the assignment ID to be safe
             $scheduledAt = $request->request->get('scheduled_at');
             $description = $request->request->get('description');
 
-            $classe = $this->classeRepo->find($classId);
-            if (!$classe) {
-                $this->addFlash('error', 'Class not found.');
-                return $this->redirectToRoute('app_livestream_teacher_list');
+            $ta = $this->taRepo->find($assignmentId);
+            if (!$ta || $ta->getTeacher() !== $user) {
+                $this->addFlash('error', 'Invalid assignment selection.');
+                return $this->redirectToRoute('app_livestream_teacher_create');
             }
 
             $livestream = new Livestream();
             $livestream->setTitle($title);
-            $livestream->setClasse($classe);
-            $livestream->setTeacher($this->getUser());
+            $livestream->setClasse($ta->getClasse());
+            $livestream->setSubject($ta->getSubject());
+            $livestream->setTeacher($user);
             $livestream->setDescription($description);
             $livestream->setMeetingRoom($this->livestreamRepo->generateUniqueMeetingRoom());
             $livestream->setScheduledAt(new \DateTime($scheduledAt));
@@ -72,12 +84,12 @@ class LivestreamController extends AbstractController
             $this->em->persist($livestream);
             $this->em->flush();
 
-            $this->addFlash('success', 'Livestream created successfully!');
+            $this->addFlash('success', 'Livestream created successfully for ' . $ta->getSubject()->getName() . ' (' . $ta->getClasse()->getName() . ')');
             return $this->redirectToRoute('app_livestream_teacher_list');
         }
 
         return $this->render('livestream/teacher_create.html.twig', [
-            'classes' => $classes,
+            'assignments' => $assignments,
         ]);
     }
 
@@ -86,7 +98,7 @@ class LivestreamController extends AbstractController
     public function teacherEdit(int $id, Request $request): Response
     {
         $livestream = $this->livestreamRepo->find($id);
-        if (!$livestream || $livestream->getTeacher() !== $this->getUser()) {
+        if (!$livestream || !$this->isTeacherOfLivestream($livestream, $this->getUser())) {
             throw $this->createAccessDeniedException();
         }
 
@@ -114,7 +126,7 @@ class LivestreamController extends AbstractController
     public function teacherStart(int $id): Response
     {
         $livestream = $this->livestreamRepo->find($id);
-        if (!$livestream || $livestream->getTeacher() !== $this->getUser()) {
+        if (!$livestream || !$this->isTeacherOfLivestream($livestream, $this->getUser())) {
             return new JsonResponse(['error' => 'Unauthorized'], 403);
         }
 
@@ -130,12 +142,69 @@ class LivestreamController extends AbstractController
     public function teacherEnd(int $id): Response
     {
         $livestream = $this->livestreamRepo->find($id);
-        if (!$livestream || $livestream->getTeacher() !== $this->getUser()) {
+        if (!$livestream || !$this->isTeacherOfLivestream($livestream, $this->getUser())) {
             return new JsonResponse(['error' => 'Unauthorized'], 403);
         }
 
         $livestream->setStatus('ENDED');
         $livestream->setEndedAt(new \DateTime());
+
+        // For security measures, delete all facial analysis data once the session is closed
+        // But first, save general info about students who need more focus
+        $facialAnalyses = $this->em->getRepository(FacialAnalysis::class)->findBy(['livestream' => $livestream]);
+        
+        $studentScores = [];
+        foreach ($facialAnalyses as $analysis) {
+            $studentId = $analysis->getStudent()->getId();
+            $studentName = $analysis->getStudent()->getFirst_name() . ' ' . $analysis->getStudent()->getLast_name();
+            
+            if (!isset($studentScores[$studentId])) {
+                $studentScores[$studentId] = [
+                    'name' => $studentName,
+                    'totalScore' => 0,
+                    'count' => 0,
+                    'emotions' => []
+                ];
+            }
+            
+            $data = $analysis->getAdditionalData();
+            $score = $data['averageScore'] ?? 0;
+            $studentScores[$studentId]['totalScore'] += $score;
+            $studentScores[$studentId]['count'] += 1;
+            
+            $emotion = $analysis->getEmotion();
+            if (!isset($studentScores[$studentId]['emotions'][$emotion])) {
+                $studentScores[$studentId]['emotions'][$emotion] = 0;
+            }
+            $studentScores[$studentId]['emotions'][$emotion]++;
+            
+            // Delete the raw data for privacy
+            $this->em->remove($analysis);
+        }
+        
+        $needsFocus = [];
+        foreach ($studentScores as $studentId => $data) {
+            $avgScore = $data['count'] > 0 ? round($data['totalScore'] / $data['count']) : 0;
+            
+            // Flag students with less than 50% average focus/engagement
+            if ($avgScore < 50) {
+                arsort($data['emotions']);
+                $dominantEmotion = array_key_first($data['emotions']);
+                
+                $needsFocus[] = [
+                    'studentId' => $studentId,
+                    'name' => $data['name'],
+                    'averageScore' => $avgScore,
+                    'dominantEmotion' => $dominantEmotion
+                ];
+            }
+        }
+        
+        $livestream->setEngagementSummary([
+            'studentsNeedingFocus' => $needsFocus,
+            'totalStudentsAnalyzed' => count($studentScores)
+        ]);
+
         $this->em->flush();
 
         return new JsonResponse(['status' => 'ended']);
@@ -146,7 +215,7 @@ class LivestreamController extends AbstractController
     public function teacherDelete(int $id): Response
     {
         $livestream = $this->livestreamRepo->find($id);
-        if (!$livestream || $livestream->getTeacher() !== $this->getUser()) {
+        if (!$livestream || !$this->isTeacherOfLivestream($livestream, $this->getUser())) {
             return new JsonResponse(['error' => 'Unauthorized'], 403);
         }
 
@@ -194,18 +263,7 @@ class LivestreamController extends AbstractController
 
         // Check if user can access this livestream
         $hasAccess = false;
-        if ($livestream->getTeacher() === $user) {
-            $hasAccess = true;
-        } else {
-            // Check if student is in the class
-            $enrollments = $user->getStudentEnrollments();
-            foreach ($enrollments as $enrollment) {
-                if ($enrollment->getClasse() === $livestream->getClasse()) {
-                    $hasAccess = true;
-                    break;
-                }
-            }
-        }
+        $hasAccess = $this->canAccessLivestream($livestream, $user);
 
         if (!$hasAccess) {
             throw $this->createAccessDeniedException();
@@ -219,7 +277,7 @@ class LivestreamController extends AbstractController
             $participant = new LivestreamParticipant();
             $participant->setLivestream($livestream);
             $participant->setUser($user);
-            $participant->setRole($livestream->getTeacher() === $user ? 'TEACHER' : 'STUDENT');
+            $participant->setRole($this->isTeacherOfLivestream($livestream, $user) ? 'TEACHER' : 'STUDENT');
             $this->em->persist($participant);
             $this->em->flush();
         }
@@ -231,24 +289,31 @@ class LivestreamController extends AbstractController
             'livestream' => $livestream,
             'questions' => $questions,
             'chats' => $chats,
-            'isTeacher' => $livestream->getTeacher() === $user,
+            'isTeacher' => $this->isTeacherOfLivestream($livestream, $user),
         ]);
     }
 
     // ============= API ENDPOINTS =============
 
     #[Route('/api/question/{id}/ask', name: 'api_ask_question', methods: ['POST'])]
-    public function askQuestion(int $id, Request $request): JsonResponse
+    #[IsGranted('ROLE_USER')]
+    public function askQuestion(int $id, Request $request): Response
     {
         $livestream = $this->livestreamRepo->find($id);
         if (!$livestream) {
             return new JsonResponse(['error' => 'Livestream not found'], 404);
         }
 
+        // Verify user has access to this livestream
         $user = $this->getUser();
+        $hasAccess = $this->canAccessLivestream($livestream, $user);
+        if (!$hasAccess) {
+            return new JsonResponse(['error' => 'Access denied'], 403);
+        }
+
         $question = $request->request->get('question');
 
-        if (!$question) {
+        if (!$question || trim($question) === '') {
             return new JsonResponse(['error' => 'Question is required'], 400);
         }
 
@@ -260,6 +325,29 @@ class LivestreamController extends AbstractController
         $this->em->persist($qa);
         $this->em->flush();
 
+        // Publish to Redis for real-time updates
+        try {
+            $eventData = json_encode([
+                'room' => "livestream_{$livestream->getId()}_chat",
+                'id' => $qa->getId(),
+                'studentId' => $user->getId(),
+                'studentName' => $user->getFirst_name() . ' ' . $user->getLast_name(),
+                'question' => $qa->getQuestion(),
+                'createdAt' => $qa->getCreatedAt()->format('Y-m-d H:i:s'),
+            ]);
+            $this->redis->publish('livestream-qa', $eventData);
+        } catch (\Exception $e) {
+            error_log("Redis publish failed for Q&A: " . $e->getMessage());
+        }
+
+        // If HTMX request, return partial template
+        if ($request->headers->has('HX-Request')) {
+            return $this->render('livestream/_qa_question.html.twig', [
+                'question' => $qa,
+                'isTeacher' => $this->isTeacherOfLivestream($livestream, $user),
+            ]);
+        }
+
         return new JsonResponse([
             'id' => $qa->getId(),
             'question' => $qa->getQuestion(),
@@ -269,45 +357,75 @@ class LivestreamController extends AbstractController
     }
 
     #[Route('/api/question/{questionId}/answer', name: 'api_answer_question', methods: ['POST'])]
-    #[IsGranted('ROLE_TEACHER')]
-    public function answerQuestion(int $questionId, Request $request): JsonResponse
+    #[IsGranted('ROLE_USER')]
+    public function answerQuestion(int $questionId, Request $request): Response
     {
         $qa = $this->em->getRepository(LivestreamQA::class)->find($questionId);
         if (!$qa) {
             return new JsonResponse(['error' => 'Question not found'], 404);
         }
 
-        // Check if user is the teacher
-        if ($qa->getLivestream()->getTeacher() !== $this->getUser()) {
-            return new JsonResponse(['error' => 'Unauthorized'], 403);
+        // Verify user has access to this livestream
+        $user = $this->getUser();
+        $hasAccess = $this->canAccessLivestream($qa->getLivestream(), $user);
+        if (!$hasAccess) {
+            return new JsonResponse(['error' => 'Access denied'], 403);
         }
 
         $answer = $request->request->get('answer');
-        if (!$answer) {
+        if (!$answer || trim($answer) === '') {
             return new JsonResponse(['error' => 'Answer is required'], 400);
         }
 
         $qa->setAnswer($answer);
-        $qa->setAnsweredBy($this->getUser());
+        $qa->setAnsweredBy($user);
         $qa->setAnsweredAt(new \DateTime());
 
         $this->em->flush();
+
+        // Publish to Redis for real-time updates
+        try {
+            $eventData = json_encode([
+                'room' => "livestream_{$qa->getLivestream()->getId()}_chat",
+                'questionId' => $qa->getId(),
+                'answeredByName' => $user->getFirst_name() . ' ' . $user->getLast_name(),
+                'answer' => $qa->getAnswer(),
+            ]);
+            $this->redis->publish('livestream-qa-answer', $eventData);
+        } catch (\Exception $e) {
+            error_log("Redis publish failed for Q&A answer: " . $e->getMessage());
+        }
+
+        // If HTMX request, return updated question template
+        if ($request->headers->has('HX-Request')) {
+            return $this->render('livestream/_qa_question.html.twig', [
+                'question' => $qa,
+                'isTeacher' => $this->isTeacherOfLivestream($qa->getLivestream(), $user),
+            ]);
+        }
 
         return new JsonResponse(['status' => 'answered']);
     }
 
     #[Route('/api/chat/{id}/send', name: 'api_send_chat', methods: ['POST'])]
-    public function sendChat(int $id, Request $request): JsonResponse
+    #[IsGranted('ROLE_USER')]
+    public function sendChat(int $id, Request $request): Response
     {
         $livestream = $this->livestreamRepo->find($id);
         if (!$livestream) {
             return new JsonResponse(['error' => 'Livestream not found'], 404);
         }
 
+        // Verify user has access to this livestream
         $user = $this->getUser();
+        $hasAccess = $this->canAccessLivestream($livestream, $user);
+        if (!$hasAccess) {
+            return new JsonResponse(['error' => 'Access denied'], 403);
+        }
+
         $message = $request->request->get('message');
 
-        if (!$message) {
+        if (!$message || trim($message) === '') {
             return new JsonResponse(['error' => 'Message is required'], 400);
         }
 
@@ -319,6 +437,28 @@ class LivestreamController extends AbstractController
         $this->em->persist($chat);
         $this->em->flush();
 
+        // Publish to Redis for real-time updates
+        try {
+            $eventData = json_encode([
+                'room' => "livestream_{$livestream->getId()}_chat",
+                'id' => $chat->getId(),
+                'userId' => $user->getId(),
+                'userName' => $user->getFirst_name() . ' ' . $user->getLast_name(),
+                'message' => $chat->getMessage(),
+                'createdAt' => $chat->getCreatedAt()->format('H:i'),
+            ]);
+            $this->redis->publish('livestream-chat', $eventData);
+        } catch (\Exception $e) {
+            error_log("Redis publish failed for chat: " . $e->getMessage());
+        }
+
+        // If HTMX request, return partial template
+        if ($request->headers->has('HX-Request')) {
+            return $this->render('livestream/_chat_message.html.twig', [
+                'chat' => $chat,
+            ]);
+        }
+
         return new JsonResponse([
             'id' => $chat->getId(),
             'message' => $chat->getMessage(),
@@ -328,6 +468,7 @@ class LivestreamController extends AbstractController
     }
 
     #[Route('/api/facial-data', name: 'api_facial_data', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
     public function saveFacialData(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -335,8 +476,9 @@ class LivestreamController extends AbstractController
         $livestreamId = $data['livestreamId'] ?? null;
         $emotion = $data['emotion'] ?? null;
         $confidence = $data['confidence'] ?? null;
+        $averageScore = $data['averageScore'] ?? 0;
 
-        if (!$livestreamId || !$emotion || !$confidence) {
+        if (!$livestreamId || !$emotion) {
             return new JsonResponse(['error' => 'Missing required fields'], 400);
         }
 
@@ -345,20 +487,47 @@ class LivestreamController extends AbstractController
             return new JsonResponse(['error' => 'Livestream not found'], 404);
         }
 
+        // Verify user has access to this livestream
+        $user = $this->getUser();
+        if (!$this->canAccessLivestream($livestream, $user)) {
+            return new JsonResponse(['error' => 'Access denied'], 403);
+        }
+
         $facial = new FacialAnalysis();
         $facial->setLivestream($livestream);
-        $facial->setStudent($this->getUser());
+        $facial->setStudent($user);
         $facial->setEmotion($emotion);
-        $facial->setConfidence($confidence);
-        $facial->setAdditionalData($data['additionalData'] ?? null);
+        $facial->setConfidence($confidence ?? 0);
+        
+        $additionalData = $data['additionalData'] ?? [];
+        $additionalData['averageScore'] = $averageScore;
+        $facial->setAdditionalData($additionalData);
 
         $this->em->persist($facial);
         $this->em->flush();
 
-        return new JsonResponse(['status' => 'saved']);
+        // Broadcast to teacher via Redis/Socket.io
+        try {
+            $eventData = json_encode([
+                'room' => "livestream_{$livestream->getId()}_teacher",
+                'type' => 'facial_update',
+                'studentId' => $user->getId(),
+                'studentName' => $user->getFirst_name() . ' ' . $user->getLast_name(),
+                'emotion' => $emotion,
+                'score' => $averageScore,
+                'confidence' => $confidence,
+                'timestamp' => $facial->getCreatedAt()->format('H:i:s')
+            ]);
+            $this->redis->publish('livestream-ai-update', $eventData);
+        } catch (\Exception $e) {
+            // Silently fail redis broadcast
+        }
+
+        return new JsonResponse(['status' => 'saved', 'id' => $facial->getId()]);
     }
 
     #[Route('/api/emotion-stats/{id}', name: 'api_emotion_stats', methods: ['GET'])]
+    #[IsGranted('ROLE_TEACHER')]
     public function getEmotionStats(int $id): JsonResponse
     {
         $livestream = $this->livestreamRepo->find($id);
@@ -366,8 +535,70 @@ class LivestreamController extends AbstractController
             return new JsonResponse(['error' => 'Livestream not found'], 404);
         }
 
+        // Only allow teacher of this livestream to access emotion stats
+        if (!$this->isTeacherOfLivestream($livestream, $this->getUser())) {
+            return new JsonResponse(['error' => 'Unauthorized: Only the livestream teacher can access emotion stats'], 403);
+        }
+
         $stats = $this->em->getRepository(FacialAnalysis::class)->getEmotionStats($id);
 
         return new JsonResponse($stats);
+    }
+
+    // ============= HELPER METHODS =============
+
+    /**
+     * Verify if a user has access to a livestream.
+     * Teachers own the livestream.
+     * Students must be enrolled in the livestream's class.
+     */
+    private function isTeacherOfLivestream(Livestream $livestream, ?User $user): bool
+    {
+        $teacher = $livestream->getTeacher();
+
+        return $user !== null
+            && $teacher !== null
+            && (string) $teacher->getId() === (string) $user->getId();
+    }
+
+    private function canAccessLivestream(Livestream $livestream, ?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        // 1. Teachers of this livestream always have access
+        if ($this->isTeacherOfLivestream($livestream, $user)) {
+            return true;
+        }
+
+        // 2. Admins always have access
+        if ($this->isGranted('ROLE_ADMIN')) {
+            return true;
+        }
+
+        // 3. Students must be enrolled in the class assigned to the livestream
+        $livestreamClass = $livestream->getClasse();
+        
+        // If no class is assigned, we default to allowing ROLE_USER (or you can restrict to ROLE_TEACHER)
+        if (!$livestreamClass) {
+            return $this->isGranted('ROLE_USER');
+        }
+
+        // Check enrollments for students
+        $enrollments = $user->getStudentEnrollments();
+        foreach ($enrollments as $enrollment) {
+            $enrollmentClass = $enrollment->getClasse();
+            if ($enrollmentClass && (string) $enrollmentClass->getId() === (string) $livestreamClass->getId()) {
+                return true;
+            }
+        }
+
+        // 4. Also allow other teachers to view/participate (optional, but often desired)
+        if ($this->isGranted('ROLE_TEACHER')) {
+            return true;
+        }
+
+        return false;
     }
 }

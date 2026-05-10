@@ -55,15 +55,15 @@
             " placeholder="Add optional details..."></textarea>
         </div>
 
-        <!-- Class -->
+        <!-- Class & Subject -->
         <div style="margin-bottom: 1.5rem;">
             <label style="
                 display: block;
                 margin-bottom: 0.5rem;
                 font-weight: 600;
                 color: var(--m3-on-surface);
-            ">Class *</label>
-            <select name="class_id" required style="
+            ">Subject & Class *</label>
+            <select name="assignment_id" required style="
                 width: 100%;
                 padding: 0.75rem;
                 border: 2px solid var(--m3-outline);
@@ -73,11 +73,14 @@
                 background-color: var(--m3-surface);
                 color: var(--m3-on-surface);
             ">
-                <option value="">-- Select a Class --</option>
-                {% for class in classes %}
-                    <option value="{{ class.id }}">{{ class.name }} ({{ class.gradeLevel }})</option>
+                <option value="">-- Select Subject & Class --</option>
+                {% for ta in assignments %}
+                    <option value="{{ ta.id }}">{{ ta.subject.name }} — {{ ta.classe.name }}</option>
                 {% endfor %}
             </select>
+            <p style="font-size: 0.75rem; color: var(--m3-on-surface-variant); margin-top: 0.5rem;">
+                You can only create livestreams for classes and subjects you are assigned to.
+            </p>
         </div>
 
         <!-- Scheduled Date/Time -->

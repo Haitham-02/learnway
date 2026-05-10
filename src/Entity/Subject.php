@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use App\Repository\SubjectRepository;
 
 #[ORM\Entity(repositoryClass: SubjectRepository::class)]
@@ -133,6 +135,44 @@ class Subject
     public function setTerm(?Term $term): self
     {
         $this->term = $term;
+        return $this;
+    }
+
+    #[ORM\OneToMany(mappedBy: 'subject', targetEntity: Chapter::class)]
+    private Collection $chapters;
+
+    public function __construct()
+    {
+        $this->chapters = new ArrayCollection();
+    }
+
+    /**
+     * @return Collection<int, Chapter>
+     */
+    public function getChapters(): Collection
+    {
+        return $this->chapters;
+    }
+
+    public function addChapter(Chapter $chapter): self
+    {
+        if (!$this->chapters->contains($chapter)) {
+            $this->chapters->add($chapter);
+            $chapter->setSubject($this);
+        }
+
+        return $this;
+    }
+
+    public function removeChapter(Chapter $chapter): self
+    {
+        if ($this->chapters->removeElement($chapter)) {
+            // set the owning side to null (unless already changed)
+            if ($chapter->getSubject() === $this) {
+                $chapter->setSubject(null);
+            }
+        }
+
         return $this;
     }
 

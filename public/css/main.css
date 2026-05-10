@@ -92,6 +92,23 @@ body {
   background-color: var(--m3-surface);
   color: var(--m3-on-surface);
   margin: 0;
+  -webkit-tap-highlight-color: transparent; /* Remove mobile tap highlight */
+}
+
+/* Global Focus Reset for Mouse Users */
+*:focus:not(:focus-visible) {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Branding & Headings Protection */
+.logo, h1, h2, h3, .app-name, .brand-text, .m3-sidebar-item span {
+  user-select: none; /* Prevent accidental text selection line */
+  -webkit-user-drag: none;
+}
+
+a {
+  text-decoration: none;
 }
 
 /* Material 3 Buttons */
@@ -200,8 +217,7 @@ body {
 .m3-text-field:focus {
   outline: none;
   border-color: var(--m3-primary);
-  border-width: 2px;
-  padding: 15px; /* Adjust for border width change */
+  box-shadow: 0 0 0 1px var(--m3-primary);
 }
 
 /* Material 3 Label */
@@ -241,6 +257,5 @@ body {
 .m3-select:focus {
   outline: none;
   border-color: var(--m3-primary);
-  border-width: 2px;
-  padding: 15px;
+  box-shadow: 0 0 0 1px var(--m3-primary);
 }

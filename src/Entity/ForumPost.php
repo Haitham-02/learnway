@@ -199,23 +199,40 @@ class ForumPost
         return $this;
     }
 
-    #[ORM\OneToOne(targetEntity: ForumReview::class, mappedBy: 'forumPost')]
-    private ?ForumReview $forumReview = null;
+    #[ORM\OneToMany(targetEntity: ForumReview::class, mappedBy: 'forumPost')]
+    private Collection $forumReviews;
 
     public function __construct()
     {
         $this->forumComments = new ArrayCollection();
         $this->forumPostAttachments = new ArrayCollection();
+        $this->forumReviews = new ArrayCollection();
     }
 
-    public function getForumReview(): ?ForumReview
+    /**
+     * @return Collection<int, ForumReview>
+     */
+    public function getForumReviews(): Collection
     {
-        return $this->forumReview;
+        return $this->forumReviews;
     }
 
-    public function setForumReview(?ForumReview $forumReview): self
+    public function addForumReview(ForumReview $forumReview): self
     {
-        $this->forumReview = $forumReview;
+        if (!$this->forumReviews->contains($forumReview)) {
+            $this->forumReviews->add($forumReview);
+            $forumReview->setForumPost($this);
+        }
+        return $this;
+    }
+
+    public function removeForumReview(ForumReview $forumReview): self
+    {
+        if ($this->forumReviews->removeElement($forumReview)) {
+            if ($forumReview->getForumPost() === $this) {
+                $forumReview->setForumPost(null);
+            }
+        }
         return $this;
     }
 

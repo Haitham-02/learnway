@@ -24,6 +24,11 @@
     <span style="flex-grow: 1;">Live Sessions</span>
 </a>
 
+<a href="{{ path('app_schedule_view') }}" class="m3-sidebar-item {{ currentRoute == 'app_schedule_view' ? 'active' : '' }}">
+    <span style="font-size: 1.25rem;">📅</span> 
+    <span style="flex-grow: 1;">My Schedule</span>
+</a>
+
 {% if assignments|length > 0 %}
     <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--m3-primary); margin: 1.5rem 16px 8px; font-weight: 700; border-bottom: 1px solid var(--m3-outline); padding-bottom: 4px;">
         📚 My Subjects

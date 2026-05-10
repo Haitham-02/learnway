@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 class="display-5 fw-bold" style="color: var(--m3-on-surface); letter-spacing: -0.03em;">{{ title }}</h1>
+            <p class="text-muted" style="font-size: 1.1rem;">Your weekly academic organization at a glance</p>
+        </div>
+        <a href="{{ path('app_schedule_export') }}" class="btn d-inline-flex align-items-center justify-content-center gap-4" style="height: 84px; min-width: 420px; padding: 0 48px; background: var(--m3-secondary); color: white; border-radius: 32px; font-weight: 800; font-size: 1.15rem; box-shadow: 0 12px 24px rgba(0,0,0,0.1); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);" onmouseover="this.style.transform='translateY(-6px) scale(1.01)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.2)';" onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 12px 24px rgba(0,0,0,0.1)';" >
+            <span style="font-size: 2rem;">📥</span> 
+            <span style="letter-spacing: 0.02em;">Download Schedule PDF</span>
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-lg" style="border-radius: 32px; background: white; overflow: hidden; border: 1px solid var(--m3-outline-variant) !important; width: 100%;">
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle text-center mb-0" style="border-color: var(--m3-outline-variant); table-layout: fixed; width: 100%; border-collapse: collapse;">
+                <thead style="background: var(--m3-surface-container-low);">
+                    <tr>
+                        <th style="width: 150px; padding: 24px; font-weight: 800; color: var(--m3-primary); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em; border-bottom: 2px solid var(--m3-outline-variant);">Time Slot</th>
+                        {% for day in days %}
+                            <th style="padding: 24px; font-weight: 800; color: var(--m3-on-surface); font-size: 1rem; border-bottom: 2px solid var(--m3-outline-variant);">{{ day }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for slot in slots %}
+                        <tr>
+                            <td style="font-weight: 800; background: var(--m3-surface-container-lowest); font-size: 0.95rem; padding: 20px; color: var(--m3-on-surface-variant);">
+                                {{ slot.getRange }}
+                            </td>
+                            {% for day in days %}
+                                <td style="height: 120px; padding: 0;">
+                                    {% if scheduleData[day][slot.id] is defined %}
+                                        {% set item = scheduleData[day][slot.id] %}
+                                        <div class="h-100 w-100 d-flex flex-column justify-content-center align-items-center p-3" 
+                                             style="background: var(--m3-primary-container); border: 1px solid var(--m3-primary); overflow: hidden;">
+                                            <div style="font-weight: 900; font-size: 1.05rem; color: var(--m3-on-primary-container); margin-bottom: 6px; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                {{ item.subject }}
+                                            </div>
+                                            <div class="d-flex align-items-center justify-content-center gap-2" style="font-size: 0.8rem; font-weight: 700; opacity: 0.9; color: var(--m3-on-primary-container); background: rgba(255,255,255,0.4); padding: 4px 14px; border-radius: 12px; text-align: center; text-transform: uppercase; letter-spacing: 0.02em;">
+                                                {% if isTeacher %}
+                                                    {{ item.class }}
+                                                {% else %}
+                                                    {{ item.teacher }}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <div class="h-100 w-100 d-flex align-items-center justify-content-center" style="color: var(--m3-outline-variant); font-size: 1.5rem; opacity: 0.3;">
+                                            —
+                                        </div>
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

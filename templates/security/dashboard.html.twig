@@ -53,14 +53,25 @@
     </div>
 
     {# Chart Section #}
-    {% if chart is defined %}
-    <div style="margin-bottom: 48px;">
-        <div style="margin-bottom: 24px; font-size: 1.25rem; font-weight: 500; color: var(--m3-primary); letter-spacing: 0.1px;">User Distribution</div>
-        <div class="m3-card m3-card-elevated" style="padding: 32px; max-width: 600px; margin: 0 auto;">
-            {{ render_chart(chart) }}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 32px; margin-bottom: 48px;">
+        {% if chart is defined %}
+        <div style="display: flex; flex-direction: column;">
+            <div style="margin-bottom: 24px; font-size: 1.25rem; font-weight: 500; color: var(--m3-primary); letter-spacing: 0.1px;">User Distribution</div>
+            <div class="m3-card m3-card-elevated" style="padding: 32px; flex-grow: 1; min-height: 300px;">
+                {{ render_chart(chart) }}
+            </div>
         </div>
+        {% endif %}
+
+        {% if chart2 is defined %}
+        <div style="display: flex; flex-direction: column;">
+            <div style="margin-bottom: 24px; font-size: 1.25rem; font-weight: 500; color: var(--m3-primary); letter-spacing: 0.1px;">Engagement Overview</div>
+            <div class="m3-card m3-card-elevated" style="padding: 32px; flex-grow: 1; min-height: 300px;">
+                {{ render_chart(chart2) }}
+            </div>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
 
     {% endif %}
 </div>

@@ -224,4 +224,31 @@ class Message
         return $this;
     }
 
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $edited_at = null;
+
+    public function getEditedAt(): ?\DateTimeInterface
+    {
+        return $this->edited_at;
+    }
+
+    public function setEditedAt(?\DateTimeInterface $edited_at): self
+    {
+        $this->edited_at = $edited_at;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $is_forwarded = false;
+
+    public function isForwarded(): bool
+    {
+        return $this->is_forwarded;
+    }
+
+    public function setIsForwarded(bool $is_forwarded): self
+    {
+        $this->is_forwarded = $is_forwarded;
+        return $this;
+    }
 }

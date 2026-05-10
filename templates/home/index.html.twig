@@ -5,15 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LearnWay | Elevate Your Learning Experience</title>
     <meta name="description" content="LearnWay is a modern e-learning platform connecting students and teachers with real-time tools, community forums, and seamless course management.">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🎓</text></svg>">
+    <link rel="icon" href="{{ asset('images/LearnWay logo.png') }}">
     <link rel="stylesheet" href="{{ asset('css/landing.css') }}">
 </head>
 <body>
 
     <!-- Navbar -->
     <nav>
-        <a href="/" class="logo">
-            <span>🎓</span> LearnWay
+        <a href="/" class="logo" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+            <img src="{{ asset('images/LearnWay logo.png') }}" alt="LearnWay Logo" style="height: 40px; width: auto;">
+            <span class="brand-text" style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">LearnWay</span>
         </a>
         <ul class="nav-links">
             <li><a href="#features">Features</a></li>

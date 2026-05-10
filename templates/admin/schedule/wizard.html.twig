@@ -1,0 +1,556 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Schedule Wizard - {{ classe.name }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4" style="background: var(--m3-surface-container-lowest); min-height: 100vh;" 
+     id="schedule-wizard"
+     data-class-id="{{ classe.id }}">
+    
+    {# Header #}
+    <div class="wizard-header">
+        <div>
+            <h1 style="margin: 0; font-size: 2.25rem; font-weight: 300; color: var(--m3-on-surface);">Schedule Setup: <span style="font-weight: 700; color: var(--m3-primary);">{{ classe.name }}</span></h1>
+            <p style="margin: 8px 0 0; color: var(--m3-on-surface-variant); font-size: 1.1rem;">Configure the weekly academic timetable and teacher assignments.</p>
+        </div>
+        <a href="{{ path('admin_schedule_index') }}" class="m3-button m3-button-text">
+            <span>←</span> Back to Classes
+        </a>
+    </div>
+
+    {# Progress Bar #}
+    <div class="wizard-progress-bar">
+        <div id="step-nav-1" class="wizard-step-pill active">1. Select Mode</div>
+        <div id="step-nav-2" class="wizard-step-pill">2. Build Timetable</div>
+    </div>
+    
+    <div class="m3-card wizard-main-card m3-card-elevated">
+        {# Wizard Steps Content #}
+        <div class="p-0">
+            {# STEP 1: SELECT MODE #}
+            <div id="step-content-1" class="wizard-content step-content-padding">
+                <div class="text-center mb-5">
+                    <span class="badge mb-3" style="background: var(--m3-primary-container); color: var(--m3-on-primary-container); padding: 10px 20px; border-radius: 100px; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">Initial Configuration</span>
+                    <h2 class="mode-title" style="font-size: 2rem;">Choose Timetable Structure</h2>
+                    <p class="text-muted mx-auto" style="max-width: 600px; font-size: 1.1rem;">Select the duration for each academic session. This will define the layout of your weekly timetable grid.</p>
+                </div>
+
+                <div class="mode-selection-grid">
+                    <div class="mode-card" onclick="selectMode('90MIN')">
+                        <div class="mode-icon">🕒</div>
+                        <h3 class="mode-title">90 Minutes</h3>
+                        <p class="mode-description">Standard slots for balanced academic curricula. Ideal for most theoretical subjects.</p>
+                    </div>
+
+                    <div class="mode-card" onclick="selectMode('120MIN')">
+                        <div class="mode-icon">🕓</div>
+                        <h3 class="mode-title">120 Minutes</h3>
+                        <p class="mode-description">Extended sessions optimized for laboratory work, workshops, or intensive study periods.</p>
+                    </div>
+                </div>
+            </div>
+
+            {# STEP 2: GRID #}
+            <div id="step-content-2" class="wizard-content step-content-grid" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 56px;">
+                    <div>
+                        <h2 class="mode-title" style="margin: 0;">Weekly Timetable Grid</h2>
+                        <p class="text-muted small mb-0">Click any empty slot to assign a subject to this timetable.</p>
+                    </div>
+                    <button class="m3-button m3-button-tonal" onclick="goToStep(1)">
+                        <span>⚙️</span> Change Mode
+                    </button>
+                </div>
+
+                <div class="timetable-wrapper">
+                    <table class="timetable-table">
+                        <thead style="border-bottom: 2px solid var(--m3-outline-variant);">
+                            <tr>
+                                <th class="timetable-header-cell">Time Slot</th>
+                                {% for day in days %}
+                                    <th class="timetable-day-header">{{ day }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody id="schedule-grid">
+                            {# Generated via JS #}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-5 d-flex justify-content-between align-items-center p-3" style="background: var(--m3-surface-container-low); border-radius: 20px;">
+                    <p class="mb-0 text-muted small">Changes are saved automatically as you assign slots.</p>
+                    <button class="m3-button m3-button-filled" style="padding: 0 40px; height: 52px;" onclick="window.location.href='{{ path('admin_schedule_index') }}'">
+                        Finish & Close Wizard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Custom Assignment Modal Overlay #}
+<div id="custom-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); z-index: 9999; backdrop-filter: blur(12px); align-items: center; justify-content: center;">
+    <div class="m3-card" style="width: 100%; max-width: 520px; padding: 40px; border-radius: 40px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); background: white; position: relative; margin: 20px;">
+        {# Close Button #}
+        <button type="button" onclick="closeCustomModal()" style="position: absolute; top: 32px; right: 32px; border: none; background: var(--m3-surface-container-high); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 1.2rem; color: var(--m3-on-surface-variant);">✕</button>
+        
+        <div style="margin-bottom: 32px;">
+            <h3 style="font-weight: 900; color: var(--m3-primary); margin: 0; font-size: 1.75rem; letter-spacing: -0.02em;">Assign Subject</h3>
+            <p class="text-muted small" style="margin-top: 8px; font-size: 0.95rem;">Configure the lesson details for this slot.</p>
+        </div>
+        
+        {# Slot Summary Block #}
+        <div id="selected-slot-info-modal" class="mb-5 p-4" style="background: var(--m3-surface-container-lowest); border: 1px solid var(--m3-outline-variant); border-radius: 24px;">
+            {# Slot info injected here #}
+        </div>
+
+        {# Subject Selection #}
+        <div style="margin-bottom: 32px;">
+            <label class="form-label fw-bold" style="display: block; margin-bottom: 12px; color: var(--m3-on-surface); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">Academic Subject</label>
+            <select id="modal-subject" class="form-select" style="width: 100%; border-radius: 18px; border: 2px solid var(--m3-outline-variant); font-size: 1.05rem; padding: 14px 20px; background-color: var(--m3-surface-container-low); color: var(--m3-on-surface); cursor: pointer; transition: border-color 0.2s;">
+                <option value="">-- Select Subject --</option>
+                {% set subjects = [] %}
+                {% for ta in assignments %}
+                    {% if ta.subject.id not in subjects %}
+                        <option value="{{ ta.subject.id }}">{{ ta.subject.name }}</option>
+                        {% set subjects = subjects|merge([ta.subject.id]) %}
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+
+        {# Auto-Teacher Area #}
+        <div id="teacher-info-area" style="margin-bottom: 32px; padding: 24px; background: #f8fafc; border-radius: 24px; display: none; border: 2px dashed #e2e8f0; align-items: center; gap: 20px;">
+            <div style="width: 52px; height: 52px; background: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">👨‍🏫</div>
+            <div>
+                <label class="d-block small fw-bold text-muted" style="margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.025em;">Assigned Teacher</label>
+                <div id="auto-teacher-name" style="font-weight: 800; color: var(--m3-primary); font-size: 1.2rem;"></div>
+            </div>
+            <input type="hidden" id="modal-teacher">
+        </div>
+
+        <div id="modal-error" class="alert" style="display: none !important; border-radius: 20px; font-size: 0.9rem; margin-bottom: 0;"></div>
+
+        {# Footer Actions #}
+        <div style="padding-top: 32px; border-top: 1px solid var(--m3-outline-variant); display: flex; gap: 16px;">
+            <button type="button" class="m3-button m3-button-text" onclick="closeCustomModal()" style="flex: 1; font-weight: 600;">Cancel</button>
+            <button type="button" class="m3-button m3-button-filled" id="save-assignment-btn" style="flex: 2; height: 56px; font-size: 1rem; font-weight: 700; border-radius: 18px;">
+                Save Assignment
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --m3-radius-large: 24px;
+        --m3-radius-extra: 40px;
+        --m3-surface-container: #f0f3f8;
+        --m3-surface-container-high: #e1e2e8;
+        --m3-surface-container-low: #f7f9fc;
+        --m3-shadow-soft: 0 4px 15px rgba(0,0,0,0.03);
+        --m3-shadow-deep: 0 12px 24px rgba(0,0,0,0.08);
+    }
+
+    .wizard-header {
+        max-width: 1100px;
+        margin: 0 auto 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .wizard-progress-bar {
+        max-width: 1100px;
+        margin: 0 auto 40px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--m3-surface-container);
+        padding: 12px;
+        border-radius: 100px;
+    }
+
+    .wizard-step-pill {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        border-radius: 100px;
+        font-weight: 500;
+        font-size: 0.875rem;
+        color: var(--m3-on-surface-variant);
+        opacity: 0.6;
+        transition: all 0.3s ease;
+    }
+
+    .wizard-step-pill.active {
+        background: var(--m3-primary) !important;
+        color: var(--m3-on-primary) !important;
+        opacity: 1;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .wizard-main-card {
+        max-width: 1300px;
+        margin: 0 auto;
+        border-radius: 28px;
+        background: white;
+        overflow: hidden;
+        border: none;
+    }
+
+    .step-content-padding { padding: 80px 40px; }
+    .step-content-grid { padding: 40px; }
+
+    .mode-selection-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 40px;
+        max-width: 850px;
+        margin: 0 auto;
+        justify-content: center;
+    }
+
+    .mode-card {
+        border: 2px solid var(--m3-outline-variant);
+        border-radius: var(--m3-radius-extra);
+        background: white;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        min-height: 400px;
+        padding: 60px 40px !important;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .mode-card:hover {
+        background: var(--m3-surface-container-high) !important;
+        border-color: var(--m3-primary) !important;
+        transform: translateY(-10px);
+        box-shadow: var(--m3-shadow-deep);
+    }
+
+    .mode-icon {
+        font-size: 4.5rem;
+        margin-bottom: 2.5rem;
+        filter: drop-shadow(0 12px 24px rgba(0,0,0,0.12));
+    }
+
+    .mode-title {
+        font-weight: 800;
+        color: var(--m3-on-surface);
+        margin-bottom: 1.5rem;
+        font-size: 1.75rem;
+    }
+
+    .mode-description {
+        color: var(--m3-on-surface-variant);
+        line-height: 1.8;
+        font-size: 1rem;
+        padding: 0 24px;
+        margin: 0;
+    }
+
+    .timetable-wrapper {
+        border-radius: 20px;
+        border: 1px solid var(--m3-outline-variant);
+        overflow: hidden;
+        background: white;
+    }
+
+    .timetable-table {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin: 0;
+    }
+
+    .timetable-header-cell {
+        width: 120px;
+        background: var(--m3-surface-container-high);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 800;
+        color: var(--m3-primary);
+        padding: 16px !important;
+        border-right: 1px solid var(--m3-outline-variant);
+    }
+
+    .timetable-day-header {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: var(--m3-on-surface);
+        padding: 16px !important;
+        background: var(--m3-surface-container);
+    }
+
+    .grid-cell { 
+        height: 110px; 
+        transition: all 0.2s; 
+        cursor: pointer;
+        padding: 0 !important;
+        background: white;
+        border-right: 1px solid var(--m3-outline-variant);
+        border-bottom: 1px solid var(--m3-outline-variant);
+        vertical-align: middle;
+        text-align: center;
+    }
+    .grid-cell:hover { background: var(--m3-surface-container-low); }
+    
+    .slot-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .slot-plus {
+        font-size: 2.25rem;
+        font-weight: 200;
+        color: var(--m3-primary);
+        opacity: 0.25;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+    }
+    .grid-cell:hover .slot-plus { opacity: 1; transform: scale(1.2); color: var(--m3-primary); }
+
+    .slot-occupied {
+        background: var(--m3-primary-container) !important;
+        border-radius: 16px;
+        color: var(--m3-on-primary-container);
+        font-size: 0.85rem;
+        position: relative;
+        border: 1px solid var(--m3-primary) !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        padding: 8px 12px;
+        text-align: center;
+        height: 94px; /* Fixed height to fit inside 110px cell with margin */
+        width: calc(100% - 16px);
+        margin: 8px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+    
+    .slot-occupied div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    .delete-btn {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        opacity: 0;
+        transition: all 0.2s;
+        background: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border: none;
+    }
+
+    .slot-occupied:hover .delete-btn { opacity: 1; transform: scale(1.1); }
+</style>
+
+<script>
+    const slots90 = {{ slots90|map(s => {id: s.id, range: s.getRange})|json_encode|raw }};
+    const slots120 = {{ slots120|map(s => {id: s.id, range: s.getRange})|json_encode|raw }};
+    const days = {{ days|json_encode|raw }};
+    const teacherAssignments = {{ assignments|map(ta => {sid: ta.subject.id, tid: ta.teacher.id, tname: ta.teacher.firstName ~ ' ' ~ ta.teacher.lastName})|json_encode|raw }};
+    const classId = document.getElementById('schedule-wizard').dataset.classId;
+
+    let currentMode = null;
+    let activeCell = null;
+    let existingSchedule = [];
+
+    async function loadSchedule() {
+        const res = await fetch(`/admin/schedule/api/get-schedule/${classId}`);
+        existingSchedule = await res.json();
+        if (currentMode) renderGrid();
+    }
+
+    function selectMode(mode) {
+        currentMode = mode;
+        goToStep(2);
+        renderGrid();
+    }
+
+    function goToStep(step) {
+        document.querySelectorAll('.wizard-content').forEach(el => el.style.display = 'none');
+        document.getElementById('step-content-' + step).style.display = 'block';
+        
+        document.querySelectorAll('.wizard-step-pill').forEach((el, index) => {
+            el.classList.toggle('active', (index + 1) === step);
+        });
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderGrid() {
+        const slots = currentMode === '90MIN' ? slots90 : slots120;
+        const tbody = document.getElementById('schedule-grid');
+        tbody.innerHTML = '';
+
+        slots.forEach(slot => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td class="timetable-header-cell">${slot.range}</td>`;
+            
+            days.forEach(day => {
+                const occupied = existingSchedule.find(s => s.day === day && s.slotId === slot.id);
+                const td = document.createElement('td');
+                td.className = 'grid-cell';
+                
+                const wrapper = document.createElement('div');
+                wrapper.className = 'slot-wrapper';
+
+                if (occupied) {
+                    wrapper.innerHTML = `
+                        <div class="slot-occupied">
+                            <div style="font-weight: 800; margin-bottom: 4px;">${occupied.subject}</div>
+                            <div style="font-size: 0.75rem; opacity: 0.85; font-weight: 500;">${occupied.teacher}</div>
+                            <button class="delete-btn text-danger" onclick="deleteSlot(event, ${occupied.id})">✕</button>
+                        </div>
+                    `;
+                } else {
+                    td.onclick = () => openAssignmentModal(slot.id, day, slot.range);
+                    wrapper.innerHTML = `<span class="slot-plus">+</span>`;
+                }
+                
+                td.appendChild(wrapper);
+                tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+        });
+    }
+
+    function openAssignmentModal(slotId, day, range) {
+        activeCell = { slotId, day };
+        const overlay = document.getElementById('custom-modal-overlay');
+        
+        document.getElementById('selected-slot-info-modal').innerHTML = `
+            <div class="d-flex align-items-center gap-4">
+                <div class="d-flex align-items-center gap-2">
+                    <span style="font-size: 1.25rem;">📅</span> <strong>${day}</strong>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span style="font-size: 1.25rem;">🕒</span> <strong>${range}</strong>
+                </div>
+            </div>
+        `;
+        
+        const errDiv = document.getElementById('modal-error');
+        errDiv.style.setProperty('display', 'none', 'important');
+        errDiv.style.background = '';
+        errDiv.style.border = '';
+        errDiv.style.padding = '';
+        errDiv.style.marginBottom = '0';
+        
+        document.getElementById('modal-subject').value = '';
+        document.getElementById('teacher-info-area').style.display = 'none';
+        document.getElementById('modal-teacher').value = '';
+        
+        overlay.style.display = 'flex';
+    }
+
+    function closeCustomModal() {
+        document.getElementById('custom-modal-overlay').style.display = 'none';
+    }
+
+    document.getElementById('modal-subject').onchange = (e) => {
+        const sid = e.target.value;
+        const teacherArea = document.getElementById('teacher-info-area');
+        const teacherNameDiv = document.getElementById('auto-teacher-name');
+        const teacherHidden = document.getElementById('modal-teacher');
+        
+        if (!sid) {
+            teacherArea.style.display = 'none';
+            return;
+        }
+
+        const assignment = teacherAssignments.find(ta => ta.sid == sid);
+        if (assignment) {
+            teacherArea.style.display = 'flex';
+            teacherNameDiv.textContent = assignment.tname;
+            teacherHidden.value = assignment.tid;
+        } else {
+            teacherArea.style.display = 'flex';
+            teacherNameDiv.textContent = 'No teacher assigned';
+            teacherHidden.value = '';
+        }
+    };
+
+    function showError(msg) {
+        const errDiv = document.getElementById('modal-error');
+        errDiv.innerHTML = msg;
+        errDiv.style.setProperty('display', 'block', 'important');
+        errDiv.style.background = '#fff1f2';
+        errDiv.style.color = '#be123c';
+        errDiv.style.border = '1px solid #fecdd3';
+        errDiv.style.padding = '16px 20px';
+        errDiv.style.marginBottom = '32px';
+    }
+
+    document.getElementById('save-assignment-btn').onclick = async () => {
+        const sid = document.getElementById('modal-subject').value;
+        const tid = document.getElementById('modal-teacher').value;
+        
+        if (!sid || !tid) {
+            showError('Please select a subject with a valid teacher assignment.');
+            return;
+        }
+
+        const res = await fetch('/admin/schedule/api/save-slot', {
+            method: 'POST',
+            body: JSON.stringify({
+                classId,
+                subjectId: sid,
+                teacherId: tid,
+                slotId: activeCell.slotId,
+                day: activeCell.day
+            }),
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        const result = await res.json();
+        if (result.success) {
+            closeCustomModal();
+            loadSchedule();
+        } else {
+            showError(result.errors.join('<br>'));
+        }
+    };
+
+    async function deleteSlot(event, id) {
+        event.stopPropagation();
+        if (!confirm('Remove this assignment?')) return;
+        
+        await fetch(`/admin/schedule/api/delete-slot/${id}`, { method: 'DELETE' });
+        loadSchedule();
+    }
+
+    loadSchedule();
+</script>
+{% endblock %}

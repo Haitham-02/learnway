@@ -1,0 +1,132 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Academic Scheduling{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4" style="background: var(--m3-surface-container-lowest); min-height: 100vh;">
+    {# ── HEADER ── #}
+    <div class="mb-5 px-3 text-center">
+        <h1 class="display-5 fw-bold" style="color: var(--m3-on-surface); margin-bottom: 0.5rem;">📅 Academic Scheduling</h1>
+        <p class="text-muted mb-4">Manage weekly timetables and resolve scheduling conflicts for all classes.</p>
+        
+        {# ── ULTRA COMPACT FILTER BAR ── #}
+        <div class="mb-5 d-flex flex-column align-items-center" style="gap: 48px;">
+            {# Strict Horizontal Row #}
+            <div style="display: flex !important; flex-direction: row !important; align-items: center !important; gap: 40px; padding: 12px 32px; background: white; border-radius: 20px; border: 1px solid var(--m3-outline-variant); box-shadow: 0 4px 15px rgba(0,0,0,0.03); min-width: 450px; justify-content: center; flex-wrap: nowrap !important;">
+                
+                {# Search Part #}
+                <div class="position-relative" style="width: 200px; flex-shrink: 0;">
+                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 0.8rem;">🔍</span>
+                    <input type="text" id="class-search" placeholder="Search class..." 
+                           style="width: 100%; padding: 8px 12px 8px 36px; border-radius: 12px; border: 1px solid var(--m3-outline); outline: none; font-size: 0.85rem; display: block;"
+                           onkeyup="applyFilters()">
+                </div>
+
+                {# Visual Divider #}
+                <div style="width: 1px; height: 24px; background: var(--m3-outline-variant); flex-shrink: 0;"></div>
+
+                {# Grade Part #}
+                <div style="width: 140px; flex-shrink: 0;">
+                    <select id="grade-filter" onchange="applyFilters()" 
+                            style="width: 100%; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--m3-outline); outline: none; font-size: 0.85rem; background-color: var(--m3-surface-container-lowest); cursor: pointer; display: block;">
+                        <option value="">All Grades</option>
+                        {% set grades = [] %}
+                        {% for class in classes %}
+                            {% if class.gradeLevel not in grades %}
+                                <option value="{{ class.gradeLevel|lower }}">{{ class.gradeLevel }}</option>
+                                {% set grades = grades|merge([class.gradeLevel]) %}
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            {# Independent Compact Count #}
+            <div style="font-size: 0.85rem; color: var(--m3-on-surface-variant); background: var(--m3-surface-container-high); padding: 6px 20px; border-radius: 100px; font-weight: 500; width: fit-content; display: block; margin-bottom: 24px;">
+                Showing <span id="match-count" style="font-weight: 800; color: var(--m3-primary);">{{ classes|length }}</span> classes
+            </div>
+        </div>
+    </div>
+
+    {# ── CLASSES GRID ── #}
+    <div id="classes-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 32px; padding: 0 24px; justify-content: center;">
+        {% for class in classes %}
+            <div class="class-card-item" data-name="{{ class.name|lower }}" data-grade="{{ class.gradeLevel|lower }}">
+                <div class="card border-0 h-100 m3-card-elevated" style="border-radius: 28px; background: white; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid var(--m3-outline-variant) !important; overflow: visible; padding: 28px; position: relative;">
+                    
+                    {# Top Right Grade Badge #}
+                    <span class="badge" style="position: absolute; top: 20px; right: 20px; background: var(--m3-secondary-container); color: var(--m3-on-secondary-container); padding: 8px 16px; border-radius: 100px; font-weight: 700; font-size: 0.65rem; text-transform: uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        {{ class.gradeLevel }}
+                    </span>
+
+                    <div style="width: 48px; height: 48px; background: var(--m3-primary-container); color: var(--m3-on-primary-container); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 24px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+                        🏫
+                    </div>
+                    
+                    <h3 style="font-size: 1.4rem; font-weight: 700; color: var(--m3-on-surface); margin: 0 0 12px 0;">{{ class.name }}</h3>
+                    <p class="text-muted small mb-4" style="line-height: 1.6; font-size: 0.875rem;">Manage the weekly schedule, subjects, and teacher rotations for this class.</p>
+                    
+                    {# Status Indicator #}
+                    <div class="mt-auto mb-3 d-flex align-items-center gap-2">
+                        {% if class.id in scheduledIds %}
+                            <span style="width: 10px; height: 10px; background: #2e7d32; border-radius: 50%; display: inline-block;"></span>
+                            <span style="color: #2e7d32; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Schedule Ready</span>
+                        {% else %}
+                            <span style="width: 10px; height: 10px; background: #d32f2f; border-radius: 50%; display: inline-block;"></span>
+                            <span style="color: #d32f2f; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Not Scheduled</span>
+                        {% endif %}
+                    </div>
+
+                    <a href="{{ path('admin_schedule_wizard', {classId: class.id}) }}" class="btn py-2 w-100 d-flex align-items-center justify-content-center gap-2" 
+                       style="background: var(--m3-primary); color: white; border-radius: 14px; font-weight: 600; text-decoration: none; font-size: 0.9rem; transition: transform 0.2s;">
+                        <span>⚙️</span> Manage Schedule
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <div style="grid-column: 1 / -1; text-align: center; padding: 80px 0;">
+                <div class="display-1 mb-3" style="opacity: 0.2;">📭</div>
+                <h3 class="text-muted">No classes available for scheduling.</h3>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .class-card-item:hover .card {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+        border-color: var(--m3-primary) !important;
+    }
+    .class-card-item .btn:hover {
+        transform: scale(1.02);
+        filter: brightness(1.05);
+    }
+</style>
+
+<script>
+    function applyFilters() {
+        const searchQuery = document.getElementById('class-search').value.toLowerCase();
+        const gradeFilter = document.getElementById('grade-filter').value.toLowerCase();
+        const cards = document.querySelectorAll('.class-card-item');
+        let count = 0;
+
+        cards.forEach(card => {
+            const name = card.dataset.name;
+            const grade = card.dataset.grade;
+            
+            const matchesSearch = name.includes(searchQuery);
+            const matchesGrade = gradeFilter === "" || grade === gradeFilter;
+            
+            if (matchesSearch && matchesGrade) {
+                card.style.display = 'block';
+                count++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        document.getElementById('match-count').textContent = count;
+    }
+</script>
+{% endblock %}

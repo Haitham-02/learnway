@@ -1,0 +1,62 @@
+<div id="qa-{{ question.id }}" 
+     data-question-id="{{ question.id }}"
+     style="
+        padding: 1rem;
+        background-color: var(--m3-surface);
+        border-radius: 8px;
+        border-left: 4px solid {{ question.isAnswered ? 'var(--m3-primary)' : '#ff9800' }};
+    ">
+    <div style="display: flex; justify-content: space-between; align-items: start;">
+        <div style="flex: 1;">
+            <p style="margin: 0 0 0.5rem 0; font-weight: 600; font-size: 0.875rem; color: var(--m3-primary);">
+                {{ question.student.firstName }} {{ question.student.lastName }}
+            </p>
+            <p style="margin: 0 0 0.75rem 0; font-size: 0.875rem; color: var(--m3-on-surface);">
+                {{ question.question }}
+            </p>
+            {% if question.isAnswered %}
+                <div class="answer-box" style="
+                    background-color: var(--m3-primary-container);
+                    padding: 0.5rem;
+                    border-radius: 6px;
+                    font-size: 0.875rem;
+                    color: var(--m3-on-primary-container);
+                ">
+                    <p style="margin: 0 0 0.25rem 0; font-weight: 600;">Answered by {{ question.answeredBy.firstName }}</p>
+                    <p style="margin: 0;">{{ question.answer }}</p>
+                </div>
+            {% else %}
+                <form hx-post="{{ path('app_livestream_api_answer_question', {questionId: question.id}) }}"
+                      hx-target="#qa-{{ question.id }}"
+                      hx-swap="outerHTML"
+                      style="margin-top: 0.5rem;">
+                    <textarea name="answer" placeholder="Type your answer..." required style="
+                        width: 100%;
+                        padding: 0.5rem;
+                        border: 1px solid var(--m3-outline);
+                        border-radius: 6px;
+                        font-size: 0.75rem;
+                        min-height: 50px;
+                        background-color: var(--m3-surface-container);
+                        color: var(--m3-on-surface);
+                        font-family: inherit;
+                    "></textarea>
+                    <button type="submit" style="
+                        background-color: var(--m3-primary);
+                        color: white;
+                        border: none;
+                        padding: 0.5rem 1rem;
+                        border-radius: 6px;
+                        font-size: 0.75rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                        margin-top: 0.5rem;
+                        width: 100%;
+                    ">
+                        Answer
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>

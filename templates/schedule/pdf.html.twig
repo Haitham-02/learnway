@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Academic Schedule</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; margin: 0; padding: 0; color: #333; }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #4f46e5; padding-bottom: 10px; }
+        .header h1 { margin: 0; color: #4f46e5; font-size: 24px; }
+        
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        th { background-color: #f8fafc; font-weight: bold; font-size: 12px; }
+        
+        .time-cell { background-color: #f1f5f9; font-weight: bold; font-size: 11px; width: 80px; }
+        
+        .slot-content { background-color: #e0e7ff; border-radius: 8px; padding: 8px; min-height: 50px; }
+        .subject { font-weight: bold; font-size: 12px; margin-bottom: 4px; display: block; color: #1e1b4b; }
+        .info { font-size: 10px; color: #4338ca; }
+        
+        .footer { position: fixed; bottom: -30px; left: 0; right: 0; font-size: 10px; text-align: center; color: #64748b; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Learnway Academic Timetable</h1>
+        <p>{{ header }}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th class="time-cell">Time Slot</th>
+                {% for day in days %}
+                    <th>{{ day }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for slot in slots %}
+                <tr>
+                    <td class="time-cell">{{ slot.getRange }}</td>
+                    {% for day in days %}
+                        <td>
+                            {% if scheduleData[day][slot.id] is defined %}
+                                {% set item = scheduleData[day][slot.id] %}
+                                <div class="slot-content">
+                                    <span class="subject">{{ item.top }}</span>
+                                    <span class="info">{{ item.bottom }}</span>
+                                </div>
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Generated on {{ "now"|date("Y-m-d H:i") }} | Learnway Learning Management System
+    </div>
+</body>
+</html>

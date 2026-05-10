@@ -40,23 +40,56 @@ redis.on('error', (err) => {
   console.error('✗ Redis connection error:', err.message);
 });
 
-redis.subscribe("chat-messages", (err, count) => {
-  if (err) {
-    console.error("Failed to subscribe: %s", err.message);
-  } else {
-    console.log(`✓ Subscribed successfully! This client is currently subscribed to ${count} channels.`);
+// Subscribe to Redis channels for real-time updates
+redis.subscribe(
+  "chat-messages",           // Messages module
+  "livestream-chat",         // Livestream chat
+  "livestream-qa",           // Livestream Q&A
+  "livestream-qa-answer",    // Livestream Q&A answers
+  "livestream-ai-update",    // Livestream AI analytics updates
+  (err, count) => {
+    if (err) {
+      console.error("Failed to subscribe: %s", err.message);
+    } else {
+      console.log(`✓ Subscribed successfully! This client is currently subscribed to ${count} channels.`);
+    }
   }
-});
+);
 
 redis.on("message", (channel, message) => {
-  if (channel === "chat-messages") {
-    try {
-      const data = JSON.parse(message);
-      console.log(`📨 Broadcasting to room ${data.room}`);
+  try {
+    const data = JSON.parse(message);
+
+    if (channel === "chat-messages") {
+      // Handle regular message module chat
+      console.log(`📨 Broadcasting message to room ${data.room}`);
       io.to(data.room).emit("new-message", data.html);
-    } catch (e) {
-      console.error("Error parsing message:", e);
+    } 
+    else if (channel === "livestream-chat") {
+      // Handle livestream chat
+      console.log(`💬 Broadcasting livestream chat to room ${data.room}`);
+      io.to(data.room).emit("livestream-chat", data);
+    } 
+    else if (channel === "livestream-qa") {
+      // Handle livestream Q&A questions
+      console.log(`❓ Broadcasting livestream Q&A to room ${data.room}`);
+      io.to(data.room).emit("livestream-qa", data);
     }
+    else if (channel === "livestream-qa-answer") {
+      // Handle livestream Q&A answers
+      console.log(`✅ Broadcasting livestream Q&A answer to room ${data.room}`);
+      io.to(data.room).emit("livestream-qa-answer", data);
+    }
+    else if (channel === "livestream-ai-update") {
+      // Handle AI analytics updates
+      console.log(`🤖 [AI] Received update from Redis for room ${data.room}`);
+      console.log(`   - Student: ${data.studentName} (${data.studentId})`);
+      console.log(`   - Emotion: ${data.emotion}, Score: ${data.score}%`);
+      io.to(data.room).emit("livestream-ai-update", data);
+      console.log(`   - Broadcasted to room: ${data.room}`);
+    }
+  } catch (e) {
+    console.error(`Error parsing message from ${channel}:`, e);
   }
 });
 

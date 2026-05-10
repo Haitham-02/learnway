@@ -1,4 +1,71 @@
 {% extends 'base.html.twig' %}
+{% macro render_comment(comment, post, app) %}
+    <div class="m3-card m3-card-elevated" style="padding: 24px; border-radius: 16px; margin-top: 16px; background: var(--m3-surface);">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <div style="width: 32px; height: 32px; background: var(--m3-secondary-container); color: var(--m3-on-secondary-container); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.875rem; overflow: hidden; border: 1px solid var(--m3-outline-variant);">
+                {% if comment.user.profile_picture %}
+                    <img src="{{ asset('uploads/profiles/' ~ comment.user.profile_picture) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                    {{ comment.user.firstName|first|upper }}
+                {% endif %}
+            </div>
+            <span style="font-size: 1rem; font-weight: 600; color: var(--m3-on-surface);">{{ comment.user.firstName }} {{ comment.user.lastName }}</span>
+            {% if comment.user != app.user %}
+                <a href="{{ path('app_messages_start', {userId: comment.user.id}) }}" class="m3-button m3-button-tonal" style="height: 24px; padding: 0 8px; font-size: 0.625rem; border-radius: 6px; text-decoration: none; margin-left: 8px;">
+                    ✉️ Message
+                </a>
+            {% endif %}
+            <span style="font-size: 0.8125rem; color: var(--m3-on-surface-variant); margin-left: auto;">{{ comment.createdAt|date('M d, Y \\a\\t H:i') }}</span>
+        </div>
+        <div style="font-size: 1rem; line-height: 1.7; color: var(--m3-on-surface); padding-left: 44px; white-space: pre-wrap;" id="comment-content-{{ comment.id }}">{{ comment.content }}</div>
+        
+        {# Edit Form (Hidden) #}
+        {% if comment.user == app.user or is_granted('ROLE_ADMIN') %}
+            <form method="post" action="{{ path('app_forum_comment_edit', {id: comment.id}) }}" id="edit-form-{{ comment.id }}" style="display: none; margin-top: 16px; padding-left: 44px;">
+                <textarea name="content" required class="m3-text-field" rows="3" style="width: 100%; border-radius: 8px; padding: 12px; margin-bottom: 8px; border: 1px solid var(--m3-outline);">{{ comment.content }}</textarea>
+                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                    <button type="button" class="m3-button m3-button-text" onclick="document.getElementById('edit-form-{{ comment.id }}').style.display='none'; document.getElementById('comment-content-{{ comment.id }}').style.display='block';">Cancel</button>
+                    <button type="submit" class="m3-button m3-button-filled" style="height: 32px; padding: 0 16px;">Save</button>
+                </div>
+            </form>
+        {% endif %}
+
+        {# Actions #}
+        <div style="padding-left: 44px; margin-top: 12px; display: flex; gap: 12px; align-items: center;">
+            <button class="m3-button m3-button-text" style="height: 28px; font-size: 0.8rem; padding: 0 8px;" onclick="document.getElementById('reply-form-{{ comment.id }}').style.display='block'">Reply</button>
+            
+            {% if comment.user == app.user or is_granted('ROLE_ADMIN') %}
+                <button class="m3-button m3-button-text" style="height: 28px; font-size: 0.8rem; padding: 0 8px;" onclick="document.getElementById('edit-form-{{ comment.id }}').style.display='block'; document.getElementById('comment-content-{{ comment.id }}').style.display='none';">Edit</button>
+                
+                <form method="post" action="{{ path('app_forum_comment_delete', {id: comment.id}) }}" style="display: inline;" onsubmit="return confirm('Delete this comment and all replies?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_comment_' ~ comment.id) }}">
+                    <button type="submit" class="m3-button m3-button-text" style="height: 28px; font-size: 0.8rem; padding: 0 8px; color: var(--m3-error);">Delete</button>
+                </form>
+            {% endif %}
+        </div>
+
+        {# Reply Form (Hidden) #}
+        <form method="post" action="{{ path('app_forum_comment', {id: post.id}) }}" id="reply-form-{{ comment.id }}" style="display: none; margin-top: 16px; padding-left: 44px;">
+            <input type="hidden" name="parent_id" value="{{ comment.id }}">
+            <textarea name="content" required class="m3-text-field" rows="2" placeholder="Write a reply..." style="width: 100%; border-radius: 8px; padding: 12px; margin-bottom: 8px; border: 1px solid var(--m3-outline);"></textarea>
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button type="button" class="m3-button m3-button-text" onclick="document.getElementById('reply-form-{{ comment.id }}').style.display='none'">Cancel</button>
+                <button type="submit" class="m3-button m3-button-filled" style="height: 32px; padding: 0 16px;">Reply</button>
+            </div>
+        </form>
+
+        {# Nested Comments #}
+        {% if comment.forumComments|length > 0 %}
+            <div style="padding-left: 20px; border-left: 2px solid var(--m3-outline-variant); margin-left: 16px; margin-top: 16px;">
+                {% for child in comment.forumComments %}
+                    {% if child.status == 'APPROVED' or child.user == app.user or is_granted('ROLE_ADMIN') %}
+                        {{ _self.render_comment(child, post, app) }}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+{% endmacro %}
 
 {% block title %}{{ post.title }} — Forum{% endblock %}
 
@@ -26,10 +93,14 @@
     </div>
 
     {# ── THE POST ── #}
-    <div class="m3-card m3-card-elevated" style="padding: 40px; margin-bottom: 48px;">
+    <div class="m3-card m3-card-elevated" style="padding: 40px; margin-bottom: 24px;">
         <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--m3-outline-variant);">
-            <div style="width: 48px; height: 48px; background: var(--m3-primary-container); color: var(--m3-on-primary-container); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.25rem;">
-                {{ post.user.firstName|first }}
+            <div style="width: 48px; height: 48px; background: var(--m3-primary-container); color: var(--m3-on-primary-container); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.25rem; overflow: hidden; border: 1px solid var(--m3-outline-variant);">
+                {% if post.user.profile_picture %}
+                    <img src="{{ asset('uploads/profiles/' ~ post.user.profile_picture) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                    {{ post.user.firstName|first|upper }}
+                {% endif %}
             </div>
             <div style="flex-grow: 1;">
                 <div style="display: flex; align-items: center; gap: 12px;">
@@ -46,6 +117,18 @@
                     <span style="background: var(--m3-secondary-container); color: var(--m3-on-secondary-container); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">
                         {{ post.classe ? post.classe.name : 'General Discussion' }}
                     </span>
+                    
+                    {% if post.forumReviews|length > 0 %}
+                        {% set totalRating = 0 %}
+                        {% for r in post.forumReviews %}
+                            {% set totalRating = totalRating + r.rating %}
+                        {% endfor %}
+                        {% set avgRating = (totalRating / post.forumReviews|length)|round(1) %}
+                        <span style="color: var(--m3-outline); margin-left: 8px;">•</span>
+                        <span style="color: #f59e0b; margin-left: 4px; font-weight: bold;">
+                            ★ {{ avgRating }}/5 ({{ post.forumReviews|length }} Reviews)
+                        </span>
+                    {% endif %}
                 </div>
             </div>
             {% if post.status != 'APPROVED' %}
@@ -55,9 +138,79 @@
             {% endif %}
         </div>
 
+        {% if post.featuredImage %}
+            <div style="width: calc(100% + 80px); margin: -40px -40px 40px -40px; height: 320px; overflow: hidden; border-radius: 24px 24px 0 0;">
+                <img src="{{ asset('uploads/forum/' ~ post.featuredImage) }}" alt="{{ post.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+        {% endif %}
+
         <h1 style="margin: 0 0 24px 0; font-size: 2.5rem; font-weight: 400; color: var(--m3-on-surface); line-height: 1.2;">{{ post.title }}</h1>
         
         <div style="font-size: 1.125rem; line-height: 1.8; color: var(--m3-on-surface); white-space: pre-wrap; background: var(--m3-surface-container-lowest); padding: 24px; border-radius: 12px; border: 1px solid var(--m3-outline-variant);">{{ post.content }}</div>
+    </div>
+
+    {# ── REVIEW SECTION ── #}
+    <style>
+        .star-rating {
+            display: inline-flex;
+            flex-direction: row-reverse;
+            gap: 4px;
+            justify-content: flex-end;
+        }
+        .star-rating input {
+            display: none;
+        }
+        .star-rating label {
+            font-size: 2.5rem;
+            color: var(--m3-outline-variant);
+            cursor: pointer;
+            transition: color 0.2s ease, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            line-height: 1;
+        }
+        .star-rating label:hover,
+        .star-rating label:hover ~ label,
+        .star-rating input:checked ~ label {
+            color: #f59e0b;
+        }
+        .star-rating label:hover {
+            transform: scale(1.15);
+        }
+    </style>
+    <div class="m3-card m3-card-outlined" style="padding: 32px; margin-bottom: 48px; background: var(--m3-surface-container-low); border-radius: 16px;">
+        <h3 style="margin: 0 0 16px 0; font-size: 1.5rem;">Rate this Post</h3>
+        {% set currentUserReview = post.forumReviews|filter(r => r.user == app.user)|first %}
+        <form method="post" action="{{ path('app_forum_review', {id: post.id}) }}" style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="star-rating">
+                <input type="radio" id="star5" name="rating" value="5" required {% if currentUserReview and currentUserReview.rating == 5 %}checked{% endif %} />
+                <label for="star5" title="5 stars">★</label>
+                
+                <input type="radio" id="star4" name="rating" value="4" {% if currentUserReview and currentUserReview.rating == 4 %}checked{% endif %} />
+                <label for="star4" title="4 stars">★</label>
+                
+                <input type="radio" id="star3" name="rating" value="3" {% if currentUserReview and currentUserReview.rating == 3 %}checked{% endif %} />
+                <label for="star3" title="3 stars">★</label>
+                
+                <input type="radio" id="star2" name="rating" value="2" {% if currentUserReview and currentUserReview.rating == 2 %}checked{% endif %} />
+                <label for="star2" title="2 stars">★</label>
+                
+                <input type="radio" id="star1" name="rating" value="1" {% if currentUserReview and currentUserReview.rating == 1 %}checked{% endif %} />
+                <label for="star1" title="1 star">★</label>
+            </div>
+            <textarea name="review_text" class="m3-text-field" rows="2" placeholder="Leave an optional review comment..." style="background: white; border-radius: 12px; padding: 12px; border: 1px solid var(--m3-outline); font-size: 1rem;">{% if currentUserReview %}{{ currentUserReview.reviewText }}{% endif %}</textarea>
+            <div style="display: flex; justify-content: flex-end;">
+                <button type="submit" class="m3-button m3-button-filled" style="height: 40px; padding: 0 24px; border-radius: 12px;">
+                    Submit Review
+                </button>
+            </div>
+        </form>
+        {% if currentUserReview %}
+            <div style="margin-top: 16px; padding: 12px; background: var(--m3-surface-container-lowest); border-radius: 8px; border-left: 4px solid #f59e0b;">
+                <strong style="color: #f59e0b;">Your Review:</strong> ★ {{ currentUserReview.rating }}/5
+                {% if currentUserReview.reviewText %}
+                    <p style="margin: 8px 0 0 0; font-style: italic;">"{{ currentUserReview.reviewText }}"</p>
+                {% endif %}
+            </div>
+        {% endif %}
     </div>
 
     {# ── COMMENTS SECTION ── #}
@@ -70,7 +223,7 @@
         {# NEW COMMENT FORM #}
         <div class="m3-card m3-card-outlined" style="padding: 24px; margin-bottom: 48px; background: var(--m3-surface-container-low); border-radius: 16px;">
             <form method="post" action="{{ path('app_forum_comment', {id: post.id}) }}" style="display: flex; flex-direction: column; gap: 16px;">
-                <textarea name="content" required class="m3-text-field" rows="4" placeholder="Join the discussion..." style="background: white; border-radius: 12px; padding: 16px; border: 1px solid var(--m3-outline); font-size: 1rem;"></textarea>
+                <textarea name="content" required class="m3-text-field" rows="3" placeholder="Start a new discussion thread..." style="background: white; border-radius: 12px; padding: 16px; border: 1px solid var(--m3-outline); font-size: 1rem;"></textarea>
                 <div style="display: flex; justify-content: flex-end; align-items: center;">
                     <button type="submit" class="m3-button m3-button-filled" style="height: 44px; padding: 0 24px; border-radius: 12px;">
                         Post Comment
@@ -80,24 +233,13 @@
         </div>
 
         {# COMMENTS LIST #}
-        <div style="display: flex; flex-direction: column; gap: 24px;">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
             {% for comment in post.forumComments %}
-                {% if comment.status == 'APPROVED' or comment.user == app.user or is_granted('ROLE_ADMIN') %}
-                    <div class="m3-card m3-card-elevated" style="padding: 24px; border-radius: 16px;">
-                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-                            <div style="width: 32px; height: 32px; background: var(--m3-secondary-container); color: var(--m3-on-secondary-container); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.875rem;">
-                                {{ comment.user.firstName|first }}
-                            </div>
-                            <span style="font-size: 1rem; font-weight: 600; color: var(--m3-on-surface);">{{ comment.user.firstName }} {{ comment.user.lastName }}</span>
-                            {% if comment.user != app.user %}
-                                <a href="{{ path('app_messages_start', {userId: comment.user.id}) }}" class="m3-button m3-button-tonal" style="height: 24px; padding: 0 8px; font-size: 0.625rem; border-radius: 6px; text-decoration: none; margin-left: 8px;">
-                                    ✉️ Message
-                                </a>
-                            {% endif %}
-                            <span style="font-size: 0.8125rem; color: var(--m3-on-surface-variant); margin-left: auto;">{{ comment.createdAt|date('M d, Y \\a\\t H:i') }}</span>
-                        </div>
-                        <div style="font-size: 1rem; line-height: 1.7; color: var(--m3-on-surface); padding-left: 44px;">{{ comment.content }}</div>
-                    </div>
+                {# Only render top-level comments (those without a parent) #}
+                {% if not comment.forumComment %}
+                    {% if comment.status == 'APPROVED' or comment.user == app.user or is_granted('ROLE_ADMIN') %}
+                        {{ _self.render_comment(comment, post, app) }}
+                    {% endif %}
                 {% endif %}
             {% else %}
                 <div style="text-align: center; padding: 48px; background: var(--m3-surface-container-lowest); border-radius: 16px; border: 2px dashed var(--m3-outline-variant);">

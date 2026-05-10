@@ -206,6 +206,245 @@ class MessageController extends AbstractController
         ]);
     }
 
+    #[Route('/{id}/edit', name: 'edit', methods: ['POST'])]
+    public function edit(Message $message, Request $request, EntityManagerInterface $em): Response
+    {
+        if ($message->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('You can only edit your own messages.');
+        }
+
+        $content = trim($request->request->get('content', ''));
+        if ($content !== '') {
+            $message->setContent($content);
+            $message->setEditedAt(new \DateTime());
+            $em->flush();
+
+            // Notify via Redis (optional for now, but good practice)
+        }
+
+        if ($request->headers->has('HX-Request')) {
+            return $this->render('message/_message.html.twig', ['message' => $message]);
+        }
+
+        return $this->redirectToRoute('app_messages_show', ['id' => $message->getConversation()->getId()]);
+    }
+
+    #[Route('/{id}/delete', name: 'delete', methods: ['POST'])]
+    public function delete(Message $message, EntityManagerInterface $em, Request $request): Response
+    {
+        if ($message->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('You can only delete your own messages.');
+        }
+
+        $message->setIsDeleted(true);
+        $em->flush();
+
+        if ($request->headers->has('HX-Request')) {
+            return $this->render('message/_message.html.twig', ['message' => $message]);
+        }
+
+        return $this->redirectToRoute('app_messages_show', ['id' => $message->getConversation()->getId()]);
+    }
+
+    #[Route('/{id}/forward', name: 'forward_msg', methods: ['POST'])]
+    public function forwardMessage(Message $message, Request $request, EntityManagerInterface $em, ConversationRepository $convRepo): Response
+    {
+        $targetConvId = $request->request->get('target_conversation_id');
+        $targetConv = $convRepo->find($targetConvId);
+
+        if (!$targetConv) {
+            throw $this->createNotFoundException('Target conversation not found.');
+        }
+
+        // Check if user is member of target
+        $isMember = false;
+        foreach ($targetConv->getMembers() as $m) {
+            if ($m->getUser() === $this->getUser()) {
+                $isMember = true;
+                break;
+            }
+        }
+
+        if (!$isMember) throw $this->createAccessDeniedException();
+
+        $newMsg = new Message();
+        $newMsg->setConversation($targetConv);
+        $newMsg->setUser($this->getUser());
+        $newMsg->setContent($message->getContent());
+        $newMsg->setSentAt(new \DateTime());
+        $newMsg->setIsForwarded(true);
+        $newMsg->setStatus('SENT');
+
+        $em->persist($newMsg);
+        $em->flush();
+
+        return $this->redirectToRoute('app_messages_show', ['id' => $targetConv->getId()]);
+    }
+
+    #[Route('/group/create', name: 'group_create', methods: ['POST'])]
+    public function createGroup(Request $request, EntityManagerInterface $em, UserRepository $userRepo): Response
+    {
+        $name = trim($request->request->get('name', 'Group Chat'));
+        $userIds = $request->request->all('users');
+        $currentUser = $this->getUser();
+
+        $conversation = new Conversation();
+        $conversation->setType('GROUP');
+        $conversation->setName($name);
+        $conversation->setCreatedAt(new \DateTime());
+        $conversation->setUser($currentUser);
+
+        // Add creator as MOD
+        $creator = new ConversationMember();
+        $creator->setUser($currentUser);
+        $creator->setJoinedAt(new \DateTime());
+        $creator->setRole('MOD');
+        $conversation->addMember($creator);
+
+        foreach ($userIds as $uid) {
+            $u = $userRepo->find($uid);
+            if ($u && $u !== $currentUser) {
+                $member = new ConversationMember();
+                $member->setUser($u);
+                $member->setJoinedAt(new \DateTime());
+                $member->setRole('MEMBER');
+                $conversation->addMember($member);
+            }
+        }
+
+        $em->persist($conversation);
+        $em->flush();
+
+        return $this->redirectToRoute('app_messages_show', ['id' => $conversation->getId()]);
+    }
+
+    #[Route('/{id}/group/update', name: 'group_update', methods: ['POST'])]
+    public function updateGroup(Conversation $conversation, Request $request, EntityManagerInterface $em): Response
+    {
+        $this->ensureIsMod($conversation);
+
+        $name = trim($request->request->get('name', ''));
+        if ($name !== '') {
+            $conversation->setName($name);
+            $em->flush();
+        }
+
+        return $this->redirectToRoute('app_messages_show', ['id' => $conversation->getId()]);
+    }
+
+    #[Route('/{id}/group/add-member', name: 'group_add_member', methods: ['POST'])]
+    public function addMember(Conversation $conversation, Request $request, EntityManagerInterface $em, UserRepository $userRepo): Response
+    {
+        $this->ensureIsMod($conversation);
+
+        $userId = $request->request->get('user_id');
+        $user = $userRepo->find($userId);
+
+        if (!$user) throw $this->createNotFoundException();
+
+        // Check if already member
+        foreach ($conversation->getMembers() as $m) {
+            if ($m->getUser() === $user) return $this->redirectToRoute('app_messages_show', ['id' => $conversation->getId()]);
+        }
+
+        $member = new ConversationMember();
+        $member->setUser($user);
+        $member->setJoinedAt(new \DateTime());
+        $member->setRole('MEMBER');
+        $conversation->addMember($member);
+
+        $em->persist($member);
+        $em->flush();
+
+        return $this->redirectToRoute('app_messages_show', ['id' => $conversation->getId()]);
+    }
+
+    #[Route('/{id}/group/remove-member/{userId}', name: 'group_remove_member', methods: ['POST'])]
+    public function removeMember(Conversation $conversation, #[MapEntity(id: 'userId')] User $user, EntityManagerInterface $em): Response
+    {
+        $this->ensureIsMod($conversation);
+
+        foreach ($conversation->getMembers() as $m) {
+            if ($m->getUser() === $user) {
+                $em->remove($m);
+                break;
+            }
+        }
+
+        $em->flush();
+
+        return $this->redirectToRoute('app_messages_show', ['id' => $conversation->getId()]);
+    }
+
+    #[Route('/{id}/group/leave', name: 'group_leave', methods: ['POST'])]
+    public function leaveGroup(Conversation $conversation, EntityManagerInterface $em): Response
+    {
+        $currentUser = $this->getUser();
+        foreach ($conversation->getMembers() as $m) {
+            if ($m->getUser() === $currentUser) {
+                $em->remove($m);
+                break;
+            }
+        }
+
+        $em->flush();
+
+        return $this->redirectToRoute('app_messages_index');
+    }
+
+    #[Route('/{id}/group/delete', name: 'group_delete', methods: ['POST'])]
+    public function deleteGroup(Conversation $conversation, EntityManagerInterface $em): Response
+    {
+        $this->ensureIsMod($conversation);
+
+        // Delete all members and messages (cascading might handle it but let's be explicit if needed)
+        // Actually Conversation entity has cascade: ['remove'] on members
+        $em->remove($conversation);
+        $em->flush();
+
+        return $this->redirectToRoute('app_messages_index');
+    }
+
+    private function ensureIsMod(Conversation $conversation): void
+    {
+        $isMod = false;
+        foreach ($conversation->getMembers() as $m) {
+            if ($m->getUser() === $this->getUser() && $m->getRole() === 'MOD') {
+                $isMod = true;
+                break;
+            }
+        }
+
+        if (!$isMod && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('Only moderators can perform this action.');
+        }
+    }
+
+    #[Route('/api/contacts', name: 'api_contacts', methods: ['GET'])]
+    public function getContacts(
+        UserRepository $userRepo,
+        StudentEnrollmentRepository $enrollmentRepo,
+        TeacherAssignmentRepository $taRepo
+    ): Response {
+        $currentUser = $this->getUser();
+        $allUsers = $userRepo->findAll();
+        $eligible = [];
+
+        foreach ($allUsers as $u) {
+            if ($u === $currentUser) continue;
+            if ($this->checkMessagingPermission($currentUser, $u, $enrollmentRepo, $taRepo)) {
+                $eligible[] = [
+                    'id' => $u->getId(),
+                    'name' => $u->getFirstName() . ' ' . $u->getLastName(),
+                    'role' => $u->getRoles()[0],
+                    'avatar' => $u->getProfilePicture() ? '/uploads/profiles/' . $u->getProfilePicture() : null
+                ];
+            }
+        }
+
+        return $this->json($eligible);
+    }
+
     private function checkMessagingPermission(
         User $me,
         User $other,

@@ -26,6 +26,10 @@ class Livestream
     #[ORM\JoinColumn(name: 'class_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private ?Classe $classe = null;
 
+    #[ORM\ManyToOne(targetEntity: Subject::class)]
+    #[ORM\JoinColumn(name: 'subject_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    private ?Subject $subject = null;
+
     #[ORM\Column(type: 'string', length: 255)]
     private ?string $title = null;
 
@@ -55,6 +59,9 @@ class Livestream
 
     #[ORM\Column(type: 'datetime')]
     private ?\DateTimeInterface $updatedAt = null;
+
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $engagementSummary = null;
 
     #[ORM\OneToMany(targetEntity: LivestreamParticipant::class, mappedBy: 'livestream', cascade: ['remove'])]
     private Collection $participants;
@@ -103,6 +110,17 @@ class Livestream
     public function setClasse(?Classe $classe): self
     {
         $this->classe = $classe;
+        return $this;
+    }
+
+    public function getSubject(): ?Subject
+    {
+        return $this->subject;
+    }
+
+    public function setSubject(?Subject $subject): self
+    {
+        $this->subject = $subject;
         return $this;
     }
 
@@ -213,6 +231,17 @@ class Livestream
     public function setUpdatedAt(\DateTimeInterface $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+        return $this;
+    }
+
+    public function getEngagementSummary(): ?array
+    {
+        return $this->engagementSummary;
+    }
+
+    public function setEngagementSummary(?array $engagementSummary): self
+    {
+        $this->engagementSummary = $engagementSummary;
         return $this;
     }
 
