@@ -82,7 +82,7 @@ class DashboardController extends AbstractController
         $chart->setData([
             'labels' => array_keys($subjectStats),
             'datasets' => [[
-                'backgroundColor' => ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+                'backgroundColor' => ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316', '#14b8a6', '#6366f1'],
                 'data' => array_values($subjectStats),
             ]],
         ]);

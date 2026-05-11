@@ -109,9 +109,12 @@
             </div>
             <div style="display: flex; flex-direction: column; gap: 8px;">
                 <label style="font-size: 0.75rem; font-weight: 600; color: var(--m3-primary);">SELECT MEMBERS</label>
+                <input type="text" id="group-contact-search" placeholder="Search members..." style="width: 100%; height: 48px; border-radius: 12px; border: 1px solid var(--m3-outline); padding: 0 16px; outline: none; font-size: 0.875rem; box-sizing: border-box; margin-bottom: 8px;">
+                <div id="selected-chips" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; min-height: 24px;"></div>
                 <div id="group-contacts-list" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; border: 1px solid var(--m3-outline-variant); border-radius: 12px; padding: 8px;">
                     <!-- Contacts will be loaded here -->
                 </div>
+                <div id="selected-users-hidden"></div>
             </div>
             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px;">
                 <button type="button" onclick="closeModals()" class="m3-button m3-button-text">Cancel</button>
@@ -123,6 +126,7 @@
 
 <script>
     let allContacts = [];
+    let selectedGroupUsers = new Set();
 
     async function fetchContacts() {
         try {
@@ -140,7 +144,27 @@
         list.innerHTML = '';
         groupList.innerHTML = '';
 
-        const filtered = allContacts.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
+        const s = search.toLowerCase();
+        let filtered = allContacts.filter(c => c.name.toLowerCase().includes(s));
+
+        // Sort: Matches at the start of the name appear first
+        filtered.sort((a, b) => {
+            const aName = a.name.toLowerCase();
+            const bName = b.name.toLowerCase();
+            const aStarts = aName.startsWith(s);
+            const bStarts = bName.startsWith(s);
+            
+            if (aStarts && !bStarts) return -1;
+            if (!aStarts && bStarts) return 1;
+            return aName.localeCompare(bName);
+        });
+
+        if (filtered.length === 0) {
+            const empty = `<div style="padding: 20px; text-align: center; color: var(--m3-on-surface-variant); font-size: 0.875rem; opacity: 0.7;">No matches found</div>`;
+            list.innerHTML = empty;
+            groupList.innerHTML = empty;
+            return;
+        }
 
         filtered.forEach(c => {
             const formattedRole = c.role.replace('ROLE_', '').toLowerCase();
@@ -178,8 +202,10 @@
             groupItem.style.borderRadius = '8px';
             groupItem.onmouseover = () => groupItem.style.background = 'var(--m3-surface-container-high)';
             groupItem.onmouseout = () => groupItem.style.background = 'transparent';
+            
+            const isChecked = selectedGroupUsers.has(String(c.id));
             groupItem.innerHTML = `
-                <input type="checkbox" name="users[]" value="${c.id}" style="width: 18px; height: 18px;">
+                <input type="checkbox" value="${c.id}" ${isChecked ? 'checked' : ''} onchange="toggleGroupUser('${c.id}')" style="width: 18px; height: 18px;">
                 <div style="font-size: 0.9rem; font-weight: 500;">${c.name}</div>
                 <div style="font-size: 0.7rem; color: var(--m3-on-surface-variant); margin-left: auto;">${formattedRole}</div>
             `;
@@ -187,12 +213,63 @@
         });
     }
 
+    function toggleGroupUser(userId) {
+        if (selectedGroupUsers.has(userId)) {
+            selectedGroupUsers.delete(userId);
+        } else {
+            selectedGroupUsers.add(userId);
+        }
+        updateHiddenInputs();
+    }
+
+    function updateHiddenInputs() {
+        const container = document.getElementById('selected-users-hidden');
+        const chipsContainer = document.getElementById('selected-chips');
+        container.innerHTML = '';
+        chipsContainer.innerHTML = '';
+        
+        selectedGroupUsers.forEach(id => {
+            // Hidden Input
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'users[]';
+            input.value = id;
+            container.appendChild(input);
+
+            // Chip UI
+            const contact = allContacts.find(c => String(c.id) === id);
+            if (contact) {
+                const chip = document.createElement('div');
+                chip.style.cssText = `
+                    background: var(--m3-secondary-container);
+                    color: var(--m3-on-secondary-container);
+                    padding: 4px 12px;
+                    border-radius: 16px;
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    cursor: pointer;
+                `;
+                chip.onclick = () => {
+                    toggleGroupUser(id);
+                    renderContacts(document.getElementById('group-contact-search').value);
+                };
+                chip.innerHTML = `${contact.name} <span style="opacity: 0.6">×</span>`;
+                chipsContainer.appendChild(chip);
+            }
+        });
+    }
+
     document.getElementById('contact-search').addEventListener('input', (e) => renderContacts(e.target.value));
+    document.getElementById('group-contact-search').addEventListener('input', (e) => renderContacts(e.target.value));
 
     function openNewMessageModal() {
         document.getElementById('modal-container').style.display = 'flex';
         document.getElementById('new-message-modal').style.display = 'flex';
         document.getElementById('new-group-modal').style.display = 'none';
+        document.getElementById('contact-search').value = '';
         fetchContacts();
     }
 
@@ -200,6 +277,9 @@
         document.getElementById('modal-container').style.display = 'flex';
         document.getElementById('new-group-modal').style.display = 'flex';
         document.getElementById('new-message-modal').style.display = 'none';
+        document.getElementById('group-contact-search').value = '';
+        selectedGroupUsers.clear();
+        updateHiddenInputs();
         fetchContacts();
     }
 

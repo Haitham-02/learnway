@@ -44,7 +44,7 @@ class ForumReview
         return $this;
     }
 
-    #[ORM\OneToOne(targetEntity: User::class, inversedBy: 'forumReview')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'forumReviews')]
     #[ORM\JoinColumn(name: 'student_id', referencedColumnName: 'id')]
     private ?User $user = null;
 

@@ -35,7 +35,7 @@ class ForumController extends AbstractController
     }
 
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
-    #[IsGranted(new Expression("is_granted('ROLE_STUDENT') or is_granted('ROLE_TEACHER')"))]
+    #[IsGranted(new Expression("is_granted('ROLE_STUDENT') or is_granted('ROLE_TEACHER') or is_granted('ROLE_ADMIN')"))]
     public function new(
         Request $request,
         EntityManagerInterface $em,
@@ -119,7 +119,7 @@ class ForumController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
-    #[IsGranted(new Expression("is_granted('ROLE_STUDENT') or is_granted('ROLE_TEACHER')"))]
+    #[IsGranted(new Expression("is_granted('ROLE_STUDENT') or is_granted('ROLE_TEACHER') or is_granted('ROLE_ADMIN')"))]
     public function edit(
         ForumPost $post,
         Request $request,
@@ -187,7 +187,7 @@ class ForumController extends AbstractController
     }
 
     #[Route('/{id}/delete', name: 'delete', methods: ['POST'])]
-    #[IsGranted(new Expression("is_granted('ROLE_STUDENT') or is_granted('ROLE_TEACHER')"))]
+    #[IsGranted(new Expression("is_granted('ROLE_STUDENT') or is_granted('ROLE_TEACHER') or is_granted('ROLE_ADMIN')"))]
     public function delete(
         ForumPost $post,
         Request $request,

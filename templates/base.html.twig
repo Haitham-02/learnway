@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}Welcome!{% endblock %}</title>
-    <link rel="icon" href="{{ asset('images/LearnWay logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -11,6 +11,28 @@
     <link rel="stylesheet" href="/css/main.css">
     {% block stylesheets %}
     {% endblock %}
+    
+    <style>
+        /* Modern Scrollbar for Sidebar */
+        aside::-webkit-scrollbar {
+            width: 6px;
+        }
+        aside::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        aside::-webkit-scrollbar-thumb {
+            background-color: var(--m3-primary);
+            border-radius: 10px;
+        }
+        aside::-webkit-scrollbar-thumb:hover {
+            background-color: var(--m3-primary-container);
+        }
+        /* Firefox support */
+        aside {
+            scrollbar-width: thin;
+            scrollbar-color: var(--m3-primary) transparent;
+        }
+    </style>
 
     {% block javascripts %}
         {% block importmap %}{{ importmap('app') }}{% endblock %}

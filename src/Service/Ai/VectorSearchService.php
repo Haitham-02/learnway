@@ -84,6 +84,21 @@ class VectorSearchService
             $searchRequest->setLimit($limit);
             $searchRequest->setWithPayload(true);
 
+            // Apply Filters (Qdrant Filter API)
+            if (!empty($filters)) {
+                $qdrantFilter = new \Qdrant\Models\Filter\Filter();
+                
+                // If user_id is provided, prioritize content uploaded by this user 
+                // OR generic content (placeholder for class-shared content if implemented)
+                if (isset($filters['user_id'])) {
+                    $qdrantFilter->addMust(
+                        new \Qdrant\Models\Filter\Condition\MatchString('user_id', $filters['user_id'])
+                    );
+                }
+
+                $searchRequest->setFilter($qdrantFilter);
+            }
+
             $response = $this->qdrant->collections($this->collectionName)->points()->search($searchRequest);
             return $response['result'] ?? [];
         } catch (\Exception $e) {

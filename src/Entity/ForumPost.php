@@ -281,4 +281,23 @@ class ForumPost
         $this->status = $status;
         return $this;
     }
+
+    public function getAverageRating(): float
+    {
+        if ($this->forumReviews->isEmpty()) {
+            return 0;
+        }
+
+        $total = 0;
+        foreach ($this->forumReviews as $review) {
+            $total += $review->getRating();
+        }
+
+        return round($total / $this->forumReviews->count(), 1);
+    }
+
+    public function getReviewCount(): int
+    {
+        return $this->forumReviews->count();
+    }
 }

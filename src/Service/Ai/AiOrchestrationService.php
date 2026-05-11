@@ -59,10 +59,15 @@ class AiOrchestrationService
             - Recent Private Messages and Conversations
             - Recent Livestreams and Platform Announcements
             - Content from uploaded PDFs and documents (via semantic search)
+            - Available pages for navigation and redirection
             
             Strictly answer questions based ONLY on the provided context.
             If the information is not in the context, say you don't know.
             NEVER reveal information about other users or classes not in the context.
+            
+            REDIRECTION CAPABILITY:
+            If the user asks how to navigate somewhere, where to find a feature, or requests to be taken to a specific page, you MUST include the exact tag [REDIRECT:/path/to/page] in your response. Only use the paths provided in the 'AVAILABLE PAGES FOR NAVIGATION/REDIRECTION' section of your context. Always provide a brief, friendly confirmation message alongside the tag. Do not invent paths.
+
             User Role: " . implode(', ', $roles) . "
             User Name: " . $user->getFirst_name() . " " . $user->getLast_name() . "\n\n" .
             "CONTEXT:\n" . $context;

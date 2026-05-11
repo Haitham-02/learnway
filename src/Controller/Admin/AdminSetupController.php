@@ -136,14 +136,15 @@ class AdminSetupController extends AbstractController
                     count($classes),
                     $createdSubjectsCount
                 ));
-                return $this->redirectToRoute('admin_setup_new_year');
+                return $this->redirectToRoute('admin_setup_new_year', [], Response::HTTP_SEE_OTHER);
             }
         }
 
+        $response = new Response(null, $request->isMethod('POST') && $errors ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK);
         return $this->render('admin/setup/new_year.html.twig', [
             'errors' => $errors,
             'result' => $result,
-        ]);
+        ], $response);
     }
 
     /**

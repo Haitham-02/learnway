@@ -33,6 +33,7 @@
      data-controller="ai-assistant"
      data-ai-assistant-chat-url-value="{{ path('api_ai_chat') }}"
      data-ai-assistant-upload-url-value="{{ path('api_ai_upload') }}"
+     data-ai-assistant-history-url-value="{{ path('api_ai_history') }}"
      data-ai-assistant-suggestions-value="{{ suggestions|json_encode }}"
      data-ai-assistant-logo-url-value="{{ asset('images/LearnWay logo.png') }}">
 
@@ -63,7 +64,7 @@
                 <button data-action="click->ai-assistant#clearChat" class="copilot-icon-btn" title="Clear chat">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
                 </button>
-                <button data-action="click->ai-assistant#togglePanel" class="copilot-icon-btn" title="Close">
+                <button data-action="click->ai-assistant#closePanel" class="copilot-icon-btn" title="Close">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
                 </button>
             </div>

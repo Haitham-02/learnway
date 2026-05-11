@@ -5,6 +5,7 @@ export default class extends Controller {
     static values = {
         chatUrl: String,
         uploadUrl: String,
+        historyUrl: String,
         suggestions: Array,
         logoUrl: String
     };
@@ -25,6 +26,8 @@ export default class extends Controller {
 
     connect() {
         this.renderSuggestions();
+        this.loadState();
+        
         this.inputTarget.addEventListener('input', () => this.onInput());
         this.inputTarget.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -36,10 +39,50 @@ export default class extends Controller {
         // Bind drag handlers
         this.dragMoveHandler = this.dragMove.bind(this);
         this.dragEndHandler = this.dragEnd.bind(this);
+
+        if (this.chatId) {
+            this.fetchHistory();
+        }
+    }
+
+    loadState() {
+        this.chatId = localStorage.getItem('learnway_ai_chat_id');
+        this.currentTranslateX = parseFloat(localStorage.getItem('learnway_ai_pos_x') || 0);
+        this.currentTranslateY = parseFloat(localStorage.getItem('learnway_ai_pos_y') || 0);
+        this.element.style.transform = `translate(${this.currentTranslateX}px, ${this.currentTranslateY}px)`;
+        
+        const wasOpen = localStorage.getItem('learnway_ai_is_open') === 'true';
+        if (wasOpen) {
+            this.togglePanel(true);
+        }
+    }
+
+    saveState() {
+        if (this.chatId) localStorage.setItem('learnway_ai_chat_id', this.chatId);
+        localStorage.setItem('learnway_ai_pos_x', this.currentTranslateX);
+        localStorage.setItem('learnway_ai_pos_y', this.currentTranslateY);
+        localStorage.setItem('learnway_ai_is_open', this.isOpen);
+    }
+
+    async fetchHistory() {
+        try {
+            const url = `${this.historyUrlValue}?chatId=${this.chatId}`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.messages && data.messages.length > 0) {
+                // Clear welcome message if we have history
+                this.messagesTarget.innerHTML = '';
+                data.messages.forEach(msg => {
+                    this.appendMessage(msg.content, msg.role, true);
+                });
+            }
+        } catch (err) {
+            console.error("Failed to fetch history", err);
+        }
     }
 
     onInput() {
-        const val = this.inputTarget.value;
         this.autoResize();
     }
 
@@ -106,13 +149,14 @@ export default class extends Controller {
         if (this.hasMoved) {
             this.currentTranslateX = this.tempTranslateX;
             this.currentTranslateY = this.tempTranslateY;
+            this.saveState();
         } else {
             this.togglePanel();
         }
     }
 
-    togglePanel() {
-        this.isOpen = !this.isOpen;
+    togglePanel(forceOpen = null) {
+        this.isOpen = forceOpen !== null ? forceOpen : !this.isOpen;
         const panel = this.panelTarget;
         const fab = this.fabTarget;
 
@@ -123,13 +167,22 @@ export default class extends Controller {
                 panel.style.transform = 'translateY(0) scale(1)';
             });
             fab.classList.add('open');
-            this.inputTarget.focus();
+            if (forceOpen === null) this.inputTarget.focus();
         } else {
             panel.style.opacity = '0';
             panel.style.transform = 'translateY(16px) scale(0.97)';
             setTimeout(() => { panel.style.display = 'none'; }, 200);
             fab.classList.remove('open');
         }
+        this.saveState();
+    }
+
+    closePanel(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        this.togglePanel(false);
     }
 
     renderSuggestions() {
@@ -178,7 +231,22 @@ export default class extends Controller {
 
             if (data.response) {
                 this.chatId = data.chatId;
-                this.appendMessage(data.response, 'assistant');
+                this.saveState();
+                let responseText = data.response;
+                
+                // Check for [REDIRECT:/path] tag
+                const redirectMatch = responseText.match(/\[REDIRECT:([^\]]+)\]/);
+                if (redirectMatch) {
+                    const redirectPath = redirectMatch[1].trim();
+                    responseText = responseText.replace(redirectMatch[0], '').trim();
+                    
+                    if (responseText) {
+                        this.appendMessage(responseText, 'assistant');
+                    }
+                    this.appendRedirectConfirmation(redirectPath);
+                } else {
+                    this.appendMessage(responseText, 'assistant');
+                }
             } else {
                 this.appendMessage('[ICON:warning] ' + (data.error || 'Something went wrong.'), 'error');
             }
@@ -188,6 +256,53 @@ export default class extends Controller {
         } finally {
             this.isTyping = false;
         }
+    }
+
+    appendRedirectConfirmation(path) {
+        const wrap = document.createElement('div');
+        wrap.className = 'copilot-msg copilot-msg--assistant';
+        wrap.innerHTML = `
+            <div class="copilot-avatar" style="background: transparent; box-shadow: none;">
+                <img src="${this.logoUrlValue}" style="width: 20px; height: 20px; object-fit: contain;">
+            </div>
+            <div class="copilot-bubble copilot-bubble--ai" style="border: 1px solid var(--m3-primary);">
+                <div style="font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                    <span class="material-symbols-rounded" style="color: var(--m3-primary);">explore</span>
+                    Action Required
+                </div>
+                <p style="margin: 0 0 12px 0;">I can take you directly to that page. Would you like to go there now?</p>
+                <div style="display: flex; gap: 8px;">
+                    <button class="m3-button" 
+                            style="flex: 1; height: 36px; font-size: 0.75rem; border-radius: 12px; background: linear-gradient(135deg, var(--m3-primary), #4ea5d9); color: white; border: none; box-shadow: 0 4px 12px rgba(34, 72, 112, 0.3); font-weight: 600; cursor: pointer; transition: transform 0.2s;"
+                            onmouseover="this.style.transform='translateY(-1px)'"
+                            onmouseout="this.style.transform='translateY(0)'"
+                            data-action="click->ai-assistant#confirmRedirect" 
+                            data-path="${path}">
+                        Confirm & Go
+                    </button>
+                    <button class="m3-button" 
+                            style="flex: 1; height: 36px; font-size: 0.75rem; border-radius: 12px; background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(4px); font-weight: 600; cursor: pointer; transition: background 0.2s;"
+                            onmouseover="this.style.background='rgba(255, 255, 255, 0.15)'"
+                            onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'"
+                            data-action="click->ai-assistant#dismissRedirect">
+                        Stay here
+                    </button>
+                </div>
+            </div>
+        `;
+        this.messagesTarget.appendChild(wrap);
+        this.scrollToBottom();
+        requestAnimationFrame(() => wrap.classList.add('visible'));
+    }
+
+    confirmRedirect(event) {
+        const path = event.currentTarget.dataset.path;
+        window.location.href = path;
+    }
+
+    dismissRedirect(event) {
+        event.currentTarget.closest('.copilot-msg').remove();
+        this.appendMessage("No problem, we'll stay on this page. What else can I help you with?", 'assistant');
     }
 
     async uploadFile(event) {
@@ -221,7 +336,7 @@ export default class extends Controller {
         }
     }
 
-    appendMessage(text, role) {
+    appendMessage(text, role, skipAnimation = false) {
         const wrap = document.createElement('div');
         wrap.className = `copilot-msg copilot-msg--${role}`;
 
@@ -245,8 +360,11 @@ export default class extends Controller {
         this.messagesTarget.appendChild(wrap);
         this.scrollToBottom();
 
-        // Animate in
-        requestAnimationFrame(() => wrap.classList.add('visible'));
+        if (skipAnimation) {
+            wrap.classList.add('visible');
+        } else {
+            requestAnimationFrame(() => wrap.classList.add('visible'));
+        }
     }
 
     showTypingIndicator(show) {
@@ -286,6 +404,7 @@ export default class extends Controller {
     }
 
     escapeHtml(text) {
+        if (!text) return '';
         return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
@@ -295,6 +414,7 @@ export default class extends Controller {
 
     clearChat() {
         this.chatId = null;
+        localStorage.removeItem('learnway_ai_chat_id');
         this.messagesTarget.innerHTML = '';
         this.suggestionsTarget.style.display = 'flex';
         this.suggestionsTarget.style.opacity = '1';

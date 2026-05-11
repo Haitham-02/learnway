@@ -471,17 +471,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    #[ORM\OneToOne(targetEntity: ForumReview::class, mappedBy: "user")]
-    private ?ForumReview $forumReview = null;
+    #[ORM\OneToMany(targetEntity: ForumReview::class, mappedBy: "user")]
+    private Collection $forumReviews;
 
-    public function getForumReview(): ?ForumReview
+    /**
+     * @return Collection<int, ForumReview>
+     */
+    public function getForumReviews(): Collection
     {
-        return $this->forumReview;
+        return $this->forumReviews;
     }
 
-    public function setForumReview(?ForumReview $forumReview): self
+    public function addForumReview(ForumReview $forumReview): self
     {
-        $this->forumReview = $forumReview;
+        if (!$this->forumReviews->contains($forumReview)) {
+            $this->forumReviews->add($forumReview);
+            $forumReview->setUser($this);
+        }
+        return $this;
+    }
+
+    public function removeForumReview(ForumReview $forumReview): self
+    {
+        if ($this->forumReviews->removeElement($forumReview)) {
+            if ($forumReview->getUser() === $this) {
+                $forumReview->setUser(null);
+            }
+        }
         return $this;
     }
 
@@ -600,6 +616,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->readMessages = new ArrayCollection();
         $this->studentEnrollments = new ArrayCollection();
         $this->conversationMembers = new ArrayCollection();
+        $this->forumReviews = new ArrayCollection();
     }
 
     /**

@@ -61,9 +61,17 @@
                             <span style="font-size: 0.75rem; color: var(--m3-on-surface-variant);">{{ post.user.roles|first|replace({'ROLE_': ''})|title }}</span>
                         </div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 6px; color: var(--m3-primary); font-size: 0.875rem; font-weight: 600; background: var(--m3-surface-container-high); padding: 6px 12px; border-radius: 20px;">
-                        <span>💬</span>
-                        <span>{{ post.forumComments|length }}</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        {% if post.getReviewCount() > 0 %}
+                            <div style="display: flex; align-items: center; gap: 4px; color: #f59e0b; font-size: 0.875rem; font-weight: 700; background: #fffbeb; padding: 6px 12px; border-radius: 20px; border: 1px solid #fef3c7;">
+                                <span>⭐</span>
+                                <span>{{ post.getAverageRating() }}</span>
+                            </div>
+                        {% endif %}
+                        <div style="display: flex; align-items: center; gap: 6px; color: var(--m3-primary); font-size: 0.875rem; font-weight: 600; background: var(--m3-surface-container-high); padding: 6px 12px; border-radius: 20px;">
+                            <span>💬</span>
+                            <span>{{ post.forumComments|length }}</span>
+                        </div>
                     </div>
                 </div>
             </a>

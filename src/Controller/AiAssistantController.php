@@ -59,6 +59,37 @@ class AiAssistantController extends AbstractController
         ]);
     }
 
+    #[Route('/history', name: 'api_ai_history', methods: ['GET'])]
+    public function history(Request $request): JsonResponse
+    {
+        $chatId = $request->query->get('chatId');
+        if (!$chatId) {
+            return new JsonResponse(['error' => 'chatId is required'], 400);
+        }
+
+        /** @var User $user */
+        $user = $this->getUser();
+        $chat = $this->entityManager->getRepository(AiChat::class)->find($chatId);
+
+        if (!$chat || $chat->getUser() !== $user) {
+            return new JsonResponse(['error' => 'Chat not found or unauthorized'], 404);
+        }
+
+        $messages = [];
+        foreach ($chat->getMessages() as $msg) {
+            $messages[] = [
+                'role' => $msg->getRole(),
+                'content' => $msg->getContent(),
+                'createdAt' => $msg->getCreatedAt()?->format('c')
+            ];
+        }
+
+        return new JsonResponse([
+            'chatId' => $chat->getId(),
+            'messages' => $messages
+        ]);
+    }
+
     #[Route('/upload', name: 'api_ai_upload', methods: ['POST'])]
     public function upload(Request $request): JsonResponse
     {
