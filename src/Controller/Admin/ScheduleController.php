@@ -6,10 +6,12 @@ use App\Entity\Announcement;
 use App\Entity\ClassSchedule;
 use App\Repository\ClasseRepository;
 use App\Repository\ClassScheduleRepository;
+use App\Repository\StudentEnrollmentRepository;
 use App\Repository\SubjectRepository;
 use App\Repository\TimeSlotRepository;
 use App\Repository\TeacherAssignmentRepository;
 use App\Repository\UserRepository;
+use App\Service\NotificationService;
 use App\Service\ScheduleConflictService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -78,18 +80,37 @@ class ScheduleController extends AbstractController
         SubjectRepository $subjectRepo,
         UserRepository $userRepo,
         TimeSlotRepository $slotRepo,
-        ClassScheduleRepository $scheduleRepo
+        ClassScheduleRepository $scheduleRepo,
+        StudentEnrollmentRepository $enrollmentRepo,
+        NotificationService $notificationService,
+        \App\Repository\AcademicYearRepository $yearRepo
     ): JsonResponse {
-        $data = json_decode($request->getContent(), true);
+        $content = $request->getContent();
+        if (!$content) {
+            return new JsonResponse(['success' => false, 'errors' => ['Empty request body']], 400);
+        }
+
+        $data = json_decode($content, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return new JsonResponse(['success' => false, 'errors' => ['Invalid JSON']], 400);
+        }
         
-        $classId = $data['classId'];
-        $subjectId = $data['subjectId'];
-        $teacherId = $data['teacherId'];
-        $slotId = $data['slotId'];
-        $day = $data['day'];
+        $classId = $data['classId'] ?? null;
+        $subjectId = $data['subjectId'] ?? null;
+        $teacherId = $data['teacherId'] ?? null;
+        $slotId = $data['slotId'] ?? null;
+        $day = $data['day'] ?? null;
+
+        if (!$classId || !$subjectId || !$teacherId || !$slotId || !$day) {
+            return new JsonResponse(['success' => false, 'errors' => ['Missing required fields']], 400);
+        }
+
+        // Find current academic year
+        $currentYear = $yearRepo->findOneBy(['is_current' => true]);
+        $yearId = $currentYear ? $currentYear->getId() : null;
 
         // 1. Validate
-        $errors = $conflictService->validateSlot($classId, $subjectId, $teacherId, $slotId, $day);
+        $errors = $conflictService->validateSlot((int)$classId, (int)$subjectId, (int)$teacherId, (int)$slotId, $day, $yearId);
         if (!empty($errors)) {
             return new JsonResponse(['success' => false, 'errors' => $errors], 400);
         }
@@ -102,8 +123,39 @@ class ScheduleController extends AbstractController
         $schedule->setTimeSlot($slotRepo->find($slotId));
         $schedule->setDayOfWeek($day);
         
+        if ($currentYear) {
+            $schedule->setAcademicYear($currentYear);
+        }
+        
         $em->persist($schedule);
         $em->flush();
+
+        $recipients = [];
+        $teacher = $schedule->getTeacher();
+        if ($teacher !== null) {
+            $recipients[] = $teacher;
+        }
+
+        $criteria = ['classe' => $schedule->getClasse()];
+        if ($currentYear !== null) {
+            $criteria['academicYear'] = $currentYear;
+        }
+
+        foreach ($enrollmentRepo->findBy($criteria) as $enrollment) {
+            $student = $enrollment->getUser();
+            if ($student !== null) {
+                $recipients[] = $student;
+            }
+        }
+
+        $subjectName = $schedule->getSubject()?->getName() ?? 'a subject';
+        $slotRange = $schedule->getTimeSlot()?->getRange() ?? 'the assigned time';
+        $notificationService->sendToUsers(
+            $recipients,
+            'New schedule published',
+            sprintf('%s has been scheduled for %s at %s.', $subjectName, $day, $slotRange),
+            $this->generateUrl('app_schedule_view')
+        );
 
         return new JsonResponse(['success' => true]);
     }
@@ -148,6 +200,8 @@ class ScheduleController extends AbstractController
         \App\Entity\ScheduleChangeRequest $changeRequest, 
         EntityManagerInterface $em,
         ScheduleConflictService $conflictService,
+        StudentEnrollmentRepository $enrollmentRepo,
+        NotificationService $notificationService,
         \App\Repository\ScheduleChangeRequestRepository $requestRepo,
         Request $request
     ): Response {
@@ -194,6 +248,31 @@ class ScheduleController extends AbstractController
         
         $em->persist($announcement);
         $em->flush();
+
+        $recipients = [];
+        $teacher = $classSchedule->getTeacher();
+        if ($teacher !== null) {
+            $recipients[] = $teacher;
+        }
+
+        $criteria = ['classe' => $classe];
+        if ($classSchedule->getAcademicYear() !== null) {
+            $criteria['academicYear'] = $classSchedule->getAcademicYear();
+        }
+
+        foreach ($enrollmentRepo->findBy($criteria) as $enrollment) {
+            $student = $enrollment->getUser();
+            if ($student !== null) {
+                $recipients[] = $student;
+            }
+        }
+
+        $notificationService->sendToUsers(
+            $recipients,
+            'Schedule updated',
+            sprintf('%s was moved to %s at %s. Please review your timetable.', $subjectName, $newDay, $newTime),
+            $this->generateUrl('app_schedule_view')
+        );
         
         if ($request->headers->get('HX-Request')) {
             $pendingCount = count($requestRepo->findBy(['status' => 'PENDING']));

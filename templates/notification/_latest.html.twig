@@ -1,0 +1,18 @@
+{% for notification in notifications %}
+    <div class="notification-item {{ notification.isRead ? '' : 'unread' }}" 
+         onclick='markAsRead(this, {{ notification.id }}, {{ notification.link|default('')|json_encode|raw }})'>
+        <div class="notification-content">
+            <div class="notification-title">{{ notification.title }}</div>
+            <div class="notification-message">{{ notification.message }}</div>
+            <div class="notification-time">{{ notification.createdAt|date('M d, H:i') }}</div>
+        </div>
+        {% if not notification.isRead %}
+            <div class="unread-dot"></div>
+        {% endif %}
+    </div>
+{% else %}
+    <div class="no-notifications">
+        <span class="material-symbols-rounded">notifications_off</span>
+        <p>No new notifications</p>
+    </div>
+{% endfor %}

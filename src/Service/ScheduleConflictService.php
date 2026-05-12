@@ -16,17 +16,17 @@ class ScheduleConflictService
     /**
      * Checks for any conflicts before saving a schedule slot.
      */
-    public function validateSlot(int $classId, int $subjectId, int $teacherId, int $slotId, string $day): array
+    public function validateSlot(int $classId, int $subjectId, int $teacherId, int $slotId, string $day, int $academicYearId = null): array
     {
         $errors = [];
 
         // 1. Class Conflict: Does the class already have a subject in this slot?
-        if ($this->scheduleRepo->findConflict($slotId, $day, $classId)) {
+        if ($this->scheduleRepo->findConflict($slotId, $day, $classId, null, $academicYearId)) {
             $errors[] = "This class already has a subject scheduled for this time slot.";
         }
 
         // 2. Teacher Conflict: Is the teacher already teaching another class in this slot?
-        if ($this->scheduleRepo->findConflict($slotId, $day, null, $teacherId)) {
+        if ($this->scheduleRepo->findConflict($slotId, $day, null, $teacherId, $academicYearId)) {
             $errors[] = "This teacher is already assigned to another class during this time slot.";
         }
 

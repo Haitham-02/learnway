@@ -35,13 +35,17 @@ class ClassScheduleRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function findConflict(int $slotId, string $day, int $classId = null, int $teacherId = null)
+    public function findConflict(int $slotId, string $day, int $classId = null, int $teacherId = null, int $academicYearId = null)
     {
         $qb = $this->createQueryBuilder('s')
             ->where('s.timeSlot = :slotId')
             ->andWhere('s.dayOfWeek = :day')
             ->setParameter('slotId', $slotId)
             ->setParameter('day', $day);
+
+        if ($academicYearId) {
+            $qb->andWhere('s.academicYear = :yearId')->setParameter('yearId', $academicYearId);
+        }
 
         if ($classId) {
             $qb->andWhere('s.classe = :classId')->setParameter('classId', $classId);

@@ -8,10 +8,10 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: ClassScheduleRepository::class)]
 #[ORM\Table(name: 'class_schedules')]
-#[ORM\UniqueConstraint(name: 'uniq_class_slot_day', columns: ['classe_id', 'time_slot_id', 'day_of_week'])]
-#[ORM\UniqueConstraint(name: 'uniq_teacher_slot_day', columns: ['teacher_id', 'time_slot_id', 'day_of_week'])]
-#[UniqueEntity(fields: ['classe', 'timeSlot', 'dayOfWeek'], message: 'This class already has a subject at this time.')]
-#[UniqueEntity(fields: ['teacher', 'timeSlot', 'dayOfWeek'], message: 'This teacher is already teaching another class at this time.')]
+#[ORM\UniqueConstraint(name: 'uniq_class_slot_day_year', columns: ['classe_id', 'time_slot_id', 'day_of_week', 'academic_year_id'])]
+#[ORM\UniqueConstraint(name: 'uniq_teacher_slot_day_year', columns: ['teacher_id', 'time_slot_id', 'day_of_week', 'academic_year_id'])]
+#[UniqueEntity(fields: ['classe', 'timeSlot', 'dayOfWeek', 'academicYear'], message: 'This class already has a subject at this time for this year.')]
+#[UniqueEntity(fields: ['teacher', 'timeSlot', 'dayOfWeek', 'academicYear'], message: 'This teacher is already teaching another class at this time for this year.')]
 class ClassSchedule
 {
     #[ORM\Id]
