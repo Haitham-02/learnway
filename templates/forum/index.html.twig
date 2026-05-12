@@ -10,7 +10,7 @@
             <h1 style="margin: 0; font-size: 2.5rem; font-weight: 300; color: var(--m3-on-surface);">Community <span style="font-weight: 700; color: var(--m3-primary);">Forum</span></h1>
             <p style="margin: 8px 0 0 0; color: var(--m3-on-surface-variant); font-size: 1.125rem;">Discuss, share, and learn with your peers.</p>
         </div>
-        {% if is_granted('ROLE_STUDENT') or is_granted('ROLE_TEACHER') %}
+        {% if is_granted('ROLE_STUDENT') or is_granted('ROLE_TEACHER') or is_granted('ROLE_ADMIN') %}
             <a href="{{ path('app_forum_new') }}" class="m3-button m3-button-filled" style="height: 48px; padding: 0 24px; border-radius: 12px; gap: 8px;">
                 <span style="font-size: 1.25rem;">+</span> Start Discussion
             </a>
@@ -80,11 +80,13 @@
                 <div style="font-size: 5rem; margin-bottom: 24px; filter: grayscale(1); opacity: 0.3;">💬</div>
                 <h3 style="margin: 0 0 8px 0; font-size: 1.75rem; font-weight: 400; color: var(--m3-on-surface);">No discussions yet</h3>
                 <p style="margin: 0; color: var(--m3-on-surface-variant); font-size: 1.1rem;">Be the first to share something with the community!</p>
+                {% if is_granted('ROLE_STUDENT') or is_granted('ROLE_TEACHER') or is_granted('ROLE_ADMIN') %}
                 <div style="margin-top: 32px;">
                      <a href="{{ path('app_forum_new') }}" class="m3-button m3-button-filled" style="height: 48px; padding: 0 32px; border-radius: 12px;">
                         Start a Discussion
                     </a>
                 </div>
+                {% endif %}
             </div>
         {% endfor %}
     </div>
