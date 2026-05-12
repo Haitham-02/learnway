@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>LearnWay — The Intelligent Future of Education</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🚀</text></svg>">
+    
+    {# Fonts & Icons #}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    
+    <link rel="stylesheet" href="{{ asset('css/presentation.css') }}">
+    
+    {{ importmap('app') }}
+</head>
+<body class="presentation-mode">
+
+    <div class="presentation-container" data-controller="presentation">
+        
+        {# ── NAVIGATION DOTS ── #}
+        <div class="nav-dots">
+            {% for i in 0..11 %}
+                <div class="dot" data-presentation-target="dot" data-index="{{ i }}" data-action="click->presentation#goTo"></div>
+            {% endfor %}
+        </div>
+
+        {# ── SECTION 1: THE TEAM (Alphax) ── #}
+        <section data-presentation-target="section" style="padding-top: 40px;">
+            <div class="slide-number">01</div>
+            <div class="glow" style="top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; opacity: 0.1;"></div>
+            <div class="reveal">
+                <div style="text-align: center; margin-bottom: 60px;">
+                    <img src="{{ asset('/images/Alphax_logo.png') }}" style="height: 180px; width: auto; filter: drop-shadow(0 0 25px rgba(59, 130, 246, 0.4));">
+                    <div style="margin-top: 16px;">
+                        <span style="color: #3b82f6; font-weight: 800; text-transform: uppercase; letter-spacing: 5px; font-size: 1.6rem; opacity: 1; text-shadow: 0 0 20px rgba(59, 130, 246, 0.6);">Presenting the team</span>
+                    </div>
+                </div>
+                
+                <div class="team-grid" style="grid-template-columns: repeat(4, 1fr); gap: 24px; align-items: stretch;">
+                    {% set accents = ['linear-gradient(90deg, #224870, #4ea5d9)', 'linear-gradient(90deg, #4ea5d9, #44cfcb)', 'linear-gradient(90deg, #44cfcb, #224870)', 'linear-gradient(90deg, #122c34, #4ea5d9)'] %}
+                    {% for member in team %}
+                        <div class="team-card-premium">
+                            <div class="team-accent-line" style="background: {{ accents[loop.index0] }};"></div>
+                            <div class="team-image-box">
+                                <img src="{{ asset(member.image) }}">
+                            </div>
+                            <div class="team-info-box">
+                                <div style="font-size: 1.5rem; font-weight: 800; color: #f9fafb; margin-bottom: 8px;">{{ member.name }}</div>
+                                <div style="font-size: 0.85rem; font-weight: 800; color: #7dd3fc; letter-spacing: 0.08em; margin-bottom: 16px; text-transform: uppercase;">{{ member.role }}</div>
+                                <p style="font-size: 0.95rem; color: rgba(255,255,255,0.7); line-height: 1.6; margin: 0;">{{ member.description }}</p>
+                            </div>
+                            <div class="tech-tags">
+                                {% for tech in member.tech_stack %}
+                                    <span class="tech-tag">{{ tech }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        {# ── SECTION 2: INTRODUCTION (LearnWay) ── #}
+        <section data-presentation-target="section">
+            <div class="slide-number">02</div>
+            <div class="glow" style="top: -100px; left: -100px;"></div>
+            <div class="reveal" style="display: flex; align-items: center; gap: 80px;">
+                
+                {# LEFT CONTENT #}
+                <div style="flex: 1;">
+                    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 50px; padding: 10px 24px; margin-bottom: 3rem;">
+                        <span style="width: 10px; height: 10px; border-radius: 50%; background: #44cfcb; display: inline-block;"></span>
+                        <span style="font-size: 0.9rem; font-weight: 800; color: var(--p-primary); letter-spacing: 0.1em;">ALL-IN-ONE ACADEMY PLATFORM</span>
+                    </div>
+
+                    <h1 style="font-size: 4rem;">LearnWay: The Intelligent Future of Education</h1>
+                    <p class="lead" style="margin-top: 24px;">Unlock your academy potential with a premium, AI-powered ecosystem that redefines the educational experience. By integrating RAG-based assistance, real-time engagement monitoring, and seamless administration, bridging the gap between innovation and academic excellence.</p>
+                </div>
+
+                {# RIGHT CONTENT (DASHBOARD MOCKUP) #}
+                <div style="flex: 1.4; display: flex; align-items: center; justify-content: center;">
+                    <div class="hover-float" style="width: 80%; background: #0d1b2a; border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 20px; overflow: hidden; box-shadow: 0 50px 120px rgba(0,0,0,0.7);">
+                        <!-- Window bar -->
+                        <div style="background: linear-gradient(135deg, #0f2338, #162d4a); padding: 12px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; align-items: center; gap: 8px;">
+                            <span style="width: 10px; height: 10px; border-radius: 50%; background: #ff5f57;"></span>
+                            <span style="width: 10px; height: 10px; border-radius: 50%; background: #febc2e;"></span>
+                            <span style="width: 10px; height: 10px; border-radius: 50%; background: #28c840;"></span>
+                            <span style="flex: 1; background: rgba(255,255,255,0.05); border-radius: 6px; height: 20px; margin-left: 10px; display: flex; align-items: center; padding: 0 10px;">
+                                <span style="font-size: 10px; color: rgba(255,255,255,0.3);">learnway.academy / admin / dashboard</span>
+                            </span>
+                        </div>
+
+                        <!-- Dashboard body -->
+                        <div style="display: flex; height: 580px;">
+                            <!-- Sidebar -->
+                            <div style="width: 60px; background: rgba(15,35,56,0.8); border-right: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 16px 0;">
+                                <img src="{{ asset('images/LearnWay logo.png') }}" style="width: 24px; height: 24px; margin-bottom: 8px;">
+                                <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(59, 130, 246, 0.2); display: flex; align-items: center; justify-content: center; font-size: 14px;">🏠</div>
+                                <div style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; opacity: 0.4;">👥</div>
+                                <div style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; opacity: 0.4;">📅</div>
+                                <div style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; opacity: 0.4;">💬</div>
+                            </div>
+
+                            <!-- Main content -->
+                            <div style="flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow: hidden;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="font-size: 14px; font-weight: 700;">Good morning, Admin 👋</div>
+                                    <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 20px; padding: 2px 8px; font-size: 9px; color: #10b981;">● SYSTEM ONLINE</div>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                                    <div class="glass-card" style="padding: 10px; text-align: center; border-radius: 12px;">
+                                        <div style="font-size: 1.25rem; font-weight: 800; color: #44cfcb;">{{ stats.total_users }}</div>
+                                        <div style="font-size: 9px; color: var(--p-muted);">Students</div>
+                                    </div>
+                                    <div class="glass-card" style="padding: 10px; text-align: center; border-radius: 12px;">
+                                        <div style="font-size: 1.25rem; font-weight: 800; color: var(--p-primary);">{{ stats.livestreams }}</div>
+                                        <div style="font-size: 9px; color: var(--p-muted);">Streams</div>
+                                    </div>
+                                    <div class="glass-card" style="padding: 10px; text-align: center; border-radius: 12px;">
+                                        <div style="font-size: 1.25rem; font-weight: 800; color: #7dd3fc;">{{ stats.forum_posts }}</div>
+                                        <div style="font-size: 9px; color: var(--p-muted);">Posts</div>
+                                    </div>
+                                </div>
+
+                                <!-- Learning Chart -->
+                                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; height: 120px;">
+                                    <div style="font-size: 10px; font-weight: 600; color: var(--p-muted); margin-bottom: 8px;">LEARNING ENGAGEMENT</div>
+                                    <div style="height: 60px; display: flex; align-items: flex-end; gap: 4px;">
+                                        <div style="flex: 1; height: 40%; background: #3b82f6; opacity: 0.3; border-radius: 2px;"></div>
+                                        <div style="flex: 1; height: 65%; background: #3b82f6; opacity: 0.5; border-radius: 2px;"></div>
+                                        <div style="flex: 1; height: 50%; background: #3b82f6; opacity: 0.4; border-radius: 2px;"></div>
+                                        <div style="flex: 1; height: 90%; background: #3b82f6; border-radius: 2px; box-shadow: 0 0 10px #3b82f6;"></div>
+                                        <div style="flex: 1; height: 75%; background: #3b82f6; opacity: 0.7; border-radius: 2px;"></div>
+                                        <div style="flex: 1; height: 60%; background: #3b82f6; opacity: 0.5; border-radius: 2px;"></div>
+                                    </div>
+                                </div>
+
+                                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 12px;">
+                                    <div style="font-size: 10px; font-weight: 600; color: var(--p-muted); margin-bottom: 8px;">RECENT ACTIVITY</div>
+                                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                                        <div style="font-size: 11px; display: flex; align-items: center; gap: 8px;">
+                                            <span style="color: #44cfcb;">●</span> New student enrolled in Class 10-B
+                                        </div>
+                                        <div style="font-size: 11px; display: flex; align-items: center; gap: 8px;">
+                                            <span style="color: #ef4444;">●</span> Forum post flagged for review
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Expanded Copilot Card -->
+                                <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15)); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <img src="{{ asset('images/LearnWay logo.png') }}" style="width: 20px; height: 20px;">
+                                        <span style="font-size: 11px; font-weight: 700; color: #7dd3fc; letter-spacing: 1px;">AI COPILOT INSIGHT</span>
+                                    </div>
+                                    <div style="font-size: 11px; color: rgba(255,255,255,0.8); line-height: 1.5;">
+                                        "Overall engagement is up 12% today. I recommend reviewing the latest Forum questions in <b>Software Security</b>."
+                                    </div>
+                                    <div style="display: flex; gap: 6px; margin-top: auto;">
+                                        <div style="padding: 4px 8px; background: rgba(59, 130, 246, 0.2); border-radius: 4px; font-size: 9px; color: #7dd3fc;">Analyze Mood</div>
+                                        <div style="padding: 4px 8px; background: rgba(255, 255, 255, 0.05); border-radius: 4px; font-size: 9px; color: white;">Dismiss</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {# ── SECTION 3: THE PROBLEM ── #}
+        <section data-presentation-target="section">
+            <div class="slide-number">03</div>
+            <div class="glow" style="bottom: 0; right: 0; background: radial-gradient(circle, rgba(239, 68, 68, 0.05) 0%, transparent 70%);"></div>
+            <div class="reveal">
+                <div style="text-align: center; margin-bottom: 64px;">
+                    <div style="margin-bottom: 12px;">
+                        <span style="color: #ef4444; font-size: 5.5rem; font-weight: 900; letter-spacing: -3px; text-transform: uppercase; opacity: 1;">CORE PROBLEMS</span>
+                    </div>
+                    <span style="color: #ef4444; font-weight: 700; text-transform: uppercase; letter-spacing: 5px; font-size: 1.2rem; opacity: 0.8;">The Educational Crisis</span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;">
+                    <!-- Problem 1 -->
+                    <div class="glass-card" style="border-top: 4px solid #ef4444; position: relative; overflow: hidden; min-height: 480px; display: flex; flex-direction: column; justify-content: flex-start; padding: 40px;">
+                        <div style="position: absolute; top: -20px; right: -20px; font-size: 8rem; font-weight: 900; color: rgba(239, 68, 68, 0.03); z-index: 0;">01</div>
+                        <div style="width: 64px; height: 64px; background: rgba(239, 68, 68, 0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+                            <span class="material-symbols-rounded" style="font-size: 32px; color: #ef4444;">visibility_off</span>
+                        </div>
+                        <h3 style="font-size: 1.75rem; margin-bottom: 20px; color: #f9fafb; font-weight: 800;">The Engagement Void</h3>
+                        <p style="color: var(--p-muted); line-height: 1.7; font-size: 1.25rem;">Traditional platforms suffer from 70% student disengagement. Modern LMS solutions act as static repositories rather than interactive environments.</p>
+                    </div>
+
+                    <!-- Problem 2 -->
+                    <div class="glass-card" style="border-top: 4px solid #f59e0b; position: relative; overflow: hidden; min-height: 480px; display: flex; flex-direction: column; justify-content: flex-start; padding: 40px;">
+                        <div style="position: absolute; top: -20px; right: -20px; font-size: 8rem; font-weight: 900; color: rgba(245, 158, 11, 0.03); z-index: 0;">02</div>
+                        <div style="width: 64px; height: 64px; background: rgba(245, 158, 11, 0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+                            <span class="material-symbols-rounded" style="font-size: 32px; color: #f59e0b;">hub</span>
+                        </div>
+                        <h3 style="font-size: 1.75rem; margin-bottom: 20px; color: #f9fafb; font-weight: 800;">The Silo Effect</h3>
+                        <p style="color: var(--p-muted); line-height: 1.7; font-size: 1.25rem;">Fragmented data across disconnected tools. Administrators lack real-time visibility, leading to delayed academic interventions and systemic inefficiencies.</p>
+                    </div>
+
+                    <!-- Problem 3 -->
+                    <div class="glass-card" style="border-top: 4px solid #3b82f6; position: relative; overflow: hidden; min-height: 480px; display: flex; flex-direction: column; justify-content: flex-start; padding: 40px;">
+                        <div style="position: absolute; top: -20px; right: -20px; font-size: 8rem; font-weight: 900; color: rgba(59, 130, 246, 0.03); z-index: 0;">03</div>
+                        <div style="width: 64px; height: 64px; background: rgba(59, 130, 246, 0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+                            <span class="material-symbols-rounded" style="font-size: 32px; color: #3b82f6;">psychology</span>
+                        </div>
+                        <h3 style="font-size: 1.75rem; margin-bottom: 20px; color: #f9fafb; font-weight: 800;">The Generic Blueprint</h3>
+                        <p style="color: var(--p-muted); line-height: 1.7; font-size: 1.25rem;">One-size-fits-all education. Current systems fail to adapt to individual student needs, ignoring the power of AI-driven personalization and contextual support.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {# ── SECTION 4: TARGET MARKET ── #}
+        <section data-presentation-target="section">
+            <div class="slide-number">04</div>
+            <div class="glow" style="top: 0; left: 0; background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%);"></div>
+            <div class="reveal">
+                <div style="text-align: center; margin-bottom: 64px;">
+                    <div style="margin-bottom: 12px;">
+                        <span style="color: var(--p-primary); font-size: 5.5rem; font-weight: 900; letter-spacing: -3px; text-transform: uppercase; opacity: 1;">MARKET REACH</span>
+                    </div>
+                    <span style="color: var(--p-primary); font-weight: 700; text-transform: uppercase; letter-spacing: 5px; font-size: 1.2rem; opacity: 0.8;">Target Audience & Market</span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+                    <!-- Column 1: Audience -->
+                    <div class="glass-card" style="border-left: 6px solid var(--p-primary); padding: 56px; min-height: 500px; display: flex; flex-direction: column; justify-content: center;">
+                        <h3 style="font-size: 2.5rem; margin-bottom: 40px; color: var(--p-primary); font-weight: 800;">The User Ecosystem</h3>
+                        <div style="display: flex; flex-direction: column; gap: 32px;">
+                            <div style="display: flex; gap: 24px; align-items: center;">
+                                <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(59, 130, 246, 0.1); color: var(--p-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <span class="material-symbols-rounded" style="font-size: 32px;">school</span>
+                                </div>
+                                <div>
+                                    <h4 style="font-size: 1.5rem; color: #f9fafb;">Academic Institutions</h4>
+                                    <p style="color: var(--p-muted); font-size: 1.15rem; line-height: 1.6;">Primary schools, high schools, and private academies seeking a unified digital core.</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 24px; align-items: center;">
+                                <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(59, 130, 246, 0.1); color: var(--p-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <span class="material-symbols-rounded" style="font-size: 32px;">account_balance</span>
+                                </div>
+                                <div>
+                                    <h4 style="font-size: 1.5rem; color: #f9fafb;">Higher Education</h4>
+                                    <p style="color: var(--p-muted); font-size: 1.15rem; line-height: 1.6;">Universities and colleges looking to modernize student engagement with AI insights.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Market -->
+                    <div class="glass-card" style="border-left: 6px solid #10b981; padding: 56px; min-height: 500px; display: flex; flex-direction: column; justify-content: center;">
+                        <h3 style="font-size: 2.5rem; margin-bottom: 40px; color: #10b981; font-weight: 800;">The Growth Sectors</h3>
+                        <div style="display: flex; flex-direction: column; gap: 32px;">
+                            <div style="display: flex; gap: 24px; align-items: center;">
+                                <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(16, 185, 129, 0.1); color: #10b981; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <span class="material-symbols-rounded" style="font-size: 32px;">model_training</span>
+                                </div>
+                                <div>
+                                    <h4 style="font-size: 1.5rem; color: #f9fafb;">Training Centers</h4>
+                                    <p style="color: var(--p-muted); font-size: 1.15rem; line-height: 1.6;">Vocational schools and professional certification centers requiring robust management.</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 24px; align-items: center;">
+                                <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(16, 185, 129, 0.1); color: #10b981; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <span class="material-symbols-rounded" style="font-size: 32px;">workspace_premium</span>
+                                </div>
+                                <div>
+                                    <h4 style="font-size: 1.5rem; color: #f9fafb;">Modern Educators</h4>
+                                    <p style="color: var(--p-muted); font-size: 1.15rem; line-height: 1.6;">Independent teachers and tutors scaling their business with intelligent virtual tools.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {# ── SECTION 5: COMPETITOR SPOTLIGHT ── #}
+        <section data-presentation-target="section">
+            <div class="slide-number">05</div>
+            <div class="glow" style="top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; opacity: 0.1;"></div>
+            <div class="reveal">
+                <div style="text-align: center; margin-bottom: 60px;">
+                    <span style="color: var(--p-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 5px; font-size: 1.2rem; opacity: 0.8;">Competitive Analysis</span>
+                    <h2 style="margin-top: 16px; font-size: 3.5rem; font-weight: 800; color: var(--p-primary);">The Industry Benchmark</h2>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 80px; max-width: 1200px; margin: 0 auto;">
+                    <div style="flex: 1; text-align: center;">
+                        <div class="glass-card" style="padding: 60px; display: inline-block; border-color: rgba(255,255,255,0.1);">
+                            <img src="{{ asset('images/blackboard logo.png') }}" style="height: 120px; width: auto; filter: drop-shadow(0 0 20px rgba(255,255,255,0.1));">
+                        </div>
+                        <div style="margin-top: 32px; font-size: 1.8rem; font-weight: 800; color: #94a3b8;">Blackboard Learn</div>
+                    </div>
+                    
+                    <div style="flex: 1.2;">
+                        <p style="font-size: 1.2rem; color: var(--p-muted); line-height: 1.8; margin-bottom: 40px;">
+                            Blackboard is a widely adopted Learning Management System (LMS) used by universities and schools worldwide as a primary digital core for hybrid learning.
+                        </p>
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+                            <div style="display: flex; gap: 16px; align-items: center; background: rgba(255,255,255,0.03); padding: 16px 24px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                <span class="material-symbols-rounded" style="color: #94a3b8;">check_circle</span>
+                                <span style="color: white; font-weight: 600;">Online Course Management</span>
+                            </div>
+                            <div style="display: flex; gap: 16px; align-items: center; background: rgba(255,255,255,0.03); padding: 16px 24px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                <span class="material-symbols-rounded" style="color: #94a3b8;">check_circle</span>
+                                <span style="color: white; font-weight: 600;">Virtual Classrooms & Communication</span>
+                            </div>
+                            <div style="display: flex; gap: 16px; align-items: center; background: rgba(255,255,255,0.03); padding: 16px 24px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                <span class="material-symbols-rounded" style="color: #94a3b8;">check_circle</span>
+                                <span style="color: white; font-weight: 600;">Assignment & Quiz Infrastructure</span>
+                            </div>
+                            <div style="display: flex; gap: 16px; align-items: center; background: rgba(255,255,255,0.03); padding: 16px 24px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                <span class="material-symbols-rounded" style="color: #94a3b8;">check_circle</span>
+                                <span style="color: white; font-weight: 600;">Student Progress Tracking</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {# ── SECTION 6: THE COMPARISON ── #}
+        <section data-presentation-target="section">
+            <div class="slide-number">06</div>
+            <div class="glow" style="top: -100px; right: -100px; background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%);"></div>
+            <div class="reveal">
+                <div style="text-align: center; margin-bottom: 56px;">
+                    <div style="margin-bottom: 12px;">
+                        <span style="background: linear-gradient(90deg, #ef4444 0%, #ef4444 50%, #10b981 50%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 5.5rem; font-weight: 900; letter-spacing: -3px; text-transform: uppercase; opacity: 0.3;">COMPARISON</span>
+                    </div>
+                    <span style="color: var(--p-primary); font-weight: 700; text-transform: uppercase; letter-spacing: 5px; font-size: 1.2rem; opacity: 0.8;">Heritage vs. Future</span>
+                </div>
+
+                <div class="glass-card" style="margin: 40px auto 0; max-width: 950px; padding: 0; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1);">
+                    <table class="comparison-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: rgba(255, 255, 255, 0.02);">
+                                <th style="padding: 32px 24px; text-align: left; font-size: 1.1rem; color: var(--p-muted); width: 30%;">Capability</th>
+                                <th style="padding: 32px 24px; text-align: center; background: rgba(239, 68, 68, 0.03);">
+                                    <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 20px;">
+                                        <img src="{{ asset('images/blackboard logo.png') }}" style="height: 55px; width: auto; filter: grayscale(1) opacity(0.8);">
+                                        <div style="width: 1px; height: 30px; background: rgba(255,255,255,0.1);"></div>
+                                        <img src="{{ asset('images/esprim logo.png') }}" style="height: 45px; width: auto; filter: grayscale(1) opacity(0.8);">
+                                    </div>
+                                    <div style="font-weight: 700; font-size: 0.8rem; color: #fca5a5; text-transform: uppercase; letter-spacing: 2px;">The Legacy Core</div>
+                                    <div style="font-size: 0.75rem; color: #fca5a5; opacity: 0.6; margin-top: 4px;">(ESPRIT version)</div>
+                                </th>
+                                <th style="padding: 32px 24px; text-align: center; background: rgba(16, 185, 129, 0.03);">
+                                    <div style="display: inline-block; background: white; padding: 12px 24px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);">
+                                        <img src="{{ asset('images/LearnWay logo full.png') }}" style="height: 75px; width: auto;">
+                                    </div>
+                                    <div style="font-weight: 700; font-size: 0.8rem; color: #6ee7b7; text-transform: uppercase; letter-spacing: 2px;">The Intelligent Future</div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody style="font-size: 1.05rem;">
+                            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                                <td style="padding: 24px; font-weight: 600; color: #f9fafb;">Course Management</td>
+                                <td style="padding: 24px; text-align: center; background: rgba(239, 68, 68, 0.05); color: #fca5a5;">
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                        <span class="material-symbols-rounded" style="font-size: 20px;">close</span> Manual / Static
+                                    </div>
+                                </td>
+                                <td style="padding: 24px; text-align: center; background: rgba(16, 185, 129, 0.05); color: #6ee7b7; font-weight: 700;">
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                        <span class="material-symbols-rounded" style="font-size: 20px;">check_circle</span> AI-Driven & Predictive
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                                <td style="padding: 24px; font-weight: 600; color: #f9fafb;">Virtual Classrooms</td>
+                                <td style="padding: 24px; text-align: center; background: rgba(239, 68, 68, 0.05); color: #fca5a5;">
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                        <span class="material-symbols-rounded" style="font-size: 20px;">close</span> Basic Streaming
+                                    </div>
+                                </td>
+                                <td style="padding: 24px; text-align: center; background: rgba(16, 185, 129, 0.05); color: #6ee7b7; font-weight: 700;">
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                        <span class="material-symbols-rounded" style="font-size: 20px;">check_circle</span> Facial & Mood Analysis
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                                <td style="padding: 24px; font-weight: 600; color: #f9fafb;">Student Support</td>
+                                <td style="padding: 24px; text-align: center; background: rgba(239, 68, 68, 0.05); color: #fca5a5;">
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                        <span class="material-symbols-rounded" style="font-size: 20px;">close</span> Manual Documentation
+                                    </div>
+                                </td>
+                                <td style="padding: 24px; text-align: center; background: rgba(16, 185, 129, 0.05); color: #6ee7b7; font-weight: 700;">
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                        <span class="material-symbols-rounded" style="font-size: 20px;">check_circle</span> 24/7 Contextual AI
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                                <td style="padding: 24px; font-weight: 600; color: #f9fafb;">Data Analytics</td>
+                                <td style="padding: 24px; text-align: center; background: rgba(239, 68, 68, 0.05); color: #fca5a5;">
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                        <span class="material-symbols-rounded" style="font-size: 20px;">close</span> Static Gradebooks
+                                    </div>
+                                </td>
+                                <td style="padding: 24px; text-align: center; background: rgba(16, 185, 129, 0.05); color: #6ee7b7; font-weight: 700;">
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                        <span class="material-symbols-rounded" style="font-size: 20px;">check_circle</span> Real-time Intelligence
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                                <td style="padding: 24px; font-weight: 600; color: #f9fafb;">Unified Messaging</td>
+                                <td style="padding: 24px; text-align: center; background: rgba(239, 68, 68, 0.05); color: #fca5a5;">
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                        <span class="material-symbols-rounded" style="font-size: 20px;">close</span> Disconnected Silos
+                                    </div>
+                                </td>
+                                <td style="padding: 24px; text-align: center; background: rgba(16, 185, 129, 0.05); color: #6ee7b7; font-weight: 700;">
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                        <span class="material-symbols-rounded" style="font-size: 20px;">check_circle</span> Native Intelligent Chat
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                                <td style="padding: 24px; font-weight: 600; color: #f9fafb;">AI Copilot (RAG)</td>
+                                <td style="padding: 24px; text-align: center; background: rgba(239, 68, 68, 0.05); color: #fca5a5;">
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                        <span class="material-symbols-rounded" style="font-size: 20px;">close</span> Not Available
+                                    </div>
+                                </td>
+                                <td style="padding: 24px; text-align: center; background: rgba(16, 185, 129, 0.05); color: #6ee7b7; font-weight: 700;">
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                        <span class="material-symbols-rounded" style="font-size: 20px;">check_circle</span> RAG-Powered Assistant
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 24px; font-weight: 600; color: #f9fafb;">Architecture</td>
+                                <td style="padding: 24px; text-align: center; background: rgba(239, 68, 68, 0.05); color: #fca5a5;">
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                        <span class="material-symbols-rounded" style="font-size: 20px;">close</span> Fragmented Silos
+                                    </div>
+                                </td>
+                                <td style="padding: 24px; text-align: center; background: rgba(16, 185, 129, 0.05); color: #6ee7b7; font-weight: 700;">
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                        <span class="material-symbols-rounded" style="font-size: 20px;">check_circle</span> Unified Intelligent Core
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        {# ── SECTION 7: THE SOLUTION ── #}
+        <section data-presentation-target="section">
+            <div class="slide-number">07</div>
+            <div class="glow" style="top: 20%; left: 10%; background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);"></div>
+            <div class="reveal">
+                <div style="text-align: center; margin-bottom: 48px;">
+                    <h2 style="margin-top: 12px; font-size: 4.2rem; font-weight: 800; background: radial-gradient(circle at center, #7dd3fc, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.3));">LearnWay: The Intelligent Solution</h2>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 60px; align-items: center;">
+                    {# LEFT: BRANDING #}
+                    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border-right: 1px solid rgba(255,255,255,0.05); padding-right: 60px;">
+                        <div style="margin-bottom: 2.5rem; display: flex; flex-direction: column; align-items: center; gap: 24px;">
+                            <div class="logo-box" style="padding: 32px 64px; background: white; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
+                                <img src="{{ asset('images/LearnWay logo full.png') }}" style="height: 80px; width: auto;">
+                            </div>
+                            <span style="font-size: 1.5rem; font-weight: 800; color: var(--p-muted); text-transform: uppercase; letter-spacing: 5px; opacity: 0.5;">By</span>
+                            <img src="{{ asset('/images/Alphax_logo.png') }}" style="height: 140px; width: auto; filter: drop-shadow(0 0 30px rgba(59, 130, 246, 0.4));">
+                        </div>
+                        <div style="font-size: 2.8rem; font-weight: 900; color: white; line-height: 1.1;">Built for Real Academies</div>
+                        <p style="margin-top: 20px; font-size: 1.1rem; color: var(--p-muted); line-height: 1.6;">Precision-engineered for the actual workflows of modern teachers, students, and administrators.</p>
+                    </div>
+
+                    {# RIGHT: TECH & FEATURES #}
+                    <div>
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 24px; margin-bottom: 40px;">
+                            <div class="glass-card" style="display: flex; gap: 24px; align-items: center; background: linear-gradient(90deg, rgba(59, 130, 246, 0.05), transparent);">
+                                <div style="width: 64px; height: 64px; border-radius: 16px; background: rgba(59, 130, 246, 0.1); color: var(--p-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <span class="material-symbols-rounded" style="font-size: 32px;">smart_toy</span>
+                                </div>
+                                <div>
+                                    <h4 style="font-size: 1.5rem; color: white;">Contextual AI Copilot</h4>
+                                    <p style="color: var(--p-muted); font-size: 1rem;">RAG-based intelligence that understands your specific academic context and roles.</p>
+                                </div>
+                            </div>
+                            <div class="glass-card" style="display: flex; gap: 24px; align-items: center; background: linear-gradient(90deg, rgba(16, 185, 129, 0.05), transparent);">
+                                <div style="width: 64px; height: 64px; border-radius: 16px; background: rgba(16, 185, 129, 0.1); color: var(--p-accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <span class="material-symbols-rounded" style="font-size: 32px;">face_retouching_natural</span>
+                                </div>
+                                <div>
+                                    <h4 style="font-size: 1.5rem; color: white;">Engagement Monitoring</h4>
+                                    <p style="color: var(--p-muted); font-size: 1rem;">Real-time facial and mood analysis during live streams to optimize learning outcomes.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Persona Grid Small -->
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                            <div class="glass-card" style="padding: 24px; border-top: 4px solid #3b82f6;">
+                                <div style="font-size: 0.75rem; font-weight: 800; color: #3b82f6; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px;">For Teachers</div>
+                                <h5 style="color: white; font-size: 1.1rem; margin-bottom: 12px;">Orchestration</h5>
+                                <ul style="list-style: none; padding: 0; font-size: 0.85rem; color: var(--p-muted); line-height: 1.8;">
+                                    <li>• Automated Grading</li>
+                                    <li>• Lesson Prep AI</li>
+                                    <li>• Live Analytics</li>
+                                </ul>
+                            </div>
+                            <div class="glass-card" style="padding: 24px; border-top: 4px solid #10b981;">
+                                <div style="font-size: 0.75rem; font-weight: 800; color: #10b981; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px;">For Students</div>
+                                <h5 style="color: white; font-size: 1.1rem; margin-bottom: 12px;">Intelligent Hub</h5>
+                                <ul style="list-style: none; padding: 0; font-size: 0.85rem; color: var(--p-muted); line-height: 1.8;">
+                                    <li>• Personal Paths</li>
+                                    <li>• 24/7 AI Support</li>
+                                    <li>• Smart Messaging</li>
+                                </ul>
+                            </div>
+                            <div class="glass-card" style="padding: 24px; border-top: 4px solid #f59e0b;">
+                                <div style="font-size: 0.75rem; font-weight: 800; color: #f59e0b; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px;">For Admins</div>
+                                <h5 style="color: white; font-size: 1.1rem; margin-bottom: 12px;">Oversight</h5>
+                                <ul style="list-style: none; padding: 0; font-size: 0.85rem; color: var(--p-muted); line-height: 1.8;">
+                                    <li>• Global Analytics</li>
+                                    <li>• Billing Engine</li>
+                                    <li>• Real-time Control</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Core Tech Stack -->
+                <div style="margin-top: 32px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 32px;">
+                    <div style="font-size: 0.85rem; font-weight: 800; color: var(--p-muted); letter-spacing: 3px; text-transform: uppercase; text-align: center; margin-bottom: 24px;">Full Architecture Ecosystem</div>
+                    <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px;">
+                        <div class="tech-card-mini" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 16px 10px; text-align: center; backdrop-filter: blur(10px);">
+                            <span class="material-symbols-rounded" style="color: #7dd3fc; font-size: 1.5rem; margin-bottom: 8px;">auto_awesome</span>
+                            <div style="color: white; font-weight: 700; font-size: 0.9rem;">Gemini AI</div>
+                            <div style="color: rgba(255,255,255,0.4); font-size: 0.7rem; margin-top: 2px;">Intelligence</div>
+                        </div>
+                        <div class="tech-card-mini" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 16px 10px; text-align: center; backdrop-filter: blur(10px);">
+                            <span class="material-symbols-rounded" style="color: #44cfcb; font-size: 1.5rem; margin-bottom: 8px;">database</span>
+                            <div style="color: white; font-weight: 700; font-size: 0.9rem;">Qdrant</div>
+                            <div style="color: rgba(255,255,255,0.4); font-size: 0.7rem; margin-top: 2px;">Vector DB</div>
+                        </div>
+                        <div class="tech-card-mini" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; padding: 16px 10px; text-align: center; backdrop-filter: blur(10px);">
+                            <span class="material-symbols-rounded" style="color: #f59e0b; font-size: 1.5rem; margin-bottom: 8px;">video_chat</span>
+                            <div style="color: white; font-weight: 700; font-size: 0.9rem;">Jitsi</div>
+                            <div style="color: rgba(255,255,255,0.4); font-size: 0.7rem; margin-top: 2px;">Virtual Class</div>
+                        </div>
+                        <div class="tech-card-mini" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 16px 10px; text-align: center; backdrop-filter: blur(10px);">
+                            <span class="material-symbols-rounded" style="color: #3b82f6; font-size: 1.5rem; margin-bottom: 8px;">terminal</span>
+                            <div style="color: white; font-weight: 700; font-size: 0.9rem;">Symfony</div>
+                            <div style="color: rgba(255,255,255,0.4); font-size: 0.7rem; margin-top: 2px;">Core Logic</div>
+                        </div>
+                        <div class="tech-card-mini" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 16px 10px; text-align: center; backdrop-filter: blur(10px);">
+                            <span class="material-symbols-rounded" style="color: #a855f7; font-size: 1.5rem; margin-bottom: 8px;">bolt</span>
+                            <div style="color: white; font-weight: 700; font-size: 0.9rem;">Socket.io</div>
+                            <div style="color: rgba(255,255,255,0.4); font-size: 0.7rem; margin-top: 2px;">Real-time</div>
+                        </div>
+                        <div class="tech-card-mini" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 16px 10px; text-align: center; backdrop-filter: blur(10px);">
+                            <span class="material-symbols-rounded" style="color: #ef4444; font-size: 1.5rem; margin-bottom: 8px;">speed</span>
+                            <div style="color: white; font-weight: 700; font-size: 0.9rem;">Redis</div>
+                            <div style="color: rgba(255,255,255,0.4); font-size: 0.7rem; margin-top: 2px;">Performance</div>
+                        </div>
+                        <div class="tech-card-mini" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 16px 10px; text-align: center; backdrop-filter: blur(10px);">
+                            <span class="material-symbols-rounded" style="color: #10b981; font-size: 1.5rem; margin-bottom: 8px;">storage</span>
+                            <div style="color: white; font-weight: 700; font-size: 0.9rem;">MySQL</div>
+                            <div style="color: rgba(255,255,255,0.4); font-size: 0.7rem; margin-top: 2px;">Persistence</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+
+        {# ── SECTION 5: IMPLEMENTATION - UI OVERVIEW ── #}
+        <section data-presentation-target="section">
+            <div class="slide-number">08</div>
+            <div class="glow" style="bottom: -10%; left: 50%; background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);"></div>
+            <div class="reveal">
+                <div style="text-align: center; margin-bottom: 48px;">
+                    <span style="color: var(--p-primary); font-weight: 700; text-transform: uppercase; letter-spacing: 4px; font-size: 1.1rem;">Project Implementation</span>
+                    <h2 style="margin-top: 12px; font-size: 3.5rem; font-weight: 800;">The Dual-Core Ecosystem</h2>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: stretch;">
+                    {# WEB VERSION #}
+                    <div class="glass-card" style="padding: 0; overflow: hidden; border-color: rgba(59, 130, 246, 0.2);">
+                        <div style="padding: 24px; background: rgba(59, 130, 246, 0.1); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 800; letter-spacing: 1px;">WEB INTERFACE (Cloud)</span>
+                            <span class="material-symbols-rounded">cloud</span>
+                        </div>
+                        <div style="padding: 32px;">
+                            <div style="height: 400px; width: fit-content; margin: 0 auto 24px; background: #0f172a; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); position: relative; overflow: hidden;">
+                                <div style="width: 100%; height: 20px; background: #1e293b; position: absolute; top: 0; left: 0; padding: 0 10px; display: flex; align-items: center; gap: 4px; z-index: 2;">
+                                    <div style="width: 6px; height: 6px; border-radius: 50%; background: #ef4444;"></div>
+                                    <div style="width: 6px; height: 6px; border-radius: 50%; background: #fbbf24;"></div>
+                                    <div style="width: 6px; height: 6px; border-radius: 50%; background: #10b981;"></div>
+                                </div>
+                                <img src="{{ asset('images/web app scene1.png') }}" style="height: 380px; width: auto; display: block; margin-top: 20px;">
+                            </div>
+                            <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 16px;">
+                                <li style="display: flex; gap: 12px; align-items: center; font-size: 0.95rem; color: var(--p-muted);">
+                                    <span class="material-symbols-rounded" style="color: var(--p-primary); font-size: 20px;">public</span>
+                                    Accessible from any device globally
+                                </li>
+                                <li style="display: flex; gap: 12px; align-items: center; font-size: 0.95rem; color: var(--p-muted);">
+                                    <span class="material-symbols-rounded" style="color: var(--p-primary); font-size: 20px;">bolt</span>
+                                    Real-time synchronized student portal
+                                </li>
+                                <li style="display: flex; gap: 12px; align-items: center; font-size: 0.95rem; color: var(--p-muted);">
+                                    <span class="material-symbols-rounded" style="color: var(--p-primary); font-size: 20px;">smart_toy</span>
+                                    Full 24/7 AI Copilot integration
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    {# LOCAL VERSION #}
+                    <div class="glass-card" style="padding: 0; overflow: hidden; border-color: rgba(16, 185, 129, 0.2);">
+                        <div style="padding: 24px; background: rgba(16, 185, 129, 0.1); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 800; letter-spacing: 1px;">LOCAL TERMINAL (Campus)</span>
+                            <span class="material-symbols-rounded">dns</span>
+                        </div>
+                        <div style="padding: 32px;">
+                            <div style="height: 400px; width: fit-content; margin: 0 auto 24px; background: #0f172a; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); position: relative; overflow: hidden;">
+                                <div style="width: 100%; height: 20px; background: #134e4a; position: absolute; top: 0; left: 0; padding: 0 10px; display: flex; align-items: center; gap: 4px; z-index: 2;">
+                                    <div style="width: 6px; height: 6px; border-radius: 50%; background: #ef4444;"></div>
+                                    <div style="width: 6px; height: 6px; border-radius: 50%; background: #fbbf24;"></div>
+                                    <div style="width: 6px; height: 6px; border-radius: 50%; background: #10b981;"></div>
+                                </div>
+                                <img src="{{ asset('images/desktp app sc1.jpeg') }}" style="height: 380px; width: auto; display: block; margin-top: 20px;">
+                            </div>
+                            <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 16px;">
+                                <li style="display: flex; gap: 12px; align-items: center; font-size: 0.95rem; color: var(--p-muted);">
+                                    <span class="material-symbols-rounded" style="color: var(--p-accent); font-size: 20px;">lan</span>
+                                    High-performance local infrastructure
+                                </li>
+                                <li style="display: flex; gap: 12px; align-items: center; font-size: 0.95rem; color: var(--p-muted);">
+                                    <span class="material-symbols-rounded" style="color: var(--p-accent); font-size: 20px;">memory</span>
+                                    Zero-Latency Local Processing
+                                </li>
+                                <li style="display: flex; gap: 12px; align-items: center; font-size: 0.95rem; color: var(--p-muted);">
+                                    <span class="material-symbols-rounded" style="color: var(--p-accent); font-size: 20px;">lock</span>
+                                    On-premise data persistence & security
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {# ── SECTION 6: SERVICE UNIVERSE ── #}
+        <section data-presentation-target="section">
+            <div class="slide-number">09</div>
+            <div class="glow" style="top: 10%; right: 10%; background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);"></div>
+            <div class="reveal">
+                <div style="text-align: center; margin-bottom: 60px;">
+                    <span style="color: var(--p-accent); font-weight: 700; text-transform: uppercase; letter-spacing: 4px; font-size: 1.1rem;">Feature Catalog</span>
+                    <h2 style="margin-top: 12px; font-size: 3.5rem; font-weight: 800;">The Service Universe</h2>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;">
+                    <div class="tech-card-mini" style="padding: 32px; border-bottom: 3px solid #3b82f6;">
+                        <span class="material-symbols-rounded" style="color: #3b82f6; font-size: 2.5rem; margin-bottom: 20px;">school</span>
+                        <h4 style="font-size: 1.2rem; margin-bottom: 12px;">Academic Core</h4>
+                        <p style="font-size: 0.85rem; color: var(--p-muted);">Lessons, Chapters, Subjects, and interactive content management.</p>
+                    </div>
+                    <div class="tech-card-mini" style="padding: 32px; border-bottom: 3px solid #10b981;">
+                        <span class="material-symbols-rounded" style="color: #10b981; font-size: 2.5rem; margin-bottom: 20px;">calendar_month</span>
+                        <h4 style="font-size: 1.2rem; margin-bottom: 12px;">Smart Scheduler</h4>
+                        <div style="font-size: 0.85rem; color: var(--p-muted);">Conflict-free timetable generation with role-based visibility.</div>
+                    </div>
+                    <div class="tech-card-mini" style="padding: 32px; border-bottom: 3px solid #f59e0b;">
+                        <span class="material-symbols-rounded" style="color: #f59e0b; font-size: 2.5rem; margin-bottom: 20px;">forum</span>
+                        <h4 style="font-size: 1.2rem; margin-bottom: 12px;">Native Messaging</h4>
+                        <div style="font-size: 0.85rem; color: var(--p-muted);">Real-time Socket.io powered communication for all roles.</div>
+                    </div>
+                    <div class="tech-card-mini" style="padding: 32px; border-bottom: 3px solid #ef4444;">
+                        <span class="material-symbols-rounded" style="color: #ef4444; font-size: 2.5rem; margin-bottom: 20px;">monitoring</span>
+                        <h4 style="font-size: 1.2rem; margin-bottom: 12px;">Engagement Pro</h4>
+                        <div style="font-size: 0.85rem; color: var(--p-muted);">AI-driven facial analysis monitoring during live sessions.</div>
+                    </div>
+                    <div class="tech-card-mini" style="padding: 32px; border-bottom: 3px solid #a855f7;">
+                        <span class="material-symbols-rounded" style="color: #a855f7; font-size: 2.5rem; margin-bottom: 20px;">smart_toy</span>
+                        <h4 style="font-size: 1.2rem; margin-bottom: 12px;">AI Copilot (RAG)</h4>
+                        <div style="font-size: 0.85rem; color: var(--p-muted);">Role-aware assistant with contextual course memory.</div>
+                    </div>
+                    <div class="tech-card-mini" style="padding: 32px; border-bottom: 3px solid #06b6d4;">
+                        <span class="material-symbols-rounded" style="color: #06b6d4; font-size: 2.5rem; margin-bottom: 20px;">payments</span>
+                        <h4 style="font-size: 1.2rem; margin-bottom: 12px;">Admin Engine</h4>
+                        <div style="font-size: 0.85rem; color: var(--p-muted);">Automated billing, enrollment, and academy logistics.</div>
+                    </div>
+                    <div class="tech-card-mini" style="padding: 32px; border-bottom: 3px solid #ec4899;">
+                        <span class="material-symbols-rounded" style="color: #ec4899; font-size: 2.5rem; margin-bottom: 20px;">picture_as_pdf</span>
+                        <h4 style="font-size: 1.2rem; margin-bottom: 12px;">Digital Records</h4>
+                        <div style="font-size: 0.85rem; color: var(--p-muted);">Automated PDF generation for timetables and reports.</div>
+                    </div>
+                    <div class="tech-card-mini" style="padding: 32px; border-bottom: 3px solid #84cc16;">
+                        <span class="material-symbols-rounded" style="color: #84cc16; font-size: 2.5rem; margin-bottom: 20px;">analytics</span>
+                        <h4 style="font-size: 1.2rem; margin-bottom: 12px;">Success Insights</h4>
+                        <div style="font-size: 0.85rem; color: var(--p-muted);">Predictive modeling to identify at-risk students early.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {# ── SECTION 7: PROJECT REALIZATION ── #}
+        <section data-presentation-target="section" style="padding: 40px 80px; justify-content: flex-start;">
+            <div class="slide-number">10</div>
+            <div class="reveal" style="display: flex; flex-direction: column; height: 100%; gap: 0;">
+
+                {# Compact header row #}
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-shrink: 0;">
+                    <div>
+                        <span style="color: var(--p-primary); font-weight: 700; text-transform: uppercase; letter-spacing: 4px; font-size: 0.85rem;">Experience LearnWay</span>
+                        <h2 style="font-size: 2rem; font-weight: 800; margin-top: 4px; margin-bottom: 0;">Project Realization</h2>
+                    </div>
+                    <div class="role-switcher" style="display: flex; gap: 12px;">
+                        <button class="role-btn active" data-presentation-target="roleBtn" data-role="student" data-action="click->presentation#switchRole">Student View</button>
+                        <button class="role-btn" data-presentation-target="roleBtn" data-role="teacher" data-action="click->presentation#switchRole">Teacher View</button>
+                        <button class="role-btn" data-presentation-target="roleBtn" data-role="admin" data-action="click->presentation#switchRole">Admin View</button>
+                    </div>
+                </div>
+
+                {# Preview takes all remaining space #}
+                <div class="preview-container" data-presentation-target="rolePreview" style="transition: opacity 0.3s ease; flex: 1; display: flex; justify-content: center; align-items: center; min-height: 0;">
+                    <div class="glass-card" style="padding: 0; overflow: hidden; border-color: rgba(59, 130, 246, 0.3); height: 100%; display: flex; flex-direction: column;">
+                        <div style="padding: 12px 20px; background: rgba(59, 130, 246, 0.1); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                            <span class="material-symbols-rounded" style="color: #3b82f6; font-size: 16px;">person</span>
+                            <span style="font-weight: 800; letter-spacing: 1px; font-size: 0.8rem;">STUDENT PORTAL</span>
+                        </div>
+                        <div style="padding: 16px; flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0;">
+                            <div style="background: #0f172a; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; display: flex; flex-direction: column; height: 100%;">
+                                <div style="height: 22px; background: #1e293b; display: flex; align-items: center; gap: 5px; padding: 0 10px; flex-shrink: 0;">
+                                    <div style="width: 7px; height: 7px; border-radius: 50%; background: #ef4444;"></div>
+                                    <div style="width: 7px; height: 7px; border-radius: 50%; background: #fbbf24;"></div>
+                                    <div style="width: 7px; height: 7px; border-radius: 50%; background: #10b981;"></div>
+                                </div>
+                                <img src="{{ asset('images/student view.png') }}" style="flex: 1; min-height: 0; width: auto; object-fit: contain; display: block;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {# ── SECTION 7B: AI COPILOT SHOWCASE ── #}
+        <section data-presentation-target="section" style="background: radial-gradient(ellipse at 30% 50%, rgba(139,92,246,0.12) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(59,130,246,0.08) 0%, transparent 50%), #030712;">
+            <div class="slide-number">11</div>
+            <div class="glow" style="top: -10%; left: -5%; background: radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%);"></div>
+            <div class="reveal" style="display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;">
+
+                {# LEFT: Description #}
+                <div>
+                    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3); border-radius: 999px; padding: 6px 16px; margin-bottom: 24px;">
+                        <span class="material-symbols-rounded" style="color: #a855f7; font-size: 16px;">auto_awesome</span>
+                        <span style="color: #a855f7; font-weight: 700; font-size: 0.75rem; letter-spacing: 3px; text-transform: uppercase;">AI-Powered</span>
+                    </div>
+
+                    <h2 style="font-size: 3rem; font-weight: 800; line-height: 1.2; margin-bottom: 8px;">Meet Your<br>
+                        <span style="background: linear-gradient(135deg, #a855f7, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">LearnWay Copilot</span>
+                    </h2>
+                    <p style="color: var(--p-muted); font-size: 1.05rem; line-height: 1.7; margin-bottom: 36px; max-width: 440px;">Your intelligent AI assistant lives right inside the platform. Ask about your schedule, get help with lessons, check announcements, or draft communications — all in natural language.</p>
+
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <div style="display: flex; align-items: flex-start; gap: 16px; padding: 18px 20px; background: rgba(168,85,247,0.07); border: 1px solid rgba(168,85,247,0.2); border-radius: 16px;">
+                            <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #a855f7, #7c3aed); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <span class="material-symbols-rounded" style="font-size: 18px; color: white;">manage_accounts</span>
+                            </div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">Role-Aware Intelligence</div>
+                                <div style="color: var(--p-muted); font-size: 0.85rem;">Different experience for Admin, Teacher & Student — each sees only what's relevant to them.</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: flex-start; gap: 16px; padding: 18px 20px; background: rgba(59,130,246,0.07); border: 1px solid rgba(59,130,246,0.2); border-radius: 16px;">
+                            <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <span class="material-symbols-rounded" style="font-size: 18px; color: white;">database</span>
+                            </div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">Context-Aware via RAG</div>
+                                <div style="color: var(--p-muted); font-size: 0.85rem;">Grounded in your real academy data — schedules, grades, courses, and announcements.</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: flex-start; gap: 16px; padding: 18px 20px; background: rgba(16,185,129,0.07); border: 1px solid rgba(16,185,129,0.2); border-radius: 16px;">
+                            <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #10b981, #059669); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <span class="material-symbols-rounded" style="font-size: 18px; color: white;">upload_file</span>
+                            </div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">Document Intelligence</div>
+                                <div style="color: var(--p-muted); font-size: 0.85rem;">Upload any document and instantly ask questions — lecture PDFs, syllabi, reports.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# RIGHT: Live Chat Showcase #}
+                <div style="display: flex; flex-direction: column; gap: 0; height: 100%;">
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(139,92,246,0.25); border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; flex: 1;">
+                        {# Window Bar #}
+                        <div style="padding: 12px 16px; background: rgba(139,92,246,0.12); border-bottom: 1px solid rgba(139,92,246,0.15); display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444;"></div>
+                            <div style="width: 8px; height: 8px; border-radius: 50%; background: #fbbf24;"></div>
+                            <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></div>
+                            <span style="margin-left: 10px; font-size: 0.7rem; color: rgba(255,255,255,0.35); font-weight: 600; letter-spacing: 1px;">LEARNWAY COPILOT</span>
+                            <div style="margin-left: auto; display: flex; gap: 6px;">
+                                <div style="padding: 3px 10px; border-radius: 999px; font-size: 0.6rem; font-weight: 700; background: rgba(59,130,246,0.2); color: #3b82f6; border: 1px solid rgba(59,130,246,0.3);">Student</div>
+                            </div>
+                        </div>
+
+                        {# Chat messages #}
+                        <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px; flex: 1; overflow: hidden;">
+
+                            {# Bot greeting #}
+                            <div style="display: flex; gap: 10px; align-items: flex-end;">
+                                <div style="width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, #a855f7, #3b82f6); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <span class="material-symbols-rounded" style="font-size: 14px; color: white;">smart_toy</span>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px 16px 16px 4px; padding: 12px 16px; font-size: 0.85rem; max-width: 80%; line-height: 1.5;">
+                                    Hello Rafi 👋 You have <b>2 classes today</b> and a quiz in Software Security tomorrow. Want me to generate a quick revision sheet?
+                                </div>
+                            </div>
+
+                            {# User message #}
+                            <div style="display: flex; justify-content: flex-end;">
+                                <div style="background: linear-gradient(135deg, #7c3aed, #3b82f6); border-radius: 16px 16px 4px 16px; padding: 12px 16px; font-size: 0.85rem; max-width: 70%; color: white;">
+                                    Yes! Also, when is my next exam?
+                                </div>
+                            </div>
+
+                            {# Bot response with action #}
+                            <div style="display: flex; gap: 10px; align-items: flex-end;">
+                                <div style="width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, #a855f7, #3b82f6); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <span class="material-symbols-rounded" style="font-size: 14px; color: white;">smart_toy</span>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px 16px 16px 4px; padding: 12px 16px; font-size: 0.85rem; max-width: 82%; line-height: 1.5;">
+                                    Your next exam is <b>Software Security</b> on <b>Monday, May 14 at 10:00 AM</b> — Hall B. I've prepared a study path based on your last 3 quiz scores. 📚
+                                    <div style="margin-top: 10px; display: flex; gap: 8px;">
+                                        <button style="background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4); color: #a855f7; border-radius: 8px; padding: 5px 12px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">📖 Start Study Path</button>
+                                        <button style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--p-muted); border-radius: 8px; padding: 5px 12px; font-size: 0.75rem; cursor: pointer;">View Schedule</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {# Input bar #}
+                            <div style="margin-top: auto; display: flex; gap: 10px; align-items: center; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px 14px;">
+                                <span class="material-symbols-rounded" style="color: rgba(255,255,255,0.2); font-size: 18px;">upload_file</span>
+                                <span style="flex: 1; color: rgba(255,255,255,0.25); font-size: 0.85rem;">Ask anything about your academy...</span>
+                                <div style="width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #a855f7, #3b82f6); display: flex; align-items: center; justify-content: center;">
+                                    <span class="material-symbols-rounded" style="font-size: 16px; color: white;">send</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {# ── SECTION 8: SDG & IMPACT ── #}
+        <section data-presentation-target="section">
+            <div class="slide-number">12</div>
+            <div class="reveal" style="text-align: center;">
+                <span style="color: #ec4899; font-weight: 700; text-transform: uppercase; letter-spacing: 4px; font-size: 1rem;">Social Responsibility</span>
+                <h2 style="margin-top: 12px; font-size: 3rem; font-weight: 800;">Global Impact (SDG)</h2>
+                <p class="lead" style="margin: 20px auto; max-width: 600px;">LearnWay is engineered to align with the UN 2030 Agenda for Sustainable Development.</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 60px;">
+                    <div class="glass-card" style="border-top: 5px solid #c5192d;">
+                        <div style="background: #c5192d; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                            <span style="font-weight: 900; font-size: 1.5rem;">4</span>
+                        </div>
+                        <h4 style="font-size: 1.3rem;">Quality Education</h4>
+                        <p style="margin-top: 12px; color: var(--p-muted); font-size: 0.9rem;">Ensuring inclusive and equitable learning through AI-driven personalization.</p>
+                    </div>
+                    <div class="glass-card" style="border-top: 5px solid #f4a100;">
+                        <div style="background: #f4a100; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                            <span style="font-weight: 900; font-size: 1.5rem;">9</span>
+                        </div>
+                        <h4 style="font-size: 1.3rem;">Innovation</h4>
+                        <p style="margin-top: 12px; color: var(--p-muted); font-size: 0.9rem;">Building resilient infrastructure by integrating advanced RAG and real-time tech.</p>
+                    </div>
+                    <div class="glass-card" style="border-top: 5px solid #e11484;">
+                        <div style="background: #e11484; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                            <span style="font-weight: 900; font-size: 1.5rem;">10</span>
+                        </div>
+                        <h4 style="font-size: 1.3rem;">Reduced Inequality</h4>
+                        <p style="margin-top: 12px; color: var(--p-muted); font-size: 0.9rem;">Bridging the gap between remote and local students with hybrid ecosystem.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {# ── SECTION PRICING ── #}
+        <section data-presentation-target="section" style="background: radial-gradient(ellipse at 60% 0%, rgba(59,130,246,0.1) 0%, transparent 55%), radial-gradient(ellipse at 10% 90%, rgba(139,92,246,0.08) 0%, transparent 50%), #030712;">
+            <div class="slide-number">13</div>
+            <div class="glow" style="top: -20%; right: 5%; background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%);"></div>
+            <div class="reveal">
+                <div style="text-align: center; margin-bottom: 40px;">
+                    <span style="color: var(--p-primary); font-weight: 700; text-transform: uppercase; letter-spacing: 4px; font-size: 0.85rem;">Flexible Plans</span>
+                    <h2 style="margin-top: 8px; font-size: 2.8rem; font-weight: 800;">Pricing &amp; Service Offers</h2>
+                    <p style="color: var(--p-muted); margin-top: 8px; font-size: 1rem;">Choose the plan that fits your academy — scale as you grow.</p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1.15fr 1fr; gap: 24px; align-items: start;">
+
+                    {# STARTER #}
+                    <div class="glass-card" style="padding: 28px; border-top: 3px solid rgba(255,255,255,0.1);">
+                        <div style="font-size: 0.7rem; font-weight: 800; color: var(--p-muted); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 6px;">Starter</div>
+                        <div style="font-size: 2.2rem; font-weight: 900; color: white; margin-bottom: 4px;">Free<span style="font-size: 0.95rem; font-weight: 400; color: var(--p-muted);"> / setup</span></div>
+                        <div style="color: var(--p-muted); font-size: 0.82rem; margin-bottom: 20px;">Perfect for small academies getting started</div>
+                        <div style="height: 1px; background: var(--p-border); margin-bottom: 20px;"></div>
+                        <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px;">
+                            <li style="display: flex; gap: 8px; align-items: center; font-size: 0.84rem; color: var(--p-muted);"><span class="material-symbols-rounded" style="color: #10b981; font-size: 15px;">check_circle</span>Up to 3 teachers, 50 students</li>
+                            <li style="display: flex; gap: 8px; align-items: center; font-size: 0.84rem; color: var(--p-muted);"><span class="material-symbols-rounded" style="color: #10b981; font-size: 15px;">check_circle</span>Academic Core + Scheduling</li>
+                            <li style="display: flex; gap: 8px; align-items: center; font-size: 0.84rem; color: var(--p-muted);"><span class="material-symbols-rounded" style="color: #10b981; font-size: 15px;">check_circle</span>Basic AI Copilot (limited)</li>
+                            <li style="display: flex; gap: 8px; align-items: center; font-size: 0.84rem; color: rgba(255,255,255,0.2);"><span class="material-symbols-rounded" style="color: rgba(255,255,255,0.15); font-size: 15px;">remove_circle</span>Local campus deployment</li>
+                            <li style="display: flex; gap: 8px; align-items: center; font-size: 0.84rem; color: rgba(255,255,255,0.2);"><span class="material-symbols-rounded" style="color: rgba(255,255,255,0.15); font-size: 15px;">remove_circle</span>Advanced analytics &amp; RAG</li>
+                        </ul>
+                        <button style="margin-top: 24px; width: 100%; padding: 11px; border-radius: 12px; border: 1px solid var(--p-border); background: transparent; color: white; font-weight: 700; font-size: 0.82rem; cursor: pointer;">Get Started Free</button>
+                    </div>
+
+                    {# ACADEMY PRO — FEATURED #}
+                    <div style="background: linear-gradient(145deg, rgba(59,130,246,0.12), rgba(139,92,246,0.08)); border: 1px solid rgba(59,130,246,0.4); border-top: 3px solid #3b82f6; border-radius: 24px; padding: 32px; position: relative; box-shadow: 0 0 60px rgba(59,130,246,0.12);">
+                        <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #3b82f6, #7c3aed); border-radius: 999px; padding: 4px 16px; font-size: 0.65rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; white-space: nowrap;">✦ Most Popular</div>
+                        <div style="font-size: 0.7rem; font-weight: 800; color: #3b82f6; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 6px;">Academy Pro</div>
+                        <div style="font-size: 2.2rem; font-weight: 900; color: white; margin-bottom: 4px;">$499<span style="font-size: 0.95rem; font-weight: 400; color: var(--p-muted);"> / month</span></div>
+                        <div style="color: var(--p-muted); font-size: 0.82rem; margin-bottom: 20px;">For growing institutions needing the full stack</div>
+                        <div style="height: 1px; background: rgba(59,130,246,0.2); margin-bottom: 20px;"></div>
+                        <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px;">
+                            <li style="display: flex; gap: 8px; align-items: center; font-size: 0.84rem;"><span class="material-symbols-rounded" style="color: #3b82f6; font-size: 15px;">check_circle</span>Unlimited teachers &amp; students</li>
+                            <li style="display: flex; gap: 8px; align-items: center; font-size: 0.84rem;"><span class="material-symbols-rounded" style="color: #3b82f6; font-size: 15px;">check_circle</span>Full Service Universe (8 modules)</li>
+                            <li style="display: flex; gap: 8px; align-items: center; font-size: 0.84rem;"><span class="material-symbols-rounded" style="color: #3b82f6; font-size: 15px;">check_circle</span>Full AI Copilot + RAG + Doc Upload</li>
+                            <li style="display: flex; gap: 8px; align-items: center; font-size: 0.84rem;"><span class="material-symbols-rounded" style="color: #3b82f6; font-size: 15px;">check_circle</span>Web + Local dual ecosystem</li>
+                            <li style="display: flex; gap: 8px; align-items: center; font-size: 0.84rem;"><span class="material-symbols-rounded" style="color: #3b82f6; font-size: 15px;">check_circle</span>Predictive analytics &amp; reports</li>
+                        </ul>
+                        <button style="margin-top: 24px; width: 100%; padding: 12px; border-radius: 12px; border: none; background: linear-gradient(135deg, #3b82f6, #7c3aed); color: white; font-weight: 800; font-size: 0.82rem; cursor: pointer;">Request a Quote →</button>
+                    </div>
+
+                    {# ENTERPRISE #}
+                    <div class="glass-card" style="padding: 28px; border-top: 3px solid rgba(168,85,247,0.5);">
+                        <div style="font-size: 0.7rem; font-weight: 800; color: #a855f7; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 6px;">Enterprise</div>
+                        <div style="font-size: 2.2rem; font-weight: 900; color: white; margin-bottom: 4px;">Bespoke<span style="font-size: 0.95rem; font-weight: 400; color: var(--p-muted);"> / SLA</span></div>
+                        <div style="color: var(--p-muted); font-size: 0.82rem; margin-bottom: 20px;">Multi-campus groups &amp; government institutions</div>
+                        <div style="height: 1px; background: var(--p-border); margin-bottom: 20px;"></div>
+                        <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px;">
+                            <li style="display: flex; gap: 8px; align-items: center; font-size: 0.84rem; color: var(--p-muted);"><span class="material-symbols-rounded" style="color: #a855f7; font-size: 15px;">check_circle</span>Everything in Academy Pro</li>
+                            <li style="display: flex; gap: 8px; align-items: center; font-size: 0.84rem; color: var(--p-muted);"><span class="material-symbols-rounded" style="color: #a855f7; font-size: 15px;">check_circle</span>Multi-branch management</li>
+                            <li style="display: flex; gap: 8px; align-items: center; font-size: 0.84rem; color: var(--p-muted);"><span class="material-symbols-rounded" style="color: #a855f7; font-size: 15px;">check_circle</span>Dedicated support &amp; SLA</li>
+                            <li style="display: flex; gap: 8px; align-items: center; font-size: 0.84rem; color: var(--p-muted);"><span class="material-symbols-rounded" style="color: #a855f7; font-size: 15px;">check_circle</span>Custom AI model fine-tuning</li>
+                            <li style="display: flex; gap: 8px; align-items: center; font-size: 0.84rem; color: var(--p-muted);"><span class="material-symbols-rounded" style="color: #a855f7; font-size: 15px;">check_circle</span>White-label branding option</li>
+                        </ul>
+                        <button style="margin-top: 24px; width: 100%; padding: 11px; border-radius: 12px; border: 1px solid rgba(168,85,247,0.4); background: rgba(168,85,247,0.08); color: #a855f7; font-weight: 700; font-size: 0.82rem; cursor: pointer;">Contact Sales</button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        {# ── SECTION 6C: ROADMAP ── #}
+        <section data-presentation-target="section" style="background: radial-gradient(circle at 50% 50%, #0f172a 0%, #030712 100%);">
+            <div class="slide-number">14</div>
+            <div class="glow" style="top: 20%; left: 20%; background: radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%);"></div>
+            <div class="reveal">
+                <div style="text-align: center; margin-bottom: 80px;">
+                    <span style="color: var(--p-primary); font-weight: 700; text-transform: uppercase; letter-spacing: 4px; font-size: 0.85rem;">Future Vision</span>
+                    <h2 style="margin-top: 8px; font-size: 3rem; font-weight: 800;">The Roadmap Ahead</h2>
+                </div>
+                
+                <div style="position: relative; max-width: 1000px; margin: 0 auto;">
+                    <!-- Connecting Glow Line -->
+                    <div style="position: absolute; top: 28px; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, rgba(59,130,246,0.1) 0%, rgba(139,92,246,0.8) 50%, rgba(236,72,153,0.1) 100%); border-radius: 4px; z-index: 0;"></div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; position: relative; z-index: 1;">
+                        
+                        <!-- Phase 1 -->
+                        <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                            <div style="width: 60px; height: 60px; border-radius: 50%; background: #030712; border: 4px solid #3b82f6; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 0 20px rgba(59,130,246,0.4); z-index: 2;">
+                                <span class="material-symbols-rounded" style="color: #3b82f6; font-size: 28px;">smartphone</span>
+                            </div>
+                            <div class="glass-card" style="padding: 28px; border-top: 3px solid #3b82f6; width: 100%;">
+                                <div style="font-size: 0.85rem; font-weight: 800; color: #3b82f6; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">Q3 2026</div>
+                                <h4 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 12px; color: white;">Mobile Ecosystem</h4>
+                                <p style="color: var(--p-muted); font-size: 0.9rem; line-height: 1.6;">Native iOS & Android apps with seamless offline learning capabilities.</p>
+                            </div>
+                        </div>
+
+                        <!-- Phase 2 -->
+                        <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                            <div style="width: 60px; height: 60px; border-radius: 50%; background: #030712; border: 4px solid #8b5cf6; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 0 20px rgba(139,92,246,0.4); z-index: 2;">
+                                <span class="material-symbols-rounded" style="color: #8b5cf6; font-size: 28px;">psychology</span>
+                            </div>
+                            <div class="glass-card" style="padding: 28px; border-top: 3px solid #8b5cf6; width: 100%;">
+                                <div style="font-size: 0.85rem; font-weight: 800; color: #8b5cf6; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">Q1 2027</div>
+                                <h4 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 12px; color: white;">Predictive Success</h4>
+                                <p style="color: var(--p-muted); font-size: 0.9rem; line-height: 1.6;">Advanced AI to predict student success rates before exams occur.</p>
+                            </div>
+                        </div>
+
+                        <!-- Phase 3 -->
+                        <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                            <div style="width: 60px; height: 60px; border-radius: 50%; background: #030712; border: 4px solid #ec4899; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 0 20px rgba(236,72,153,0.4); z-index: 2;">
+                                <span class="material-symbols-rounded" style="color: #ec4899; font-size: 28px;">school</span>
+                            </div>
+                            <div class="glass-card" style="padding: 28px; border-top: 3px solid #ec4899; width: 100%;">
+                                <div style="font-size: 0.85rem; font-weight: 800; color: #ec4899; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">Q3 2027</div>
+                                <h4 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 12px; color: white;">AI Tutoring Network</h4>
+                                <p style="color: var(--p-muted); font-size: 0.9rem; line-height: 1.6;">Automated, 24/7 personalized tutoring sessions for every student.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {# ── SECTION FINAL: CLOSING ── #}
+        <section data-presentation-target="section" style="text-align: center; background: radial-gradient(circle at 50% 50%, #1e293b 0%, #030712 100%);">
+            <div class="slide-number">15</div>
+            <div class="reveal">
+                <div class="logo-box" style="margin-bottom: 40px;">
+                    <img src="{{ asset('images/LearnWay logo full.png') }}" style="height: 150px; width: auto;">
+                </div>
+                <h1 style="font-size: 6rem;">Thank You.</h1>
+                <p class="lead" style="margin: 0 auto;">Let's redefine the educational landscape together.</p>
+                
+                <div style="margin-top: 80px; display: flex; justify-content: center; gap: 40px; color: var(--p-muted);">
+                    <div>
+                        <div style="font-weight: 700; color: white;">TEAM CONTACT</div>
+                        <div>contact@learnway.edu</div>
+                    </div>
+                    <div style="width: 1px; height: 40px; background: var(--p-border);"></div>
+                    <div>
+                        <div style="font-weight: 700; color: white;">GITHUB</div>
+                        <div>github.com/learnway-project</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+</body>
+</html>

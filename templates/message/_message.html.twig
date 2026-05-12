@@ -39,7 +39,12 @@
             </div>
             
             <div style="display: flex; align-items: center; gap: 4px; margin-top: 4px; justify-content: {% if isMine %}flex-end{% else %}flex-start{% endif %}; padding: 0 4px;">
-                <span style="font-size: 0.65rem; color: var(--m3-on-surface-variant); opacity: 0.8;">{{ message.sentAt|date('H:i') }}</span>
+                <span style="font-size: 0.65rem; color: var(--m3-on-surface-variant); opacity: 0.8;">
+                    {{ message.sentAt|date('H:i') }}
+                    {% if message.editedAt %}
+                        <span style="font-style: italic; opacity: 0.7; margin-left: 2px;">(edited)</span>
+                    {% endif %}
+                </span>
                 
                 {% if isMine %}
                     <div class="read-receipts" style="display: flex; align-items: center;">
@@ -65,11 +70,31 @@
                     </div>
                 {% endif %}
             </div>
+
+            {# ── MESSAGE ACTIONS (HOVER) ── #}
+            {% if not message.isDeleted %}
+            <div class="message-actions" style="position: absolute; top: 0; {% if isMine %}right: 100%; margin-right: 8px;{% else %}left: 100%; margin-left: 8px;{% endif %} display: none; background: white; border: 1px solid var(--m3-outline-variant); border-radius: 8px; box-shadow: var(--m3-elevation-1); overflow: hidden; z-index: 5; flex-direction: row;">
+                {% if isMine %}
+                    <button onclick="openEditModal('{{ message.id }}', '{{ message.content|e('js') }}')" title="Edit" style="padding: 6px; background: none; border: none; cursor: pointer; color: var(--m3-on-surface-variant); display: flex; align-items: center; justify-content: center;" onmouseover="this.style.background='var(--m3-surface-container-high)'" onmouseout="this.style.background='none'">
+                        <span class="material-symbols-rounded" style="font-size: 1.125rem;">edit</span>
+                    </button>
+                    <button onclick="deleteMessage('{{ message.id }}')" title="Delete" style="padding: 6px; background: none; border: none; cursor: pointer; color: var(--m3-error); display: flex; align-items: center; justify-content: center;" onmouseover="this.style.background='var(--m3-surface-container-high)'" onmouseout="this.style.background='none'">
+                        <span class="material-symbols-rounded" style="font-size: 1.125rem;">delete</span>
+                    </button>
+                {% endif %}
+                <button onclick="openForwardModal('{{ message.id }}')" title="Forward" style="padding: 6px; background: none; border: none; cursor: pointer; color: var(--m3-on-surface-variant); display: flex; align-items: center; justify-content: center;" onmouseover="this.style.background='var(--m3-surface-container-high)'" onmouseout="this.style.background='none'">
+                    <span class="material-symbols-rounded" style="font-size: 1.125rem;">forward</span>
+                </button>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
 
 <style>
+.message-wrapper:hover .message-actions {
+    display: flex !important;
+}
 .seen-by-trigger:hover .seen-by-list {
     display: block !important;
 }
