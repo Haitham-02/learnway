@@ -23,9 +23,17 @@ final class Version20260425175630 extends AbstractMigration
     {
         $schemaManager = $this->connection->createSchemaManager();
         $tables = $schemaManager->listTableNames();
+        $platform = $this->connection->getDatabasePlatform();
+        $platformName = $platform->getName();
 
+        // Handle table rename (SQLite vs MySQL)
         if (in_array('class_enrollments', $tables, true) && !in_array('student_enrollments', $tables, true)) {
-            $this->addSql('RENAME TABLE class_enrollments TO student_enrollments');
+            if ($platformName === 'sqlite') {
+                // SQLite doesn't support RENAME TABLE directly, use ALTER TABLE
+                $this->addSql('ALTER TABLE class_enrollments RENAME TO student_enrollments');
+            } else {
+                $this->addSql('RENAME TABLE class_enrollments TO student_enrollments');
+            }
         }
 
         $tables = $schemaManager->listTableNames();
@@ -45,8 +53,8 @@ final class Version20260425175630 extends AbstractMigration
             }
         }
 
-        $tables = $schemaManager->listTableNames();
-        if (in_array('student_enrollments', $tables, true)) {
+        // Only create MySQL triggers for MySQL databases
+        if ($platformName !== 'sqlite' && in_array('student_enrollments', $tables, true)) {
             $this->addSql('DROP TRIGGER IF EXISTS trg_student_enrollments_student_only_insert');
             $this->addSql('DROP TRIGGER IF EXISTS trg_student_enrollments_student_only_update');
 

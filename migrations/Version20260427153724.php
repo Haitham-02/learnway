@@ -19,6 +19,12 @@ final class Version20260427153724 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
+        // Skip for SQLite - contains MySQL-specific ALTER TABLE CHANGE syntax
+        $platform = $this->connection->getDatabasePlatform();
+        if ($platform->getName() === 'sqlite') {
+            return;
+        }
+
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE chapter_items CHANGE url url LONGTEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE messages RENAME INDEX fk_db021e969ac0396 TO IDX_DB021E969AC0396');

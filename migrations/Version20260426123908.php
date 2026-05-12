@@ -19,6 +19,12 @@ final class Version20260426123908 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
+        // Skip this migration for SQLite - it uses MySQL-specific syntax
+        $platform = $this->connection->getDatabasePlatform();
+        if ($platform->getName() === 'sqlite') {
+            return;
+        }
+
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE announcements ADD CONSTRAINT FK_F422A9DAE36D154 FOREIGN KEY (posted_by) REFERENCES users (id)');
         $this->addSql('ALTER TABLE announcements RENAME INDEX posted_by TO IDX_F422A9DAE36D154');
@@ -219,7 +225,7 @@ final class Version20260426123908 extends AbstractMigration
         $this->addSql('ALTER TABLE forum_comments CHANGE id id BIGINT AUTO_INCREMENT NOT NULL, CHANGE content content TEXT NOT NULL, CHANGE created_at created_at DATETIME DEFAULT CURRENT_TIMESTAMP, CHANGE sync_uuid sync_uuid VARCHAR(100) DEFAULT NULL, CHANGE post_id post_id BIGINT NOT NULL, CHANGE parent_id parent_id BIGINT DEFAULT NULL, CHANGE student_id student_id BIGINT NOT NULL');
         $this->addSql('ALTER TABLE forum_comments ADD CONSTRAINT `fk_fw_comments_parent` FOREIGN KEY (parent_id) REFERENCES forum_comments (id) ON UPDATE NO ACTION ON DELETE CASCADE');
         $this->addSql('ALTER TABLE forum_comments ADD CONSTRAINT `fk_fw_comments_post` FOREIGN KEY (post_id) REFERENCES forum_posts (id) ON UPDATE NO ACTION ON DELETE CASCADE');
-        $this->addSql('ALTER TABLE forum_comments ADD CONSTRAINT `fk_fw_comments_user` FOREIGN KEY (student_id) REFERENCES users (id) ON UPDATE NO ACTION ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE forum_comments ADD CONSTRAINT `fk_fw_comments_user` FOREIGN KEY (student_id) REFERENCES users (id) ON UPDATE NO_ACTION ON DELETE CASCADE');
         $this->addSql('CREATE UNIQUE INDEX sync_uuid ON forum_comments (sync_uuid)');
         $this->addSql('ALTER TABLE forum_comments RENAME INDEX idx_786d1bcd727aca70 TO fk_fw_comments_parent');
         $this->addSql('ALTER TABLE forum_comments RENAME INDEX idx_786d1bcd4b89032c TO idx_fw_comments_post');
@@ -287,6 +293,8 @@ final class Version20260426123908 extends AbstractMigration
         $this->addSql('CREATE UNIQUE INDEX assignment_id ON submissions (assignment_id, student_id)');
         $this->addSql('ALTER TABLE submissions RENAME INDEX idx_3f6169f7cb944f1a TO idx_submissions_student');
         $this->addSql('ALTER TABLE submissions RENAME INDEX idx_3f6169f785d7fb47 TO reviewed_by');
+        $this->addSql('DROP INDEX idx_terms_selector ON terms');
+        $this->addSql('DROP INDEX uniq_terms_current_in_year ON terms');
         $this->addSql('ALTER TABLE terms ADD current_in_year_flag INT DEFAULT NULL, CHANGE name name VARCHAR(50) NOT NULL, CHANGE is_current is_current TINYINT DEFAULT 0, CHANGE academic_year_id academic_year_id INT NOT NULL');
         $this->addSql('CREATE INDEX idx_terms_selector ON terms (academic_year_id, is_current, start_date, name)');
         $this->addSql('CREATE UNIQUE INDEX uniq_terms_current_in_year ON terms (current_in_year_flag)');
