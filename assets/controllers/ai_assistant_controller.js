@@ -6,6 +6,8 @@ export default class extends Controller {
         chatUrl: String,
         uploadUrl: String,
         historyUrl: String,
+        autoScheduleUrl: String,
+        requestChangeUrl: String,
         suggestions: Array,
         logoUrl: String
     };
@@ -234,6 +236,28 @@ export default class extends Controller {
                 this.saveState();
                 let responseText = data.response;
                 
+                // Check for [AUTO_SCHEDULE] tag
+                if (responseText.includes('[AUTO_SCHEDULE]')) {
+                    responseText = responseText.replace('[AUTO_SCHEDULE]', '').trim();
+                    if (responseText) {
+                        this.appendMessage(responseText, 'assistant');
+                    }
+                    this.triggerAutoSchedule();
+                    return;
+                }
+
+                // Check for [SCHEDULE_CHANGE_REQUEST] tag
+                const requestMatch = responseText.match(/\[SCHEDULE_CHANGE_REQUEST:([^\]]+)\]/);
+                if (requestMatch) {
+                    const requestData = JSON.parse(requestMatch[1]);
+                    responseText = responseText.replace(requestMatch[0], '').trim();
+                    if (responseText) {
+                        this.appendMessage(responseText, 'assistant');
+                    }
+                    this.submitScheduleChangeRequest(requestData);
+                    return;
+                }
+
                 // Check for [REDIRECT:/path] tag
                 const redirectMatch = responseText.match(/\[REDIRECT:([^\]]+)\]/);
                 if (redirectMatch) {
@@ -243,7 +267,7 @@ export default class extends Controller {
                     if (responseText) {
                         this.appendMessage(responseText, 'assistant');
                     }
-                    this.appendRedirectConfirmation(redirectPath);
+                    setTimeout(() => { window.location.href = redirectPath; }, 1500);
                 } else {
                     this.appendMessage(responseText, 'assistant');
                 }
@@ -258,52 +282,7 @@ export default class extends Controller {
         }
     }
 
-    appendRedirectConfirmation(path) {
-        const wrap = document.createElement('div');
-        wrap.className = 'copilot-msg copilot-msg--assistant';
-        wrap.innerHTML = `
-            <div class="copilot-avatar" style="background: transparent; box-shadow: none;">
-                <img src="${this.logoUrlValue}" style="width: 20px; height: 20px; object-fit: contain;">
-            </div>
-            <div class="copilot-bubble copilot-bubble--ai" style="border: 1px solid var(--m3-primary);">
-                <div style="font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                    <span class="material-symbols-rounded" style="color: var(--m3-primary);">explore</span>
-                    Action Required
-                </div>
-                <p style="margin: 0 0 12px 0;">I can take you directly to that page. Would you like to go there now?</p>
-                <div style="display: flex; gap: 8px;">
-                    <button class="m3-button" 
-                            style="flex: 1; height: 36px; font-size: 0.75rem; border-radius: 12px; background: linear-gradient(135deg, var(--m3-primary), #4ea5d9); color: white; border: none; box-shadow: 0 4px 12px rgba(34, 72, 112, 0.3); font-weight: 600; cursor: pointer; transition: transform 0.2s;"
-                            onmouseover="this.style.transform='translateY(-1px)'"
-                            onmouseout="this.style.transform='translateY(0)'"
-                            data-action="click->ai-assistant#confirmRedirect" 
-                            data-path="${path}">
-                        Confirm & Go
-                    </button>
-                    <button class="m3-button" 
-                            style="flex: 1; height: 36px; font-size: 0.75rem; border-radius: 12px; background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(4px); font-weight: 600; cursor: pointer; transition: background 0.2s;"
-                            onmouseover="this.style.background='rgba(255, 255, 255, 0.15)'"
-                            onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'"
-                            data-action="click->ai-assistant#dismissRedirect">
-                        Stay here
-                    </button>
-                </div>
-            </div>
-        `;
-        this.messagesTarget.appendChild(wrap);
-        this.scrollToBottom();
-        requestAnimationFrame(() => wrap.classList.add('visible'));
-    }
 
-    confirmRedirect(event) {
-        const path = event.currentTarget.dataset.path;
-        window.location.href = path;
-    }
-
-    dismissRedirect(event) {
-        event.currentTarget.closest('.copilot-msg').remove();
-        this.appendMessage("No problem, we'll stay on this page. What else can I help you with?", 'assistant');
-    }
 
     async uploadFile(event) {
         const file = event.target.files[0];
@@ -336,7 +315,70 @@ export default class extends Controller {
         }
     }
 
+    async triggerAutoSchedule() {
+        if (!this.autoScheduleUrlValue) {
+            this.appendMessage("[ICON:warning] You don't have permission to perform this action.", 'assistant');
+            return;
+        }
+
+        this.appendMessage("[ICON:settings] **Learnway Copilot:** I am now calling the Google OR-Tools optimization engine to generate your global schedule. Please wait a few seconds...", 'assistant');
+        this.showTypingIndicator(true);
+
+        try {
+            const response = await fetch(this.autoScheduleUrlValue, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+
+            this.showTypingIndicator(false);
+
+            if (data.success) {
+                this.appendMessage("[ICON:check_circle] **Optimization Complete!** I have successfully generated the global schedule without any conflicts. Would you like to view it now? [REDIRECT:/admin/schedule]", 'assistant');
+            } else {
+                this.appendMessage("[ICON:error] **Optimization Failed:** " + (data.error || "The solver couldn't find a valid solution with current constraints."), 'assistant');
+            }
+        } catch (err) {
+            this.showTypingIndicator(false);
+            this.appendMessage("[ICON:warning] Failed to connect to the scheduling service.", 'error');
+        }
+    }
+
+    async submitScheduleChangeRequest(data) {
+        if (!this.requestChangeUrlValue) {
+            this.appendMessage("[ICON:warning] You don't have permission to request schedule changes.", 'assistant');
+            return;
+        }
+
+        this.showTypingIndicator(true);
+
+        try {
+            const response = await fetch(this.requestChangeUrlValue, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+
+            this.showTypingIndicator(false);
+
+            if (result.success) {
+                this.appendMessage("[ICON:check_circle] **Request Submitted!** I have forwarded your schedule change request to the administrator. You will be notified once it has been reviewed.", 'assistant');
+            } else {
+                this.appendMessage("[ICON:error] **Failed to submit request:** " + (result.error || "Unknown error"), 'assistant');
+            }
+        } catch (err) {
+            this.showTypingIndicator(false);
+            this.appendMessage("[ICON:warning] Failed to connect to the request service.", 'error');
+        }
+    }
+
     appendMessage(text, role, skipAnimation = false) {
+        if (role === 'assistant') {
+            text = text.replace(/\[REDIRECT:[^\]]+\]/g, '').trim();
+            if (!text) return;
+        }
+
         const wrap = document.createElement('div');
         wrap.className = `copilot-msg copilot-msg--${role}`;
 

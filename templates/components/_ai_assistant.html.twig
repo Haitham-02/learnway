@@ -35,7 +35,9 @@
      data-ai-assistant-upload-url-value="{{ path('api_ai_upload') }}"
      data-ai-assistant-history-url-value="{{ path('api_ai_history') }}"
      data-ai-assistant-suggestions-value="{{ suggestions|json_encode }}"
-     data-ai-assistant-logo-url-value="{{ asset('images/LearnWay logo.png') }}">
+     data-ai-assistant-logo-url-value="{{ asset('images/LearnWay logo.png') }}"
+     data-ai-assistant-auto-schedule-url-value="{{ is_granted('ROLE_ADMIN') ? path('admin_schedule_api_auto') : '' }}"
+     data-ai-assistant-request-change-url-value="{{ is_granted('ROLE_TEACHER') ? path('app_schedule_request_change') : '' }}">
 
     {# ... rest of the FAB and Header remains the same ... #}
     {# ── FAB Button ── #}

@@ -8,65 +8,91 @@
      data-class-id="{{ classe.id }}">
     
     {# Header #}
-    <div class="wizard-header">
+    <div class="wizard-header" style="padding-top: 10px; margin-bottom: 32px;">
         <div>
-            <h1 style="margin: 0; font-size: 2.25rem; font-weight: 300; color: var(--m3-on-surface);">Schedule Setup: <span style="font-weight: 700; color: var(--m3-primary);">{{ classe.name }}</span></h1>
-            <p style="margin: 8px 0 0; color: var(--m3-on-surface-variant); font-size: 1.1rem;">Configure the weekly academic timetable and teacher assignments.</p>
+            <h1 style="margin: 0; font-size: 1.75rem; font-weight: 800; color: var(--m3-on-surface); letter-spacing: -0.02em;">Schedule Setup: <span style="color: var(--m3-primary);">{{ classe.name }}</span></h1>
+            <p style="margin: 4px 0 0; color: var(--m3-on-surface-variant); font-size: 0.95rem; opacity: 0.8;">Orchestrate the weekly academic rhythm for this class.</p>
         </div>
-        <a href="{{ path('admin_schedule_index') }}" class="m3-button m3-button-text">
-            <span>←</span> Back to Classes
+        <a href="{{ path('admin_schedule_index') }}" 
+           style="background: white; color: var(--m3-on-surface); border: 1px solid var(--m3-outline-variant); padding: 8px 20px; border-radius: 100px; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 8px; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.03); font-size: 0.9rem;"
+           onmouseover="this.style.transform='translateX(-4px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.06)';"
+           onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.03)';">
+            <span class="material-symbols-rounded" style="font-size: 1.2rem;">arrow_back</span>
+            Back
         </a>
     </div>
 
     {# Progress Bar #}
-    <div class="wizard-progress-bar">
-        <div id="step-nav-1" class="wizard-step-pill active">1. Select Mode</div>
-        <div id="step-nav-2" class="wizard-step-pill">2. Build Timetable</div>
+    <div class="wizard-progress-bar" style="margin-bottom: 32px;">
+        <div id="step-nav-1" class="wizard-step-pill active" style="padding: 8px 20px; font-size: 0.85rem;">
+            <span class="material-symbols-rounded" style="font-size: 1.1rem;">tune</span>
+            Mode Selection
+        </div>
+        <div id="step-nav-2" class="wizard-step-pill" style="padding: 8px 20px; font-size: 0.85rem;">
+            <span class="material-symbols-rounded" style="font-size: 1.1rem;">grid_view</span>
+            Timetable Grid
+        </div>
     </div>
     
-    <div class="m3-card wizard-main-card m3-card-elevated">
+    <div class="wizard-main-card" style="box-shadow: 0 15px 40px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.03); border-radius: 24px;">
         {# Wizard Steps Content #}
         <div class="p-0">
             {# STEP 1: SELECT MODE #}
-            <div id="step-content-1" class="wizard-content step-content-padding">
+            <div id="step-content-1" class="wizard-content step-content-padding" style="padding: 48px 24px;">
                 <div class="text-center mb-5">
-                    <span class="badge mb-3" style="background: var(--m3-primary-container); color: var(--m3-on-primary-container); padding: 10px 20px; border-radius: 100px; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">Initial Configuration</span>
-                    <h2 class="mode-title" style="font-size: 2rem;">Choose Timetable Structure</h2>
-                    <p class="text-muted mx-auto" style="max-width: 600px; font-size: 1.1rem;">Select the duration for each academic session. This will define the layout of your weekly timetable grid.</p>
+                    <span class="badge mb-3" style="background: var(--m3-primary-container); color: var(--m3-primary); padding: 6px 16px; border-radius: 100px; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; border: 1px solid rgba(var(--m3-primary-rgb), 0.05);">Configuration</span>
+                    <h2 class="mode-title" style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.01em;">Choose Timetable Structure</h2>
+                    <p class="text-muted mx-auto" style="max-width: 500px; font-size: 0.95rem; line-height: 1.5;">Define the session duration for this class. This generates the weekly grid layout.</p>
                 </div>
 
                 <div class="mode-selection-grid">
+                    <div class="mode-card" onclick="selectMode('60MIN')">
+                        <div class="mode-icon-wrapper" style="background: var(--m3-primary-container); color: var(--m3-primary);">
+                            <span class="material-symbols-rounded" style="font-size: 2.8rem;">timer</span>
+                        </div>
+                        <div class="mode-duration-badge" style="background: var(--m3-primary-container); color: var(--m3-primary);">60 min</div>
+                        <h3 class="mode-title">60 Minutes</h3>
+                        <p class="mode-description">Compact sessions for fast-paced learning.</p>
+                    </div>
+
                     <div class="mode-card" onclick="selectMode('90MIN')">
-                        <div class="mode-icon">🕒</div>
+                        <div class="mode-icon-wrapper" style="background: var(--m3-secondary-container); color: var(--m3-secondary);">
+                            <span class="material-symbols-rounded" style="font-size: 2.8rem;">schedule</span>
+                        </div>
+                        <div class="mode-duration-badge" style="background: var(--m3-secondary-container); color: var(--m3-secondary);">90 min</div>
                         <h3 class="mode-title">90 Minutes</h3>
-                        <p class="mode-description">Standard slots for balanced academic curricula. Ideal for most theoretical subjects.</p>
+                        <p class="mode-description">Balanced academic sessions for standard curricula.</p>
                     </div>
 
                     <div class="mode-card" onclick="selectMode('120MIN')">
-                        <div class="mode-icon">🕓</div>
+                        <div class="mode-icon-wrapper" style="background: #e8f5e9; color: #2e7d32;">
+                            <span class="material-symbols-rounded" style="font-size: 2.8rem;">hourglass_bottom</span>
+                        </div>
+                        <div class="mode-duration-badge" style="background: #e8f5e9; color: #2e7d32;">120 min</div>
                         <h3 class="mode-title">120 Minutes</h3>
-                        <p class="mode-description">Extended sessions optimized for laboratory work, workshops, or intensive study periods.</p>
+                        <p class="mode-description">Extended periods for workshops or laboratory work.</p>
                     </div>
                 </div>
             </div>
 
             {# STEP 2: GRID #}
-            <div id="step-content-2" class="wizard-content step-content-grid" style="display: none;">
-                <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 56px;">
+            <div id="step-content-2" class="wizard-content step-content-grid" style="display: none; padding: 40px 24px;">
+                <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 32px;">
                     <div>
-                        <h2 class="mode-title" style="margin: 0;">Weekly Timetable Grid</h2>
-                        <p class="text-muted small mb-0">Click any empty slot to assign a subject to this timetable.</p>
+                        <h2 class="mode-title" style="margin: 0; font-size: 1.5rem; font-weight: 800;">Weekly Timetable Grid</h2>
+                        <p class="text-muted mb-0" style="font-size: 0.9rem;">Assign subjects and teachers to the available slots.</p>
                     </div>
-                    <button class="m3-button m3-button-tonal" onclick="goToStep(1)">
-                        <span>⚙️</span> Change Mode
+                    <button class="m3-button-tonal" onclick="goToStep(1)" style="border-radius: 100px; padding: 10px 20px; background: var(--m3-surface-container-high); border: none; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem;">
+                        <span class="material-symbols-rounded" style="font-size: 1.1rem;">settings</span> 
+                        Change Mode
                     </button>
                 </div>
 
-                <div class="timetable-wrapper">
+                <div class="timetable-wrapper" style="border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
                     <table class="timetable-table">
-                        <thead style="border-bottom: 2px solid var(--m3-outline-variant);">
+                        <thead>
                             <tr>
-                                <th class="timetable-header-cell">Time Slot</th>
+                                <th class="timetable-header-cell" style="background: var(--m3-surface-container-lowest);">Time Slot</th>
                                 {% for day in days %}
                                     <th class="timetable-day-header">{{ day }}</th>
                                 {% endfor %}
@@ -78,9 +104,12 @@
                     </table>
                 </div>
                 
-                <div class="mt-5 d-flex justify-content-between align-items-center p-3" style="background: var(--m3-surface-container-low); border-radius: 20px;">
-                    <p class="mb-0 text-muted small">Changes are saved automatically as you assign slots.</p>
-                    <button class="m3-button m3-button-filled" style="padding: 0 40px; height: 52px;" onclick="window.location.href='{{ path('admin_schedule_index') }}'">
+                <div class="mt-5 d-flex justify-content-between align-items-center p-4" style="background: var(--m3-surface-container-low); border-radius: 24px; border: 1px solid rgba(0,0,0,0.03);">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="material-symbols-rounded text-primary">info</span>
+                        <p class="mb-0 text-muted" style="font-weight: 500;">Changes are persisted automatically upon assignment.</p>
+                    </div>
+                    <button class="m3-button-filled" style="padding: 0 44px; height: 56px; border-radius: 100px; background: var(--m3-primary); color: white; border: none; font-weight: 800; font-size: 1.05rem; cursor: pointer; box-shadow: 0 10px 20px rgba(var(--m3-primary-rgb), 0.2);" onclick="window.location.href='{{ path('admin_schedule_index') }}'">
                         Finish & Close Wizard
                     </button>
                 </div>
@@ -90,56 +119,66 @@
 </div>
 
 {# Custom Assignment Modal Overlay #}
-<div id="custom-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); z-index: 9999; backdrop-filter: blur(12px); align-items: center; justify-content: center;">
-    <div class="m3-card" style="width: 100%; max-width: 520px; padding: 40px; border-radius: 40px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); background: white; position: relative; margin: 20px;">
-        {# Close Button #}
-        <button type="button" onclick="closeCustomModal()" style="position: absolute; top: 32px; right: 32px; border: none; background: var(--m3-surface-container-high); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 1.2rem; color: var(--m3-on-surface-variant);">✕</button>
+<div id="custom-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); z-index: 9999; backdrop-filter: blur(12px); align-items: center; justify-content: center;">
+    <div class="dialogue-card" style="width: 100%; max-width: 520px; background: var(--m3-surface-container-low); border-radius: 32px; box-shadow: 0 24px 60px rgba(0,0,0,0.25); overflow: hidden; transform: scale(0.9); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
         
-        <div style="margin-bottom: 32px;">
-            <h3 style="font-weight: 900; color: var(--m3-primary); margin: 0; font-size: 1.75rem; letter-spacing: -0.02em;">Assign Subject</h3>
-            <p class="text-muted small" style="margin-top: 8px; font-size: 0.95rem;">Configure the lesson details for this slot.</p>
-        </div>
-        
-        {# Slot Summary Block #}
-        <div id="selected-slot-info-modal" class="mb-5 p-4" style="background: var(--m3-surface-container-lowest); border: 1px solid var(--m3-outline-variant); border-radius: 24px;">
-            {# Slot info injected here #}
-        </div>
-
-        {# Subject Selection #}
-        <div style="margin-bottom: 32px;">
-            <label class="form-label fw-bold" style="display: block; margin-bottom: 12px; color: var(--m3-on-surface); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">Academic Subject</label>
-            <select id="modal-subject" class="form-select" style="width: 100%; border-radius: 18px; border: 2px solid var(--m3-outline-variant); font-size: 1.05rem; padding: 14px 20px; background-color: var(--m3-surface-container-low); color: var(--m3-on-surface); cursor: pointer; transition: border-color 0.2s;">
-                <option value="">-- Select Subject --</option>
-                {% set subjects = [] %}
-                {% for ta in assignments %}
-                    {% if ta.subject.id not in subjects %}
-                        <option value="{{ ta.subject.id }}">{{ ta.subject.name }}</option>
-                        {% set subjects = subjects|merge([ta.subject.id]) %}
-                    {% endif %}
-                {% endfor %}
-            </select>
-        </div>
-
-        {# Auto-Teacher Area #}
-        <div id="teacher-info-area" style="margin-bottom: 32px; padding: 24px; background: #f8fafc; border-radius: 24px; display: none; border: 2px dashed #e2e8f0; align-items: center; gap: 20px;">
-            <div style="width: 52px; height: 52px; background: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">👨‍🏫</div>
-            <div>
-                <label class="d-block small fw-bold text-muted" style="margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.025em;">Assigned Teacher</label>
-                <div id="auto-teacher-name" style="font-weight: 800; color: var(--m3-primary); font-size: 1.2rem;"></div>
+        <div class="dialogue-header" style="padding: 32px 32px 16px; display: flex; align-items: center; justify-content: space-between;">
+            <div class="d-flex align-items-center gap-3">
+                <div style="width: 48px; height: 48px; background: var(--m3-primary-container); color: var(--m3-primary); border-radius: 16px; display: flex; align-items: center; justify-content: center;">
+                    <span class="material-symbols-rounded">edit_calendar</span>
+                </div>
+                <h3 style="font-weight: 900; color: var(--m3-on-surface); margin: 0; font-size: 1.5rem; letter-spacing: -0.02em;">Assign Subject</h3>
             </div>
-            <input type="hidden" id="modal-teacher">
+            <button type="button" onclick="closeCustomModal()" style="border: none; background: none; font-size: 28px; cursor: pointer; color: var(--m3-outline); transition: color 0.2s;">&times;</button>
         </div>
+        
+        <div class="dialogue-body" style="padding: 0 32px 32px;">
+            <p class="text-muted small" style="margin-bottom: 24px;">Configure the lesson details for this specific timetable slot.</p>
+            
+            {# Slot Summary Block #}
+            <div id="selected-slot-info-modal" class="mb-4 p-4" style="background: white; border: 1px solid var(--m3-outline-variant); border-radius: 20px;">
+                {# Slot info injected here #}
+            </div>
 
-        <div id="modal-error" class="alert" style="display: none !important; border-radius: 20px; font-size: 0.9rem; margin-bottom: 0;"></div>
+            {# Subject Selection #}
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--m3-on-surface-variant); margin-bottom: 10px; padding-left: 4px;">Academic Subject</label>
+                <div class="position-relative">
+                    <select id="modal-subject" style="width: 100%; border-radius: 16px; border: 1px solid var(--m3-outline-variant); font-size: 1.05rem; padding: 14px 20px; background: white; color: var(--m3-on-surface); cursor: pointer; appearance: none;">
+                        <option value="">-- Select Subject --</option>
+                        {% set subjects = [] %}
+                        {% for ta in assignments %}
+                            {% if ta.subject.id not in subjects %}
+                                <option value="{{ ta.subject.id }}">{{ ta.subject.name }}</option>
+                                {% set subjects = subjects|merge([ta.subject.id]) %}
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    <span class="material-symbols-rounded" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: 0.5;">expand_more</span>
+                </div>
+            </div>
 
-        {# Footer Actions #}
-        <div style="padding-top: 32px; border-top: 1px solid var(--m3-outline-variant); display: flex; gap: 16px;">
-            <button type="button" class="m3-button m3-button-text" onclick="closeCustomModal()" style="flex: 1; font-weight: 600;">Cancel</button>
-            <button type="button" class="m3-button m3-button-filled" id="save-assignment-btn" style="flex: 2; height: 56px; font-size: 1rem; font-weight: 700; border-radius: 18px;">
-                Save Assignment
-            </button>
-        </div>
-    </div>
+            {# Auto-Teacher Area #}
+            <div id="teacher-info-area" style="margin-bottom: 32px; padding: 24px; background: var(--m3-primary-container); border-radius: 20px; display: none; align-items: center; gap: 20px; border: 1px solid rgba(var(--m3-primary-rgb), 0.2);">
+                <div style="width: 56px; height: 56px; background: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                    <span class="material-symbols-rounded" style="font-size: 2rem; color: var(--m3-primary);">person</span>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--m3-primary); opacity: 0.7; margin-bottom: 4px;">Assigned Teacher</label>
+                    <div id="auto-teacher-name" style="font-weight: 800; color: var(--m3-primary); font-size: 1.25rem; letter-spacing: -0.01em;"></div>
+                </div>
+                <input type="hidden" id="modal-teacher">
+            </div>
+
+            <div id="modal-error" class="alert" style="display: none !important; border-radius: 16px; font-weight: 600; margin-bottom: 24px;"></div>
+
+            <div class="dialogue-footer" style="display: flex; gap: 16px; padding-top: 24px; border-top: 1px solid var(--m3-outline-variant);">
+                <button type="button" class="m3-review-btn" onclick="closeCustomModal()" style="flex: 1; height: 56px; border-radius: 16px; border: 1px solid var(--m3-outline-variant); background: white; font-weight: 700; cursor: pointer;">Cancel</button>
+                <button type="button" id="save-assignment-btn" style="flex: 2; height: 56px; border-radius: 16px; border: none; background: var(--m3-primary); color: white; font-weight: 800; font-size: 1rem; cursor: pointer; box-shadow: 0 8px 20px rgba(var(--m3-primary-rgb), 0.2);">
+                    Save Assignment
+                </button>
+            </div>
+        </div>    </div>
 </div>
 
 <style>
@@ -166,7 +205,7 @@
         margin: 0 auto 40px;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 12px;
         background: var(--m3-surface-container);
         padding: 12px;
         border-radius: 100px;
@@ -175,89 +214,123 @@
     .wizard-step-pill {
         flex: 1;
         text-align: center;
-        padding: 10px;
+        padding: 12px;
         border-radius: 100px;
-        font-weight: 500;
-        font-size: 0.875rem;
+        font-weight: 700;
+        font-size: 0.9rem;
         color: var(--m3-on-surface-variant);
-        opacity: 0.6;
-        transition: all 0.3s ease;
+        opacity: 0.5;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
     }
 
     .wizard-step-pill.active {
         background: var(--m3-primary) !important;
         color: var(--m3-on-primary) !important;
         opacity: 1;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        box-shadow: 0 8px 16px rgba(var(--m3-primary-rgb), 0.2);
     }
 
     .wizard-main-card {
         max-width: 1300px;
         margin: 0 auto;
-        border-radius: 28px;
+        border-radius: 32px;
         background: white;
         overflow: hidden;
         border: none;
     }
 
-    .step-content-padding { padding: 80px 40px; }
+    .step-content-padding { padding: 60px 40px; }
     .step-content-grid { padding: 40px; }
 
     .mode-selection-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 40px;
-        max-width: 850px;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        max-width: 960px;
         margin: 0 auto;
+    }
+
+    @media (max-width: 900px) {
+        .mode-selection-grid {
+            grid-template-columns: 1fr;
+            max-width: 420px;
+        }
+    }
+
+    .mode-duration-badge {
+        display: inline-flex;
+        align-items: center;
         justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        padding: 4px 14px;
+        border-radius: 100px;
+        margin-bottom: 16px;
     }
 
     .mode-card {
-        border: 2px solid var(--m3-outline-variant);
-        border-radius: var(--m3-radius-extra);
+        border: 2px solid rgba(0,0,0,0.06);
+        border-radius: 28px;
         background: white;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        min-height: 400px;
-        padding: 60px 40px !important;
+        transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        min-height: 320px;
+        padding: 40px 32px;
         cursor: pointer;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         text-align: center;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.03);
     }
 
     .mode-card:hover {
-        background: var(--m3-surface-container-high) !important;
+        background: var(--m3-surface-container-low) !important;
         border-color: var(--m3-primary) !important;
-        transform: translateY(-10px);
-        box-shadow: var(--m3-shadow-deep);
+        transform: translateY(-12px) scale(1.02);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.08);
     }
 
-    .mode-icon {
-        font-size: 4.5rem;
-        margin-bottom: 2.5rem;
-        filter: drop-shadow(0 12px 24px rgba(0,0,0,0.12));
+    .mode-icon-wrapper {
+        width: 88px;
+        height: 88px;
+        border-radius: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        box-shadow: inset 0 2px 8px rgba(0,0,0,0.06);
+        transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .mode-card:hover .mode-icon-wrapper {
+        transform: scale(1.1) rotate(8deg);
     }
 
     .mode-title {
         font-weight: 800;
         color: var(--m3-on-surface);
-        margin-bottom: 1.5rem;
-        font-size: 1.75rem;
+        margin-bottom: 8px;
+        font-size: 1.4rem;
+        letter-spacing: -0.02em;
     }
 
     .mode-description {
         color: var(--m3-on-surface-variant);
-        line-height: 1.8;
-        font-size: 1rem;
-        padding: 0 24px;
+        line-height: 1.6;
+        font-size: 0.9rem;
+        opacity: 0.8;
         margin: 0;
     }
 
     .timetable-wrapper {
-        border-radius: 20px;
-        border: 1px solid var(--m3-outline-variant);
+        border-radius: 28px;
+        border: 1px solid rgba(0,0,0,0.06);
         overflow: hidden;
         background: white;
     }
@@ -271,37 +344,41 @@
     }
 
     .timetable-header-cell {
-        width: 120px;
-        background: var(--m3-surface-container-high);
-        font-size: 0.75rem;
+        width: 130px;
+        background: var(--m3-surface-container-lowest);
+        font-size: 0.8rem;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.08em;
         font-weight: 800;
         color: var(--m3-primary);
-        padding: 16px !important;
-        border-right: 1px solid var(--m3-outline-variant);
+        padding: 20px !important;
+        border-right: 1px solid rgba(0,0,0,0.04);
+        border-bottom: 1px solid rgba(0,0,0,0.04);
     }
 
     .timetable-day-header {
-        font-weight: 700;
-        font-size: 0.9rem;
+        font-weight: 800;
+        font-size: 1rem;
         color: var(--m3-on-surface);
-        padding: 16px !important;
-        background: var(--m3-surface-container);
+        padding: 20px !important;
+        background: var(--m3-surface-container-low);
+        border-bottom: 1px solid rgba(0,0,0,0.04);
+        border-right: 1px solid rgba(0,0,0,0.04);
     }
 
     .grid-cell { 
-        height: 110px; 
+        height: 120px; 
         transition: all 0.2s; 
         cursor: pointer;
         padding: 0 !important;
         background: white;
-        border-right: 1px solid var(--m3-outline-variant);
-        border-bottom: 1px solid var(--m3-outline-variant);
+        border-right: 1px solid rgba(0,0,0,0.03);
+        border-bottom: 1px solid rgba(0,0,0,0.03);
         vertical-align: middle;
         text-align: center;
+        position: relative;
     }
-    .grid-cell:hover { background: var(--m3-surface-container-low); }
+    .grid-cell:hover { background: var(--m3-surface-container-lowest); }
     
     .slot-wrapper {
         display: flex;
@@ -309,73 +386,69 @@
         justify-content: center;
         width: 100%;
         height: 100%;
-        margin: 0;
-        padding: 0;
     }
 
     .slot-plus {
-        font-size: 2.25rem;
-        font-weight: 200;
+        font-size: 2rem;
         color: var(--m3-primary);
-        opacity: 0.25;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        line-height: 1;
+        opacity: 0.15;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 100%;
-        height: 100%;
     }
-    .grid-cell:hover .slot-plus { opacity: 1; transform: scale(1.2); color: var(--m3-primary); }
+    .grid-cell:hover .slot-plus { opacity: 1; transform: scale(1.3) rotate(90deg); }
 
     .slot-occupied {
-        background: var(--m3-primary-container) !important;
-        border-radius: 16px;
-        color: var(--m3-on-primary-container);
-        font-size: 0.85rem;
+        background: white !important;
+        border-radius: 20px;
+        color: var(--m3-on-surface);
         position: relative;
-        border: 1px solid var(--m3-primary) !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        padding: 8px 12px;
-        text-align: center;
-        height: 94px; /* Fixed height to fit inside 110px cell with margin */
+        border: 1px solid rgba(0,0,0,0.06) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        padding: 12px;
+        text-align: left;
+        height: 100px;
         width: calc(100% - 16px);
         margin: 8px;
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: space-between;
         overflow: hidden;
-        box-sizing: border-box;
+        transition: all 0.3s;
+    }
+    .slot-occupied:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.06);
+        border-color: var(--m3-primary) !important;
     }
     
-    .slot-occupied div {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 100%;
-    }
+    .slot-subject { font-weight: 800; color: var(--m3-primary); font-size: 0.9rem; }
+    .slot-teacher { font-weight: 600; opacity: 0.6; font-size: 0.75rem; }
 
     .delete-btn {
         position: absolute;
-        top: 6px;
-        right: 6px;
+        top: 8px;
+        right: 8px;
         opacity: 0;
         transition: all 0.2s;
-        background: white;
-        border-radius: 50%;
-        width: 24px;
-        height: 24px;
+        background: #fee2e2;
+        color: #ef4444;
+        border-radius: 8px;
+        width: 28px;
+        height: 28px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         border: none;
+        cursor: pointer;
     }
 
-    .slot-occupied:hover .delete-btn { opacity: 1; transform: scale(1.1); }
+    .slot-occupied:hover .delete-btn { opacity: 1; }
 </style>
 
 <script>
+    const slots60 = {{ slots60|map(s => {id: s.id, range: s.getRange})|json_encode|raw }};
     const slots90 = {{ slots90|map(s => {id: s.id, range: s.getRange})|json_encode|raw }};
     const slots120 = {{ slots120|map(s => {id: s.id, range: s.getRange})|json_encode|raw }};
     const days = {{ days|json_encode|raw }};
@@ -410,7 +483,11 @@
     }
 
     function renderGrid() {
-        const slots = currentMode === '90MIN' ? slots90 : slots120;
+        let slots = [];
+        if (currentMode === '60MIN') slots = slots60;
+        else if (currentMode === '90MIN') slots = slots90;
+        else slots = slots120;
+        
         const tbody = document.getElementById('schedule-grid');
         tbody.innerHTML = '';
 
@@ -429,14 +506,18 @@
                 if (occupied) {
                     wrapper.innerHTML = `
                         <div class="slot-occupied">
-                            <div style="font-weight: 800; margin-bottom: 4px;">${occupied.subject}</div>
-                            <div style="font-size: 0.75rem; opacity: 0.85; font-weight: 500;">${occupied.teacher}</div>
-                            <button class="delete-btn text-danger" onclick="deleteSlot(event, ${occupied.id})">✕</button>
+                            <div>
+                                <div class="slot-subject">${occupied.subject}</div>
+                                <div class="slot-teacher">${occupied.teacher}</div>
+                            </div>
+                            <button class="delete-btn" onclick="deleteSlot(event, ${occupied.id})">
+                                <span class="material-symbols-rounded" style="font-size: 1.1rem;">delete</span>
+                            </button>
                         </div>
                     `;
                 } else {
                     td.onclick = () => openAssignmentModal(slot.id, day, slot.range);
-                    wrapper.innerHTML = `<span class="slot-plus">+</span>`;
+                    wrapper.innerHTML = `<span class="material-symbols-rounded slot-plus">add</span>`;
                 }
                 
                 td.appendChild(wrapper);
@@ -449,18 +530,21 @@
     function openAssignmentModal(slotId, day, range) {
         activeCell = { slotId, day };
         const overlay = document.getElementById('custom-modal-overlay');
+        const dialogue = overlay.querySelector('.dialogue-card');
         
         document.getElementById('selected-slot-info-modal').innerHTML = `
-            <div class="d-flex align-items-center gap-4">
-                <div class="d-flex align-items-center gap-2">
-                    <span style="font-size: 1.25rem;">📅</span> <strong>${day}</strong>
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="material-symbols-rounded text-primary" style="opacity: 0.5;">calendar_today</span>
+                    <span style="font-weight: 700; color: var(--m3-on-surface);">${day}</span>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                    <span style="font-size: 1.25rem;">🕒</span> <strong>${range}</strong>
+                <div style="width: 1px; height: 20px; background: var(--m3-outline-variant);"></div>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="material-symbols-rounded text-primary" style="opacity: 0.5;">schedule</span>
+                    <span style="font-weight: 700; color: var(--m3-on-surface);">${range}</span>
                 </div>
             </div>
         `;
-        
         const errDiv = document.getElementById('modal-error');
         errDiv.style.setProperty('display', 'none', 'important');
         errDiv.style.background = '';
@@ -473,10 +557,14 @@
         document.getElementById('modal-teacher').value = '';
         
         overlay.style.display = 'flex';
+        setTimeout(() => dialogue.style.transform = 'scale(1)', 10);
     }
 
     function closeCustomModal() {
-        document.getElementById('custom-modal-overlay').style.display = 'none';
+        const overlay = document.getElementById('custom-modal-overlay');
+        const dialogue = overlay.querySelector('.dialogue-card');
+        dialogue.style.transform = 'scale(0.9)';
+        setTimeout(() => overlay.style.display = 'none', 200);
     }
 
     document.getElementById('modal-subject').onchange = (e) => {

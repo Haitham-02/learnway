@@ -3,62 +3,366 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block body %}
-    <div class="d-flex justify-content-between align-items-center mb-5">
+<style>
+    .schedule-page {
+        background: var(--m3-surface-container-lowest);
+        min-height: 100vh;
+        padding: 40px 40px 80px;
+    }
+
+    /* ── HEADER ── */
+    .schedule-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 48px;
+    }
+    .schedule-header h1 {
+        margin: 0 0 8px;
+        font-size: 2.75rem;
+        font-weight: 800;
+        color: var(--m3-on-surface);
+        letter-spacing: -0.04em;
+    }
+    .schedule-header p {
+        margin: 0;
+        font-size: 1.1rem;
+        color: var(--m3-on-surface-variant);
+        font-weight: 400;
+    }
+
+    .btn-export {
+        height: 56px;
+        padding: 0 32px;
+        background: var(--m3-primary);
+        color: white;
+        border-radius: 16px;
+        font-weight: 700;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 8px 24px rgba(var(--m3-primary-rgb), 0.25);
+    }
+    .btn-export:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 32px rgba(var(--m3-primary-rgb), 0.35);
+        filter: brightness(1.1);
+        color: white;
+    }
+
+    /* ── TIMETABLE CONTAINER ── */
+    .timetable-container {
+        background: white;
+        border-radius: 32px;
+        border: 1px solid var(--m3-outline-variant);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .timetable-grid {
+        display: grid;
+        grid-template-columns: 140px repeat(6, 1fr);
+        width: 100%;
+        background: var(--m3-outline-variant);
+        gap: 1px; /* Creates grid lines */
+    }
+
+    .grid-header {
+        background: var(--m3-surface-container-low);
+        padding: 24px 16px;
+        font-weight: 800;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--m3-on-surface-variant);
+        text-align: center;
+    }
+
+    .grid-header.time-col {
+        color: var(--m3-primary);
+        background: var(--m3-surface-container);
+    }
+
+    .grid-cell {
+        min-height: 140px;
+        background: white;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .time-cell {
+        background: var(--m3-surface-container-lowest);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: var(--m3-primary);
+        font-size: 1rem;
+    }
+
+    /* ── LESSON CARD ── */
+    .lesson-card {
+        margin: 12px;
+        flex-grow: 1;
+        background: var(--m3-primary-container);
+        border: 1px solid var(--m3-primary);
+        border-radius: 24px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .lesson-card:hover {
+        transform: translateY(-8px) scale(1.03);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+        z-index: 10;
+        background: white;
+    }
+
+    .lesson-subject {
+        font-weight: 900;
+        font-size: 1.25rem;
+        color: var(--m3-on-primary-container);
+        line-height: 1.2;
+        margin-bottom: 12px;
+        transition: color 0.3s;
+    }
+    .lesson-card:hover .lesson-subject {
+        color: var(--m3-primary);
+    }
+
+    .lesson-meta {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--m3-on-primary-container);
+        background: rgba(255, 255, 255, 0.5);
+        padding: 8px 16px;
+        border-radius: 100px;
+        width: fit-content;
+        max-width: 100%;
+        backdrop-filter: blur(4px);
+    }
+    
+    .lesson-card:hover .lesson-meta {
+        background: var(--m3-primary-container);
+        color: var(--m3-primary);
+    }
+
+    .edit-trigger {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        width: 40px;
+        height: 40px;
+        background: white;
+        border: 1px solid var(--m3-outline-variant);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--m3-primary);
+        cursor: pointer;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .lesson-card:hover .edit-trigger {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .edit-trigger:hover {
+        background: var(--m3-primary);
+        color: white;
+        border-color: var(--m3-primary);
+        transform: scale(1.1) !important;
+    }
+
+    .empty-cell {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--m3-outline-variant);
+        font-size: 1.5rem;
+        opacity: 0.15;
+    }
+
+    /* ── DIALOGUE ── */
+    .dialogue-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(16px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+    .dialogue-card {
+        background: var(--m3-surface-container-low);
+        width: 95%;
+        max-width: 520px;
+        border-radius: 40px;
+        box-shadow: 0 40px 80px rgba(0,0,0,0.4);
+        overflow: hidden;
+        transform: scale(0.9);
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .dialogue-header { padding: 40px 40px 20px; display: flex; align-items: center; gap: 20px; }
+    .dialogue-header h5 { margin: 0; font-weight: 800; font-size: 1.6rem; flex-grow: 1; }
+    .dialogue-body { padding: 0 40px 40px; }
+    .dialogue-footer { padding: 24px 40px 40px; display: flex; gap: 16px; border-top: 1px solid var(--m3-outline-variant); }
+    
+    .input-group { margin-bottom: 24px; }
+    .input-group label { display: block; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: var(--m3-on-surface-variant); margin-bottom: 10px; padding-left: 4px; }
+    .input-group select, .input-group textarea { width: 100%; padding: 18px; border-radius: 20px; border: 1.5px solid var(--m3-outline-variant); background: white; font-family: inherit; font-size: 1rem; outline: none; transition: border-color 0.2s; }
+    .input-group select:focus, .input-group textarea:focus { border-color: var(--m3-primary); }
+
+    .btn-dialogue-primary { flex: 2; height: 64px; border-radius: 20px; background: var(--m3-primary); color: white; border: none; font-weight: 800; font-size: 1.1rem; cursor: pointer; box-shadow: 0 12px 24px rgba(var(--m3-primary-rgb), 0.3); }
+    .btn-dialogue-secondary { flex: 1; height: 64px; border-radius: 20px; background: white; border: 1.5px solid var(--m3-outline-variant); font-weight: 700; cursor: pointer; }
+</style>
+
+<div class="schedule-page">
+    <div class="schedule-header">
         <div>
-            <h1 class="display-5 fw-bold" style="color: var(--m3-on-surface); letter-spacing: -0.03em;">{{ title }}</h1>
-            <p class="text-muted" style="font-size: 1.1rem;">Your weekly academic organization at a glance</p>
+            <h1>{{ title }}</h1>
+            <p>Your academic week, visualized for peak performance.</p>
         </div>
-        <a href="{{ path('app_schedule_export') }}" class="btn d-inline-flex align-items-center justify-content-center gap-4" style="height: 84px; min-width: 420px; padding: 0 48px; background: var(--m3-secondary); color: white; border-radius: 32px; font-weight: 800; font-size: 1.15rem; box-shadow: 0 12px 24px rgba(0,0,0,0.1); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);" onmouseover="this.style.transform='translateY(-6px) scale(1.01)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.2)';" onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 12px 24px rgba(0,0,0,0.1)';" >
-            <span style="font-size: 2rem;">📥</span> 
-            <span style="letter-spacing: 0.02em;">Download Schedule PDF</span>
+        <a href="{{ path('app_schedule_export') }}" class="btn-export">
+            <span class="material-symbols-rounded">picture_as_pdf</span>
+            Export Schedule PDF
         </a>
     </div>
 
-    <div class="card border-0 shadow-lg" style="border-radius: 32px; background: white; overflow: hidden; border: 1px solid var(--m3-outline-variant) !important; width: 100%;">
-        <div class="table-responsive">
-            <table class="table table-bordered align-middle text-center mb-0" style="border-color: var(--m3-outline-variant); table-layout: fixed; width: 100%; border-collapse: collapse;">
-                <thead style="background: var(--m3-surface-container-low);">
-                    <tr>
-                        <th style="width: 150px; padding: 24px; font-weight: 800; color: var(--m3-primary); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em; border-bottom: 2px solid var(--m3-outline-variant);">Time Slot</th>
-                        {% for day in days %}
-                            <th style="padding: 24px; font-weight: 800; color: var(--m3-on-surface); font-size: 1rem; border-bottom: 2px solid var(--m3-outline-variant);">{{ day }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for slot in slots %}
-                        <tr>
-                            <td style="font-weight: 800; background: var(--m3-surface-container-lowest); font-size: 0.95rem; padding: 20px; color: var(--m3-on-surface-variant);">
-                                {{ slot.getRange }}
-                            </td>
-                            {% for day in days %}
-                                <td style="height: 120px; padding: 0;">
-                                    {% if scheduleData[day][slot.id] is defined %}
-                                        {% set item = scheduleData[day][slot.id] %}
-                                        <div class="h-100 w-100 d-flex flex-column justify-content-center align-items-center p-3" 
-                                             style="background: var(--m3-primary-container); border: 1px solid var(--m3-primary); overflow: hidden;">
-                                            <div style="font-weight: 900; font-size: 1.05rem; color: var(--m3-on-primary-container); margin-bottom: 6px; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                                {{ item.subject }}
-                                            </div>
-                                            <div class="d-flex align-items-center justify-content-center gap-2" style="font-size: 0.8rem; font-weight: 700; opacity: 0.9; color: var(--m3-on-primary-container); background: rgba(255,255,255,0.4); padding: 4px 14px; border-radius: 12px; text-align: center; text-transform: uppercase; letter-spacing: 0.02em;">
-                                                {% if isTeacher %}
-                                                    {{ item.class }}
-                                                {% else %}
-                                                    {{ item.teacher }}
-                                                {% endif %}
-                                            </div>
-                                        </div>
-                                    {% else %}
-                                        <div class="h-100 w-100 d-flex align-items-center justify-content-center" style="color: var(--m3-outline-variant); font-size: 1.5rem; opacity: 0.3;">
-                                            —
-                                        </div>
-                                    {% endif %}
-                                </td>
-                            {% endfor %}
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    <div class="timetable-container" 
+         hx-get="{{ path('app_schedule_view') }}" 
+         hx-trigger="every 30s" 
+         hx-select="#schedule-grid" 
+         hx-target="#schedule-grid" 
+         hx-swap="outerHTML">
+        {% include 'schedule/_grid.html.twig' %}
     </div>
+</div>
+
+{# ── REQUEST DIALOGUE ── #}
+{% if isTeacher %}
+<div id="requestDialogueOverlay" class="dialogue-overlay">
+    <div class="dialogue-card">
+        <div class="dialogue-header">
+            <span class="material-symbols-rounded" style="color: var(--m3-primary); font-size: 2.2rem;">pending_actions</span>
+            <h5>Schedule Change Request</h5>
+            <button type="button" style="background:none; border:none; font-size: 2rem; cursor:pointer; color: var(--m3-outline);" onclick="closeRequestDialogue()">&times;</button>
+        </div>
+        <form id="requestForm">
+            <div class="dialogue-body">
+                <input type="hidden" id="schedule-id" name="scheduleId">
+                
+                <div id="original-info-box" style="background: white; border-radius: 24px; padding: 24px; border: 1.5px solid var(--m3-outline-variant); margin-bottom: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+                    <!-- Filled by JS -->
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="input-group">
+                        <label>Proposed Day</label>
+                        <select name="proposedDay" required>
+                            {% for day in days %}
+                                <option value="{{ day }}">{{ day }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Proposed Time</label>
+                        <select name="proposedSlot" required>
+                            {% for s in slots %}
+                                <option value="{{ s.id }}">{{ s.getRange }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Reason for Request</label>
+                    <textarea name="reason" rows="3" placeholder="Please provide a brief explanation for this change..." required></textarea>
+                </div>
+            </div>
+            <div class="dialogue-footer">
+                <button type="button" class="btn-dialogue-secondary" onclick="closeRequestDialogue()">Discard</button>
+                <button type="submit" id="submit-btn" class="btn-dialogue-primary">Send Request</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openRequestDialogue(id, subject, className, day, range) {
+        document.getElementById('schedule-id').value = id;
+        document.getElementById('original-info-box').innerHTML = `
+            <div style="font-weight: 900; color: var(--m3-on-surface); font-size: 1.3rem; margin-bottom: 8px;">${subject}</div>
+            <div style="color: var(--m3-primary); font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">${className}</div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--m3-on-surface-variant);">
+                <span class="material-symbols-rounded" style="font-size: 1.2rem;">event</span>
+                Currently scheduled: <strong>${day} (${range})</strong>
+            </div>
+        `;
+        const overlay = document.getElementById('requestDialogueOverlay');
+        overlay.style.display = 'flex';
+        setTimeout(() => {
+            overlay.style.opacity = '1';
+            overlay.querySelector('.dialogue-card').style.transform = 'scale(1)';
+        }, 10);
+    }
+
+    function closeRequestDialogue() {
+        const overlay = document.getElementById('requestDialogueOverlay');
+        overlay.querySelector('.dialogue-card').style.transform = 'scale(0.9)';
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.style.display = 'none', 400);
+    }
+
+    document.getElementById('requestForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('submit-btn');
+        const originalText = btn.innerText;
+        btn.innerText = 'Processing...';
+        btn.disabled = true;
+        
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+        
+        try {
+            const res = await fetch('{{ path('app_schedule_request_change') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (result.success) {
+                alert('Success! Your request has been sent to administration.');
+                window.location.reload();
+            } else {
+                alert('Request failed: ' + result.error);
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        } catch (err) {
+            alert('A network error occurred while sending the request.');
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    });
+</script>
+{% endif %}
 {% endblock %}

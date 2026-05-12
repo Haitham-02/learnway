@@ -42,24 +42,57 @@ class InitSlotsCommand extends Command
             ['15:45', '17:45'],
         ];
 
+        // 60 Min Slots
+        $slots60 = [
+            ['08:00', '09:00'],
+            ['09:15', '10:15'],
+            ['10:30', '11:30'],
+            ['11:45', '12:45'],
+            ['14:00', '15:00'],
+            ['15:15', '16:15'],
+            ['16:30', '17:30'],
+        ];
+
+        $repo = $this->em->getRepository(TimeSlot::class);
+
         foreach ($slots90 as $s) {
-            $slot = new TimeSlot();
-            $slot->setStartTime(new \DateTime($s[0]));
-            $slot->setEndTime(new \DateTime($s[1]));
-            $slot->setType('90MIN');
-            $this->em->persist($slot);
+            $start = new \DateTime($s[0]);
+            $end = new \DateTime($s[1]);
+            if (!$repo->findOneBy(['startTime' => $start, 'endTime' => $end, 'type' => '90MIN'])) {
+                $slot = new TimeSlot();
+                $slot->setStartTime($start);
+                $slot->setEndTime($end);
+                $slot->setType('90MIN');
+                $this->em->persist($slot);
+            }
         }
 
         foreach ($slots120 as $s) {
-            $slot = new TimeSlot();
-            $slot->setStartTime(new \DateTime($s[0]));
-            $slot->setEndTime(new \DateTime($s[1]));
-            $slot->setType('120MIN');
-            $this->em->persist($slot);
+            $start = new \DateTime($s[0]);
+            $end = new \DateTime($s[1]);
+            if (!$repo->findOneBy(['startTime' => $start, 'endTime' => $end, 'type' => '120MIN'])) {
+                $slot = new TimeSlot();
+                $slot->setStartTime($start);
+                $slot->setEndTime($end);
+                $slot->setType('120MIN');
+                $this->em->persist($slot);
+            }
+        }
+
+        foreach ($slots60 as $s) {
+            $start = new \DateTime($s[0]);
+            $end = new \DateTime($s[1]);
+            if (!$repo->findOneBy(['startTime' => $start, 'endTime' => $end, 'type' => '60MIN'])) {
+                $slot = new TimeSlot();
+                $slot->setStartTime($start);
+                $slot->setEndTime($end);
+                $slot->setType('60MIN');
+                $this->em->persist($slot);
+            }
         }
 
         $this->em->flush();
-        $io->success('Time slots initialized!');
+        $io->success('Time slots initialized (duplicates skipped)!');
 
         return Command::SUCCESS;
     }

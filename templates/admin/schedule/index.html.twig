@@ -3,130 +3,603 @@
 {% block title %}Academic Scheduling{% endblock %}
 
 {% block body %}
-<div class="container-fluid py-4" style="background: var(--m3-surface-container-lowest); min-height: 100vh;">
+{% set totalClasses = classes|length %}
+{% set scheduledCount = scheduledIds|length %}
+{% set pendingCount = pendingRequests|length %}
+
+<style>
+    .sched-page {
+        background: var(--m3-surface-container-lowest);
+        min-height: 100vh;
+        padding: 32px 40px 60px;
+    }
+
+    /* ── HEADER ── */
+    .sched-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 28px;
+    }
+    .sched-header h1 {
+        margin: 0 0 4px;
+        font-size: 1.9rem;
+        font-weight: 800;
+        color: var(--m3-on-surface);
+        letter-spacing: -0.03em;
+    }
+    .sched-header p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--m3-on-surface-variant);
+    }
+    .btn-generate {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 44px;
+        padding: 0 24px;
+        background: var(--m3-primary);
+        color: white;
+        border: none;
+        border-radius: 100px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(var(--m3-primary-rgb), 0.25);
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+    .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(var(--m3-primary-rgb), 0.35); filter: brightness(1.05); }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+    .stat-card {
+        background: white;
+        border: 1px solid var(--m3-outline-variant);
+        border-radius: 20px;
+        padding: 18px 22px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .stat-icon {
+        width: 44px; height: 44px;
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+    .stat-value { font-size: 1.7rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1; }
+    .stat-label { font-size: 0.78rem; font-weight: 600; color: var(--m3-on-surface-variant); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+
+    /* ── TOOLBAR ── */
+    .sched-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 32px;
+        background: white;
+        padding: 6px 12px;
+        border-radius: 100px;
+        border: 1px solid var(--m3-outline-variant);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        max-width: 900px;
+    }
+    .sched-toolbar:focus-within {
+        border-color: var(--m3-primary);
+        box-shadow: 0 8px 24px rgba(var(--m3-primary-rgb), 0.12);
+        transform: translateY(-1px);
+    }
+    .search-wrap {
+        flex: 1;
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .search-wrap span {
+        position: absolute;
+        left: 14px;
+        color: var(--m3-primary);
+        font-size: 1.3rem;
+        pointer-events: none;
+        transition: transform 0.3s;
+    }
+    .sched-toolbar:focus-within .search-wrap span {
+        transform: scale(1.2);
+    }
+    .search-wrap input {
+        width: 100%;
+        padding: 12px 16px 12px 52px;
+        border: none;
+        background: transparent;
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--m3-on-surface);
+        outline: none;
+    }
+    .search-wrap input::placeholder {
+        color: var(--m3-on-surface-variant);
+        opacity: 0.6;
+    }
+    .grade-select-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+        border-left: 1px solid var(--m3-outline-variant);
+        padding-left: 16px;
+        margin-left: 8px;
+    }
+    .grade-select {
+        padding: 8px 36px 8px 12px;
+        border: none;
+        background: transparent;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--m3-on-surface);
+        outline: none;
+        cursor: pointer;
+        appearance: none;
+        transition: color 0.2s;
+    }
+    .grade-select:hover { color: var(--m3-primary); }
+    .grade-select-wrap .material-symbols-rounded {
+        position: absolute;
+        right: 8px;
+        pointer-events: none;
+        color: var(--m3-on-surface-variant);
+        font-size: 1.2rem;
+    }
+    .match-pill {
+        background: var(--m3-primary-container);
+        color: var(--m3-primary);
+        padding: 8px 20px;
+        border-radius: 100px;
+        font-size: 0.8rem;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(var(--m3-primary-rgb), 0.1);
+        margin-left: auto;
+    }
+
+    /* ── PENDING REQUESTS ── */
+    .pending-section {
+        margin-bottom: 28px;
+    }
+    .section-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+    .section-label span.material-symbols-rounded { color: var(--m3-primary); font-size: 1.2rem; }
+    .section-label h2 {
+        margin: 0;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--m3-on-surface-variant);
+    }
+    .section-label .divider { flex: 1; height: 1px; background: var(--m3-outline-variant); }
+    .pending-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 12px;
+    }
+    .pending-card {
+        background: white;
+        border: 1px solid var(--m3-outline-variant);
+        border-radius: 16px;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        transition: box-shadow 0.2s;
+    }
+    .pending-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+    .pending-avatar {
+        width: 40px; height: 40px;
+        background: var(--m3-primary-container);
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .pending-avatar span { color: var(--m3-primary); font-size: 1.3rem; }
+    .pending-name { font-weight: 700; font-size: 0.9rem; color: var(--m3-on-surface); }
+    .pending-meta { font-size: 0.78rem; color: var(--m3-on-surface-variant); }
+    .btn-review {
+        flex-shrink: 0;
+        padding: 7px 16px;
+        border: 1.5px solid var(--m3-primary);
+        border-radius: 100px;
+        background: transparent;
+        color: var(--m3-primary);
+        font-weight: 700;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-review:hover { background: var(--m3-primary); color: white; }
+
+    /* ── CLASSES GRID ── */
+    #classes-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 16px;
+    }
+    .class-card-item { display: block; }
+    .class-card {
+        background: white;
+        border: 1.5px solid var(--m3-outline-variant);
+        border-radius: 20px;
+        padding: 20px;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        text-decoration: none;
+        display: block;
+    }
+    .class-card:hover {
+        border-color: var(--m3-primary);
+        box-shadow: 0 8px 24px rgba(var(--m3-primary-rgb), 0.12);
+        transform: translateY(-4px);
+    }
+    .class-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        border-radius: 20px 20px 0 0;
+        background: var(--m3-primary);
+        opacity: 0;
+        transition: opacity 0.25s;
+    }
+    .class-card:hover::before { opacity: 1; }
+
+    .card-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+    .status-pill {
+        font-size: 0.68rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 3px 10px;
+        border-radius: 100px;
+    }
+    .status-pill.scheduled { background: #e6f4ea; color: #1e8e3e; }
+    .status-pill.no-schedule { background: #fef7e0; color: #b06000; }
+    .card-settings {
+        width: 32px; height: 32px;
+        background: var(--m3-surface-container);
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        color: var(--m3-on-surface-variant);
+        font-size: 1.1rem;
+        transition: all 0.2s;
+    }
+    .class-card:hover .card-settings {
+        background: var(--m3-primary-container);
+        color: var(--m3-primary);
+    }
+    .card-grade {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--m3-primary);
+        margin-bottom: 2px;
+    }
+    .card-name {
+        font-size: 1.6rem;
+        font-weight: 900;
+        color: var(--m3-on-surface);
+        letter-spacing: -0.04em;
+        line-height: 1;
+    }
+
+    /* ── DIALOGUE ── */
+    .dialogue-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.4); backdrop-filter: blur(12px);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 9999; opacity: 0; transition: opacity 0.3s ease;
+    }
+    .dialogue-overlay.show { opacity: 1; display: flex !important; }
+    .dialogue-card {
+        background: var(--m3-surface-container-low);
+        width: 95%; max-width: 560px; max-height: 90vh;
+        display: flex; flex-direction: column;
+        border-radius: 32px;
+        box-shadow: 0 32px 64px rgba(0,0,0,0.4);
+        transform: scale(0.88) translateY(24px);
+        transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+        overflow: hidden;
+    }
+    .dialogue-overlay.show .dialogue-card { transform: scale(1) translateY(0); }
+    .dialogue-header { display: flex; align-items: center; gap: 16px; padding: 32px 32px 16px; }
+    .dialogue-header span.material-symbols-rounded { color: var(--m3-primary); font-size: 28px; }
+    .dialogue-header h5 { margin: 0; font-weight: 800; font-size: 1.3rem; flex-grow: 1; }
+    .close-dialogue { background: rgba(0,0,0,0.05); border: none; font-size: 22px; cursor: pointer; color: var(--m3-on-surface-variant); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .close-dialogue:hover { background: rgba(0,0,0,0.1); transform: rotate(90deg); }
+    .dialogue-body { padding: 0 32px 32px; overflow-y: auto; flex-grow: 1; }
+    .info-box { background: white; border: 1px solid var(--m3-outline-variant); border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+    .comparison-grid { display: flex; align-items: center; gap: 12px; }
+    .comparison-item { flex: 1; min-width: 0; }
+    .comparison-item label { display: block; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--m3-on-surface-variant); margin-bottom: 10px; letter-spacing: 0.05em; }
+    .slot-box { background: #f1f5f9; border-radius: 16px; padding: 16px; text-align: center; border: 1px solid rgba(0,0,0,0.04); }
+    .slot-box.proposed { background: var(--m3-primary-container); color: var(--m3-on-primary-container); border: 2px solid var(--m3-primary); }
+    .comparison-arrow { color: var(--m3-primary); opacity: 0.5; }
+    .reason-section label { display: block; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--m3-on-surface-variant); margin-bottom: 10px; letter-spacing: 0.05em; margin-top: 20px; }
+    .reason-box { background: white; border-radius: 16px; padding: 20px; border-left: 5px solid var(--m3-primary); font-style: italic; line-height: 1.6; color: var(--m3-on-surface); }
+    .dialogue-footer { display: flex; gap: 16px; padding: 20px 32px 32px; border-top: 1px solid var(--m3-outline-variant); }
+    .btn-reject { flex: 1; height: 52px; border-radius: 16px; border: none; background: #ffdad6; color: #ba1a1a; font-weight: 800; cursor: pointer; transition: all 0.2s; }
+    .btn-reject:hover { background: #ffb4ab; }
+    .btn-approve { flex: 2; height: 52px; border-radius: 16px; border: none; background: var(--m3-primary); color: white; font-weight: 800; cursor: pointer; transition: all 0.2s; }
+    .btn-approve:hover { filter: brightness(1.08); transform: translateY(-2px); }
+</style>
+
+<div class="sched-page">
+
     {# ── HEADER ── #}
-    <div class="mb-5 px-3 text-center">
-        <h1 class="display-5 fw-bold" style="color: var(--m3-on-surface); margin-bottom: 0.5rem;">📅 Academic Scheduling</h1>
-        <p class="text-muted mb-4">Manage weekly timetables and resolve scheduling conflicts for all classes.</p>
-        
-        {# ── ULTRA COMPACT FILTER BAR ── #}
-        <div class="mb-5 d-flex flex-column align-items-center" style="gap: 48px;">
-            {# Strict Horizontal Row #}
-            <div style="display: flex !important; flex-direction: row !important; align-items: center !important; gap: 40px; padding: 12px 32px; background: white; border-radius: 20px; border: 1px solid var(--m3-outline-variant); box-shadow: 0 4px 15px rgba(0,0,0,0.03); min-width: 450px; justify-content: center; flex-wrap: nowrap !important;">
-                
-                {# Search Part #}
-                <div class="position-relative" style="width: 200px; flex-shrink: 0;">
-                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 0.8rem;">🔍</span>
-                    <input type="text" id="class-search" placeholder="Search class..." 
-                           style="width: 100%; padding: 8px 12px 8px 36px; border-radius: 12px; border: 1px solid var(--m3-outline); outline: none; font-size: 0.85rem; display: block;"
-                           onkeyup="applyFilters()">
-                </div>
+    <div class="sched-header">
+        <div>
+            <h1>Academic Scheduling</h1>
+            <p>Manage timetables and teacher assignments across all classes.</p>
+        </div>
+        <button id="auto-schedule-btn" class="btn-generate">
+            <span class="material-symbols-rounded" style="font-size:1.1rem;">auto_fix_high</span>
+            Generate Schedule
+        </button>
+    </div>
 
-                {# Visual Divider #}
-                <div style="width: 1px; height: 24px; background: var(--m3-outline-variant); flex-shrink: 0;"></div>
-
-                {# Grade Part #}
-                <div style="width: 140px; flex-shrink: 0;">
-                    <select id="grade-filter" onchange="applyFilters()" 
-                            style="width: 100%; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--m3-outline); outline: none; font-size: 0.85rem; background-color: var(--m3-surface-container-lowest); cursor: pointer; display: block;">
-                        <option value="">All Grades</option>
-                        {% set grades = [] %}
-                        {% for class in classes %}
-                            {% if class.gradeLevel not in grades %}
-                                <option value="{{ class.gradeLevel|lower }}">{{ class.gradeLevel }}</option>
-                                {% set grades = grades|merge([class.gradeLevel]) %}
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
+    {# ── STATS BAR ── #}
+    <div class="stats-bar">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#e8f0fe; color:#1a73e8;">
+                <span class="material-symbols-rounded">school</span>
             </div>
-
-            {# Independent Compact Count #}
-            <div style="font-size: 0.85rem; color: var(--m3-on-surface-variant); background: var(--m3-surface-container-high); padding: 6px 20px; border-radius: 100px; font-weight: 500; width: fit-content; display: block; margin-bottom: 24px;">
-                Showing <span id="match-count" style="font-weight: 800; color: var(--m3-primary);">{{ classes|length }}</span> classes
+            <div>
+                <div class="stat-value" style="color:#1a73e8;">{{ totalClasses }}</div>
+                <div class="stat-label">Total Classes</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#e6f4ea; color:#1e8e3e;">
+                <span class="material-symbols-rounded">event_available</span>
+            </div>
+            <div>
+                <div class="stat-value" style="color:#1e8e3e;">{{ scheduledCount }}</div>
+                <div class="stat-label">Scheduled</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#fef7e0; color:#b06000;">
+                <span class="material-symbols-rounded">pending_actions</span>
+            </div>
+            <div>
+                <div class="stat-value" id="stat-pending-count" style="color:#b06000;">{{ pendingCount }}</div>
+                <div class="stat-label">Pending Requests</div>
             </div>
         </div>
     </div>
 
+    {# ── PENDING REQUESTS ── #}
+    {% if pendingRequests|length > 0 %}
+    <div class="pending-section">
+        <div class="section-label">
+            <span class="material-symbols-rounded">pending_actions</span>
+            <h2>Pending Approvals</h2>
+            <div class="divider"></div>
+        </div>
+        <div class="pending-grid" id="pending-requests-container">
+            {% for req in pendingRequests %}
+            <div class="pending-card" id="req-card-{{ req.id }}">
+                <div class="pending-avatar">
+                    <span class="material-symbols-rounded">person</span>
+                </div>
+                <div style="flex:1; min-width:0;">
+                    <div class="pending-name">{{ req.teacher.firstName }} {{ req.teacher.lastName }}</div>
+                    <div class="pending-meta">{{ req.classSchedule.subject.name }} &bull; {{ req.classSchedule.classe.name }}</div>
+                </div>
+                <button class="btn-review"
+                        data-request='{{ {
+                            id: req.id,
+                            teacher: req.teacher.firstName ~ ' ' ~ req.teacher.lastName,
+                            subject: req.classSchedule.subject.name,
+                            class: req.classSchedule.classe.name,
+                            oldDay: req.classSchedule.dayOfWeek,
+                            oldSlot: req.classSchedule.timeSlot.getRange,
+                            newDay: req.proposedDayOfWeek,
+                            newSlot: req.proposedTimeSlot.getRange,
+                            reason: req.reason
+                        }|json_encode|e('html_attr') }}'
+                        onclick="triggerReviewDialog(this)">
+                    Review
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {# ── TOOLBAR ── #}
+    <div class="sched-toolbar">
+        <div class="search-wrap">
+            <span class="material-symbols-rounded">search</span>
+            <input type="text" id="class-search" placeholder="Search classes by name..." onkeyup="applyFilters()">
+        </div>
+        <div class="grade-select-wrap">
+            <select id="grade-filter" class="grade-select" onchange="applyFilters()">
+                <option value="">All Grades</option>
+                {% set grades = [] %}
+                {% for class in classes %}
+                    {% if class.gradeLevel not in grades %}
+                        <option value="{{ class.gradeLevel|lower }}">{{ class.gradeLevel }}</option>
+                        {% set grades = grades|merge([class.gradeLevel]) %}
+                    {% endif %}
+                {% endfor %}
+            </select>
+            <span class="material-symbols-rounded">expand_more</span>
+        </div>
+        <div class="match-pill">
+            <span id="match-count">{{ totalClasses }}</span> classes
+        </div>
+    </div>
+
     {# ── CLASSES GRID ── #}
-    <div id="classes-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 32px; padding: 0 24px; justify-content: center;">
+    <div id="classes-container">
         {% for class in classes %}
-            <div class="class-card-item" data-name="{{ class.name|lower }}" data-grade="{{ class.gradeLevel|lower }}">
-                <div class="card border-0 h-100 m3-card-elevated" style="border-radius: 28px; background: white; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid var(--m3-outline-variant) !important; overflow: visible; padding: 28px; position: relative;">
-                    
-                    {# Top Right Grade Badge #}
-                    <span class="badge" style="position: absolute; top: 20px; right: 20px; background: var(--m3-secondary-container); color: var(--m3-on-secondary-container); padding: 8px 16px; border-radius: 100px; font-weight: 700; font-size: 0.65rem; text-transform: uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                        {{ class.gradeLevel }}
+        <div class="class-card-item" data-name="{{ class.name|lower }}" data-grade="{{ class.gradeLevel|lower }}">
+            <a href="{{ path('admin_schedule_wizard', {classId: class.id}) }}" class="class-card">
+                <div class="card-top">
+                    <span class="status-pill {{ class.id in scheduledIds ? 'scheduled' : 'no-schedule' }}">
+                        {{ class.id in scheduledIds ? 'Scheduled' : 'No Schedule' }}
                     </span>
-
-                    <div style="width: 48px; height: 48px; background: var(--m3-primary-container); color: var(--m3-on-primary-container); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 24px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
-                        🏫
+                    <div class="card-settings">
+                        <span class="material-symbols-rounded">settings</span>
                     </div>
-                    
-                    <h3 style="font-size: 1.4rem; font-weight: 700; color: var(--m3-on-surface); margin: 0 0 12px 0;">{{ class.name }}</h3>
-                    <p class="text-muted small mb-4" style="line-height: 1.6; font-size: 0.875rem;">Manage the weekly schedule, subjects, and teacher rotations for this class.</p>
-                    
-                    {# Status Indicator #}
-                    <div class="mt-auto mb-3 d-flex align-items-center gap-2">
-                        {% if class.id in scheduledIds %}
-                            <span style="width: 10px; height: 10px; background: #2e7d32; border-radius: 50%; display: inline-block;"></span>
-                            <span style="color: #2e7d32; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Schedule Ready</span>
-                        {% else %}
-                            <span style="width: 10px; height: 10px; background: #d32f2f; border-radius: 50%; display: inline-block;"></span>
-                            <span style="color: #d32f2f; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Not Scheduled</span>
-                        {% endif %}
-                    </div>
+                </div>
+                <div class="card-grade">{{ class.gradeLevel }}</div>
+                <div class="card-name">{{ class.name }}</div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
 
-                    <a href="{{ path('admin_schedule_wizard', {classId: class.id}) }}" class="btn py-2 w-100 d-flex align-items-center justify-content-center gap-2" 
-                       style="background: var(--m3-primary); color: white; border-radius: 14px; font-weight: 600; text-decoration: none; font-size: 0.9rem; transition: transform 0.2s;">
-                        <span>⚙️</span> Manage Schedule
-                    </a>
+</div>
+
+{# ── REVIEW DIALOGUE ── #}
+<div id="reviewDialogueOverlay" class="dialogue-overlay" style="display:none;">
+    <div class="dialogue-card">
+        <div class="dialogue-header">
+            <span class="material-symbols-rounded">rate_review</span>
+            <h5>Review Change Request</h5>
+            <button type="button" class="close-dialogue" onclick="closeReviewDialogue()">&times;</button>
+        </div>
+        <div class="dialogue-body">
+            <div class="info-box">
+                <div style="width:48px;height:48px;background:var(--m3-primary-container);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <span class="material-symbols-rounded" style="color:var(--m3-primary);font-size:1.6rem;">person</span>
+                </div>
+                <div>
+                    <div style="font-weight:800;font-size:1.05rem;color:var(--m3-on-surface);" id="rev-teacher"></div>
+                    <div style="font-size:0.8rem;color:var(--m3-primary);font-weight:700;text-transform:uppercase;letter-spacing:0.02em;" id="rev-info"></div>
                 </div>
             </div>
-        {% else %}
-            <div style="grid-column: 1 / -1; text-align: center; padding: 80px 0;">
-                <div class="display-1 mb-3" style="opacity: 0.2;">📭</div>
-                <h3 class="text-muted">No classes available for scheduling.</h3>
+            <div class="comparison-grid">
+                <div class="comparison-item">
+                    <label>Current Slot</label>
+                    <div class="slot-box">
+                        <div style="font-weight:800;" id="rev-old-day"></div>
+                        <div style="font-size:0.85rem;opacity:0.7;" id="rev-old-slot"></div>
+                    </div>
+                </div>
+                <div class="comparison-arrow">
+                    <span class="material-symbols-rounded" style="font-size:1.8rem;">trending_flat</span>
+                </div>
+                <div class="comparison-item">
+                    <label>Proposed Slot</label>
+                    <div class="slot-box proposed">
+                        <div style="font-weight:800;" id="rev-new-day"></div>
+                        <div style="font-size:0.85rem;" id="rev-new-slot"></div>
+                    </div>
+                </div>
             </div>
-        {% endfor %}
+            <div class="reason-section">
+                <label>Teacher's Rationale</label>
+                <div class="reason-box" id="rev-reason"></div>
+            </div>
+        </div>
+        <div class="dialogue-footer">
+            <button type="button" id="reject-btn" class="btn-reject"
+                    hx-post="" 
+                    hx-target="" 
+                    hx-swap="delete"
+                    hx-on::after-request="closeReviewDialogue()">Deny</button>
+            <button type="button" id="approve-btn" class="btn-approve"
+                    hx-post="" 
+                    hx-target="" 
+                    hx-swap="delete"
+                    hx-on::after-request="closeReviewDialogue()">Approve &amp; Update</button>
+        </div>
     </div>
 </div>
 
-<style>
-    .class-card-item:hover .card {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
-        border-color: var(--m3-primary) !important;
-    }
-    .class-card-item .btn:hover {
-        transform: scale(1.02);
-        filter: brightness(1.05);
-    }
-</style>
-
 <script>
-    function applyFilters() {
-        const searchQuery = document.getElementById('class-search').value.toLowerCase();
-        const gradeFilter = document.getElementById('grade-filter').value.toLowerCase();
-        const cards = document.querySelectorAll('.class-card-item');
-        let count = 0;
-
-        cards.forEach(card => {
-            const name = card.dataset.name;
-            const grade = card.dataset.grade;
-            
-            const matchesSearch = name.includes(searchQuery);
-            const matchesGrade = gradeFilter === "" || grade === gradeFilter;
-            
-            if (matchesSearch && matchesGrade) {
-                card.style.display = 'block';
-                count++;
-            } else {
-                card.style.display = 'none';
-            }
-        });
-
-        document.getElementById('match-count').textContent = count;
+    function triggerReviewDialog(btn) {
+        try { openReviewDialog(JSON.parse(btn.getAttribute('data-request'))); }
+        catch(e) { console.error(e); }
     }
+    function openReviewDialog(data) {
+        document.getElementById('rev-teacher').innerText = data.teacher || 'Unknown';
+        document.getElementById('rev-info').innerText = `${data.subject} · ${data.class}`;
+        document.getElementById('rev-old-day').innerText = data.oldDay;
+        document.getElementById('rev-old-slot').innerText = data.oldSlot;
+        document.getElementById('rev-new-day').innerText = data.newDay;
+        document.getElementById('rev-new-slot').innerText = data.newSlot;
+        document.getElementById('rev-reason').innerText = data.reason ? `"${data.reason}"` : '"No justification provided."';
+        
+        const approveBtn = document.getElementById('approve-btn');
+        const rejectBtn = document.getElementById('reject-btn');
+        const targetId = `#req-card-${data.id}`;
+        
+        approveBtn.setAttribute('hx-post', `/admin/schedule/request/approve/${data.id}`);
+        approveBtn.setAttribute('hx-target', targetId);
+        
+        rejectBtn.setAttribute('hx-post', `/admin/schedule/request/reject/${data.id}`);
+        rejectBtn.setAttribute('hx-target', targetId);
+        
+        htmx.process(approveBtn);
+        htmx.process(rejectBtn);
+
+        const overlay = document.getElementById('reviewDialogueOverlay');
+        overlay.style.display = 'flex';
+        setTimeout(() => overlay.classList.add('show'), 10);
+    }
+    function closeReviewDialogue() {
+        const overlay = document.getElementById('reviewDialogueOverlay');
+        overlay.classList.remove('show');
+        setTimeout(() => overlay.style.display = 'none', 400);
+    }
+    function applyFilters() {
+        const q = document.getElementById('class-search').value.toLowerCase();
+        const g = document.getElementById('grade-filter').value.toLowerCase();
+        let count = 0;
+        document.querySelectorAll('.class-card-item').forEach(card => {
+            const show = card.dataset.name.includes(q) && (!g || card.dataset.grade === g);
+            card.style.display = show ? '' : 'none';
+            if (show) count++;
+        });
+        document.getElementById('match-count').innerText = count;
+    }
+    document.getElementById('auto-schedule-btn').addEventListener('click', async function() {
+        if (!confirm('Auto-generate a schedule for all classes? Existing slots may be overwritten.')) return;
+        const btn = this, orig = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Generating…';
+        btn.disabled = true;
+        try {
+            const res  = await fetch('{{ path('admin_schedule_api_auto') }}', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+            const data = await res.json();
+            if (data.success) { window.location.reload(); }
+            else { alert('Failed: ' + data.error); btn.innerHTML = orig; btn.disabled = false; }
+        } catch(e) { alert('Network error.'); btn.innerHTML = orig; btn.disabled = false; }
+    });
 </script>
 {% endblock %}

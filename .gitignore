@@ -20,3 +20,12 @@
 /assets/vendor/
 ###< symfony/asset-mapper ###
 .env
+
+
+# Ignore local/python build artifacts and the solver workspace
+# The project has a `solver/` folder with many generated files; keep it out of git
+solver/
+solver/__pycache__/
+*.py[cod]
+*.pyo
+__pycache__/
