@@ -29,6 +29,21 @@
     <div class="m3-card m3-card-elevated" style="padding: 40px; border-radius: 24px;">
         <form method="post" enctype="multipart/form-data" novalidate style="display: flex; flex-direction: column; gap: 32px;">
             
+            {% if isAdmin is defined and isAdmin and allUsers is defined %}
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <label class="m3-label" style="font-weight: 700; color: var(--m3-primary); letter-spacing: 0.05em;">POST AS (ADMIN ONLY)</label>
+                    <select name="author_id" class="m3-text-field" style="font-size: 1rem; padding: 16px; border-radius: 12px; border: 1px solid var(--m3-outline); background-color: var(--m3-surface-container-low); outline: none;">
+                        <option value="{{ app.user.id }}">Myself ({{ app.user.firstName }} {{ app.user.lastName }})</option>
+                        {% for u in allUsers %}
+                            {% if u.id != app.user.id %}
+                                <option value="{{ u.id }}" {% if app.request.request.get('author_id') == u.id %}selected{% endif %}>{{ u.firstName }} {{ u.lastName }} ({{ u.roles|first|replace({'ROLE_': ''})|title }})</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    <p style="margin: 4px 0 0 4px; font-size: 0.8125rem; color: var(--m3-on-surface-variant);">Select a user to publish this post on their behalf. Admin posts are automatically approved.</p>
+                </div>
+            {% endif %}
+
             <div style="display: flex; flex-direction: column; gap: 8px;">
                 <label class="m3-label" style="font-weight: 700; color: var(--m3-primary); letter-spacing: 0.05em;">DISCUSSION TITLE</label>
                 <input type="text" name="title" required class="m3-text-field" placeholder="What's on your mind?" value="{{ app.request.request.get('title') }}" style="font-size: 1.125rem; padding: 16px; border-radius: 12px;">

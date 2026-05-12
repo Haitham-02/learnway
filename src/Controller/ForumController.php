@@ -42,10 +42,13 @@ class ForumController extends AbstractController
         ProfanityFilterService $profanityFilter,
         StudentEnrollmentRepository $enrollmentRepo,
         TeacherAssignmentRepository $taRepo,
-        SluggerInterface $slugger
+        SluggerInterface $slugger,
+        \App\Repository\UserRepository $userRepo
     ): Response {
         $errors = [];
         $user = $this->getUser();
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
+        $allUsers = $isAdmin ? $userRepo->findAll() : [];
 
         if ($request->isMethod('POST')) {
             $title = trim($request->request->get('title', ''));
@@ -55,12 +58,20 @@ class ForumController extends AbstractController
             if ($content === '') $errors[] = 'Content is required.';
 
             if (empty($errors)) {
+                $author = $user;
+                if ($isAdmin && $request->request->get('author_id')) {
+                    $selectedUser = $userRepo->find($request->request->get('author_id'));
+                    if ($selectedUser) {
+                        $author = $selectedUser;
+                    }
+                }
+                
                 $post = new ForumPost();
                 $post->setTitle($title);
                 $post->setContent($content);
-                $post->setUser($user);
+                $post->setUser($author);
                 $post->setCreatedAt(new \DateTime());
-                $post->setStatus('PENDING'); // Default status
+                $post->setStatus($isAdmin ? 'APPROVED' : 'PENDING');
 
                 // Automatic profanity filtering
                 $post->setTitle($profanityFilter->filter($title));
@@ -96,13 +107,19 @@ class ForumController extends AbstractController
                 $em->persist($post);
                 $em->flush();
 
-                $this->addFlash('success', 'Your post has been submitted and is awaiting admin approval.');
+                if ($isAdmin) {
+                    $this->addFlash('success', 'The post has been published successfully.');
+                } else {
+                    $this->addFlash('success', 'Your post has been submitted and is awaiting admin approval.');
+                }
                 return $this->redirectToRoute('app_forum_index');
             }
         }
 
         return $this->render('forum/new.html.twig', [
             'errors' => $errors,
+            'allUsers' => $allUsers,
+            'isAdmin' => $isAdmin,
         ]);
     }
 
