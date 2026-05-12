@@ -114,7 +114,11 @@ class RetrievalService
         if (count($teacherAssignments) > 0) {
             $context .= "TEACHERS ASSIGNED TO THESE CLASSES:\n";
             foreach ($teacherAssignments as $ta) {
-                $context .= "- " . $ta->getSubject()?->getName() . ": " . $ta->getTeacher()?->getFirst_name() . " " . $ta->getTeacher()?->getLast_name() . " (" . $ta->getTeacher()?->getEmail() . ")\n";
+                $subj = $ta->getSubject();
+                if ($subj) {
+                    $foundSubjects[$subj->getId()] = $subj->getName();
+                    $context .= "- " . $subj->getName() . ": " . $ta->getTeacher()?->getFirst_name() . " " . $ta->getTeacher()?->getLast_name() . " (" . $ta->getTeacher()?->getEmail() . ")\n";
+                }
             }
         }
         $context .= "\n";
@@ -224,7 +228,7 @@ class RetrievalService
             $context .= "--- SYSTEM ADMIN DATA ---\n";
             
             // Available Admin Pages for AI Redirection
-            $context .= "AVAILABLE ADMIN PAGES FOR NAVIGATION/REDIRECTION:\n";
+            $context .= "AVAILABLE PAGES FOR NAVIGATION/REDIRECTION:\n";
             $context .= "- Dashboard Overview: /dashboard\n";
             $context .= "- Community Forum: /forum\n";
             $context .= "- Messages & Inbox: /messages\n";
@@ -350,11 +354,29 @@ class RetrievalService
             $context .= "--- TEACHER DATA ---\n";
             
             // Available Teacher Pages for AI Redirection
-            $context .= "AVAILABLE TEACHER PAGES FOR NAVIGATION/REDIRECTION:\n";
+            $context .= "AVAILABLE PAGES FOR NAVIGATION/REDIRECTION:\n";
             $context .= "- Dashboard Overview: /dashboard\n";
             $context .= "- Community Forum: /forum\n";
             $context .= "- Messages & Inbox: /messages\n";
             $context .= "- View Schedule & Upcoming Classes: /schedule\n\n";
+
+            // Full weekly schedule for teachers (to allow change requests)
+            $teacherSchedule = $this->entityManager->getRepository(ClassSchedule::class)->findBy(['teacher' => $user]);
+            if (count($teacherSchedule) > 0) {
+                $context .= "YOUR FULL WEEKLY TEACHING SCHEDULE:\n";
+                foreach ($teacherSchedule as $cs) {
+                    $context .= "- Schedule ID: " . $cs->getId() . " | Day: " . $cs->getDayOfWeek() . " | Slot: " . $cs->getTimeSlot()->getRange() . " | Subject: " . $cs->getSubject()->getName() . " | Class: " . $cs->getClasse()->getName() . "\n";
+                }
+                $context .= "\n";
+            }
+
+            // Available time slots (for proposing changes)
+            $allSlots = $this->entityManager->getRepository(TimeSlot::class)->findAll();
+            $context .= "AVAILABLE TIME SLOTS FOR PROPOSING CHANGES:\n";
+            foreach ($allSlots as $ts) {
+                $context .= "- Slot ID: " . $ts->getId() . " | Time: " . $ts->getRange() . " (" . $ts->getType() . ")\n";
+            }
+            $context .= "\n";
 
             // Recent Submissions activity for teachers
             $qbSubRecent = $this->entityManager->createQueryBuilder();
@@ -436,11 +458,15 @@ class RetrievalService
             $context .= "--- STUDENT DATA ---\n";
 
             // Available Student Pages for AI Redirection
-            $context .= "AVAILABLE STUDENT PAGES FOR NAVIGATION/REDIRECTION:\n";
+            $context .= "AVAILABLE PAGES FOR NAVIGATION/REDIRECTION:\n";
             $context .= "- Dashboard Overview: /dashboard\n";
             $context .= "- Community Forum: /forum\n";
             $context .= "- Messages & Inbox: /messages\n";
-            $context .= "- View Class Schedule: /schedule\n\n";
+            $context .= "- View Class Schedule: /schedule\n";
+            foreach ($foundSubjects as $id => $name) {
+                $context .= "- Subject $name: /student/subject/$id\n";
+            }
+            $context .= "\n";
 
             // Student Activity Stats
             $qbSubStats = $this->entityManager->createQueryBuilder();

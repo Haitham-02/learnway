@@ -1,0 +1,37 @@
+<div class="timetable-grid" id="schedule-grid">
+    {# Headers #}
+    <div class="grid-header time-col">Time Slot</div>
+    {% for day in days %}
+        <div class="grid-header">{{ day }}</div>
+    {% endfor %}
+
+    {# Rows #}
+    {% for slot in slots %}
+        <div class="grid-cell time-cell">
+            {{ slot.getRange }}
+        </div>
+        {% for day in days %}
+            <div class="grid-cell">
+                {% if scheduleData[day][slot.id] is defined %}
+                    {% set item = scheduleData[day][slot.id] %}
+                    <div class="lesson-card">
+                        {% if isTeacher %}
+                            <div class="edit-trigger" onclick="openRequestDialogue('{{ item.id }}', '{{ item.subject|e('js') }}', '{{ item.class|e('js') }}', '{{ day|e('js') }}', '{{ slot.getRange|e('js') }}')">
+                                <span class="material-symbols-rounded">edit_calendar</span>
+                            </div>
+                        {% endif %}
+                        <div class="lesson-subject">{{ item.subject }}</div>
+                        <div class="lesson-meta">
+                            <span class="material-symbols-rounded" style="font-size: 1.2rem;">{% if isTeacher %}groups{% else %}person{% endif %}</span>
+                            <span>{% if isTeacher %}{{ item.class }}{% else %}{{ item.teacher }}{% endif %}</span>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="empty-cell">
+                        <span class="material-symbols-rounded">more_horiz</span>
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% endfor %}
+</div>

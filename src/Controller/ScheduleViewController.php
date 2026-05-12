@@ -19,7 +19,8 @@ class ScheduleViewController extends AbstractController
     public function view(
         ClassScheduleRepository $scheduleRepo,
         StudentEnrollmentRepository $enrollRepo,
-        TimeSlotRepository $slotRepo
+        TimeSlotRepository $slotRepo,
+        \Symfony\Component\HttpFoundation\Request $request
     ): Response {
         $user = $this->getUser();
         $isTeacher = $this->isGranted('ROLE_TEACHER');
@@ -57,13 +58,18 @@ class ScheduleViewController extends AbstractController
             
             foreach ($schedules as $s) {
                 $scheduleData[$s->getDayOfWeek()][$s->getTimeSlot()->getId()] = [
+                    'id' => $s->getId(),
                     'subject' => $s->getSubject()->getName(),
                     'class' => $s->getClasse()->getName(),
                 ];
             }
         }
 
-        return $this->render('schedule/view.html.twig', [
+        $template = $request->headers->get('HX-Request') 
+            ? 'schedule/_grid.html.twig' 
+            : 'schedule/view.html.twig';
+
+        return $this->render($template, [
             'title' => $title,
             'slots' => $slots,
             'scheduleData' => $scheduleData,

@@ -44,7 +44,7 @@ class Chapter
         return $this;
     }
 
-    #[ORM\ManyToOne(targetEntity: Subject::class)]
+    #[ORM\ManyToOne(targetEntity: Subject::class, inversedBy: 'chapters')]
     #[ORM\JoinColumn(name: 'subject_id', referencedColumnName: 'id')]
     private ?Subject $subject = null;
 
