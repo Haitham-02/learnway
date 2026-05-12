@@ -68,15 +68,54 @@
                 if(input) input.value = '';
                 var container = document.getElementById('message-container');
                 if(container) container.scrollTop = container.scrollHeight;
+                var emojiContainer = document.getElementById('emoji-picker-container');
+                if(emojiContainer) emojiContainer.style.display = 'none';
               "
               hx-on::response-error="console.error('HTMX Error:', event.detail.xhr.status, event.detail.xhr.responseText)"
-              style="display: flex; gap: 16px; align-items: center;">
-            <input type="text" name="content" required placeholder="Type a message..." autocomplete="off" style="flex-grow: 1; height: 48px; border-radius: 24px; border: 1px solid var(--m3-outline); padding: 0 24px; font-size: 1rem; outline: none; background: var(--m3-surface-container-low);" onfocus="this.style.border='2px solid var(--m3-primary)'; this.style.padding='0 23px';" onblur="this.style.border='1px solid var(--m3-outline)'; this.style.padding='0 24px';">
+              style="display: flex; gap: 16px; align-items: center; position: relative;">
+            
+            <div style="position: relative; display: flex; align-items: center;">
+                <button type="button" id="emoji-button" class="m3-button m3-button-tonal" style="width: 48px; height: 48px; border-radius: 50%; min-width: 48px; padding: 0; display: flex; align-items: center; justify-content: center; background: transparent; border: none; cursor: pointer; color: var(--m3-on-surface-variant);" onmouseover="this.style.background='var(--m3-surface-container-high)'" onmouseout="this.style.background='transparent'">
+                    <span class="material-symbols-rounded" style="font-size: 1.5rem;">mood</span>
+                </button>
+                <div id="emoji-picker-container" style="display: none; position: absolute; bottom: 60px; left: 0; z-index: 1000; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border-radius: 16px; overflow: hidden; background: white;">
+                    <emoji-picker></emoji-picker>
+                </div>
+            </div>
+
+            <input type="text" name="content" id="message-input-field" required placeholder="Type a message..." autocomplete="off" style="flex-grow: 1; height: 48px; border-radius: 24px; border: 1px solid var(--m3-outline); padding: 0 24px; font-size: 1rem; outline: none; background: var(--m3-surface-container-low);" onfocus="this.style.border='2px solid var(--m3-primary)'; this.style.padding='0 23px';" onblur="this.style.border='1px solid var(--m3-outline)'; this.style.padding='0 24px';">
             <button type="submit" class="m3-button m3-button-filled" style="width: 48px; height: 48px; border-radius: 50%; min-width: 48px; padding: 0; display: flex; align-items: center; justify-content: center;">
                 <span class="material-symbols-rounded" style="font-size: 1.5rem;">send</span>
             </button>
         </form>
+        <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1.21.3/index.js"></script>
         <script>
+            (function() {
+                const picker = document.querySelector('emoji-picker');
+                const btn = document.getElementById('emoji-button');
+                const container = document.getElementById('emoji-picker-container');
+                const input = document.getElementById('message-input-field');
+
+                if (picker && btn && container && input) {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        container.style.display = container.style.display === 'none' ? 'block' : 'none';
+                    });
+
+                    picker.addEventListener('emoji-click', event => {
+                        input.value += event.detail.unicode;
+                        input.focus();
+                    });
+
+                    // Hide when clicking outside
+                    document.addEventListener('click', (e) => {
+                        if (!container.contains(e.target) && !btn.contains(e.target)) {
+                            container.style.display = 'none';
+                        }
+                    });
+                }
+            })();
+
             // Ensure form works reliably
             function initMessageForm() {
                 const form = document.getElementById('message-form');

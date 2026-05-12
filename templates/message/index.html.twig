@@ -130,6 +130,7 @@
 </div>
 
 <script>
+(function() {
     let allContacts = [];
     let selectedGroupUsers = new Set();
 
@@ -231,7 +232,7 @@
             
             const isChecked = selectedGroupUsers.has(String(c.id));
             groupItem.innerHTML = `
-                <input type="checkbox" value="${c.id}" ${isChecked ? 'checked' : ''} onchange="toggleGroupUser('${c.id}')" style="width: 18px; height: 18px;">
+                <input type="checkbox" value="${c.id}" ${isChecked ? 'checked' : ''} onchange="window.toggleGroupUser('${c.id}')" style="width: 18px; height: 18px;">
                 <div style="font-size: 0.9rem; font-weight: 500;">${displayName}</div>
                 <div style="font-size: 0.7rem; color: var(--m3-on-surface-variant); margin-left: auto;">${formattedRole}</div>
             `;
@@ -239,14 +240,14 @@
         });
     }
 
-    function toggleGroupUser(userId) {
+    window.toggleGroupUser = function(userId) {
         if (selectedGroupUsers.has(userId)) {
             selectedGroupUsers.delete(userId);
         } else {
             selectedGroupUsers.add(userId);
         }
         updateHiddenInputs();
-    }
+    };
 
     function updateHiddenInputs() {
         const container = document.getElementById('selected-users-hidden');
@@ -279,7 +280,7 @@
                     cursor: pointer;
                 `;
                 chip.onclick = () => {
-                    toggleGroupUser(id);
+                    window.toggleGroupUser(id);
                     renderGroupContacts(document.getElementById('group-contact-search').value);
                 };
                 chip.innerHTML = `${contact.name} <span style="opacity: 0.6">×</span>`;
@@ -291,15 +292,15 @@
     document.getElementById('contact-search').addEventListener('input', (e) => renderSingleContacts(e.target.value));
     document.getElementById('group-contact-search').addEventListener('input', (e) => renderGroupContacts(e.target.value));
 
-    function openNewMessageModal() {
+    window.openNewMessageModal = function() {
         document.getElementById('modal-container').style.display = 'flex';
         document.getElementById('new-message-modal').style.display = 'flex';
         document.getElementById('new-group-modal').style.display = 'none';
         document.getElementById('contact-search').value = '';
         fetchContacts();
-    }
+    };
 
-    function openNewGroupModal() {
+    window.openNewGroupModal = function() {
         document.getElementById('modal-container').style.display = 'flex';
         document.getElementById('new-group-modal').style.display = 'flex';
         document.getElementById('new-message-modal').style.display = 'none';
@@ -307,11 +308,11 @@
         selectedGroupUsers.clear();
         updateHiddenInputs();
         fetchContacts();
-    }
+    };
 
-    function closeModals() {
+    window.closeModals = function() {
         document.getElementById('modal-container').style.display = 'none';
-    }
+    };
 
     // Sidebar Filtering
     document.getElementById('sidebar-search').addEventListener('input', function(e) {
@@ -330,7 +331,8 @@
 
     // Close on backdrop click
     document.getElementById('modal-container').addEventListener('click', (e) => {
-        if (e.target.id === 'modal-container') closeModals();
+        if (e.target.id === 'modal-container') window.closeModals();
     });
+})();
 </script>
 {% endblock %}
