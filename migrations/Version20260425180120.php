@@ -26,6 +26,14 @@ final class Version20260425180120 extends AbstractMigration
             return;
         }
 
+        $platform = $this->connection->getDatabasePlatform();
+        $platformName = $platform->getName();
+
+        // Only create MySQL triggers for MySQL databases (skip for SQLite)
+        if ($platformName === 'sqlite') {
+            return;
+        }
+
         $this->addSql('DROP TRIGGER IF EXISTS trg_student_enrollments_student_only_insert');
         $this->addSql('DROP TRIGGER IF EXISTS trg_student_enrollments_student_only_update');
 

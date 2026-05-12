@@ -4,6 +4,6 @@
     <file url="file://$PROJECT_DIR$/database_dumps/learnway_web.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/database_dumps/learnway_web_dump_2026-05-10_05-56-14.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/database_setup.sql" dialect="MySQL" />
-    <file url="file://$PROJECT_DIR$/learnway_web.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/learnway_web.sql" dialect="GenericSQL" />
   </component>
 </project>

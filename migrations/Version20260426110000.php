@@ -18,6 +18,20 @@ final class Version20260426110000 extends AbstractMigration
     {
         $schemaManager = $this->connection->createSchemaManager();
         $tables = $schemaManager->listTableNames();
+        $platform = $this->connection->getDatabasePlatform();
+        $isSqlite = str_contains(strtolower(get_class($platform)), 'sqlite');
+
+        // Generated columns are MySQL-specific, skip for SQLite
+        if ($isSqlite) {
+            // Just create indexes without generated columns for SQLite
+            if (in_array('terms', $tables, true)) {
+                $indexes = array_keys($schemaManager->listTableIndexes('terms'));
+                if (!in_array('idx_terms_selector', $indexes, true)) {
+                    $this->addSql('CREATE INDEX idx_terms_selector ON terms (academic_year_id, is_current, start_date, name)');
+                }
+            }
+            return;
+        }
 
         if (in_array('academic_years', $tables, true)) {
             $columns = array_map(
@@ -41,13 +55,14 @@ final class Version20260426110000 extends AbstractMigration
             );
             $indexes = array_keys($schemaManager->listTableIndexes('terms'));
 
-            if (!in_array('current_in_year_flag', $columns, true)) {
+            // Only add generated column if both required columns exist
+            if (in_array('academic_year_id', $columns, true) && !in_array('current_in_year_flag', $columns, true)) {
                 $this->addSql('ALTER TABLE terms ADD current_in_year_flag INT GENERATED ALWAYS AS (CASE WHEN is_current = 1 THEN academic_year_id ELSE NULL END) STORED');
             }
-            if (!in_array('uniq_terms_current_in_year', $indexes, true)) {
+            if (in_array('academic_year_id', $columns, true) && !in_array('uniq_terms_current_in_year', $indexes, true)) {
                 $this->addSql('CREATE UNIQUE INDEX uniq_terms_current_in_year ON terms (current_in_year_flag)');
             }
-            if (!in_array('idx_terms_selector', $indexes, true)) {
+            if (in_array('academic_year_id', $columns, true) && !in_array('idx_terms_selector', $indexes, true)) {
                 $this->addSql('CREATE INDEX idx_terms_selector ON terms (academic_year_id, is_current, start_date, name)');
             }
         }

@@ -1,24 +1,22 @@
 <?php
 /**
- * Learnway Database Setup Script
- * Run: php generate_hash.php
+ * Learnway MySQL Database Setup Script
+ * Run: php setup_mysql.php
  */
 
 echo "\n╔════════════════════════════════════════════╗\n";
-echo "║  LEARNWAY DATABASE SETUP                   ║\n";
+echo "║  LEARNWAY MYSQL DATABASE SETUP             ║\n";
 echo "╚════════════════════════════════════════════╝\n\n";
 
 require 'vendor/autoload.php';
 
-$dbPath = __DIR__ . '/var/data.db';
-
 try {
-    // Connect to SQLite
-    $pdo = new PDO("sqlite:$dbPath", '', '', [
+    // Connect to MySQL
+    $pdo = new PDO("mysql:host=127.0.0.1;dbname=learnway_web", "root", "2005", [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     ]);
 
-    echo "[1/3] Checking database connection... ✓\n";
+    echo "[1/3] Checking MySQL connection... ✓\n";
 
     // Step 1: Setup roles
     echo "[2/3] Setting up roles...\n";
@@ -30,7 +28,7 @@ try {
     }
 
     $pdo->exec("
-        INSERT OR IGNORE INTO roles (id, name, role_category, description) VALUES 
+        INSERT IGNORE INTO roles (id, name, role_category, description) VALUES 
         (1, 'ADMIN', 'Administration', 'System Administrator'),
         (2, 'TEACHER', 'Academic', 'Teacher'),
         (3, 'STUDENT', 'Academic', 'Student')
@@ -45,7 +43,12 @@ try {
     $stmt->execute(['admin@learnway.com']);
 
     if ($stmt->fetch()) {
-        echo "  ! Admin user already exists\n";
+        echo "  ! Admin user already exists - updating password\n";
+        // Update existing admin with new password
+        $hashedPassword = password_hash('2005', PASSWORD_BCRYPT, ['cost' => 12]);
+        $stmt = $pdo->prepare("UPDATE users SET password_hash = ? WHERE email = ?");
+        $stmt->execute([$hashedPassword, 'admin@learnway.com']);
+        echo "  ✓ Admin password updated\n";
     } else {
         // Hash password: 2005
         $hashedPassword = password_hash('2005', PASSWORD_BCRYPT, ['cost' => 12]);
@@ -53,7 +56,7 @@ try {
         // Insert admin user
         $stmt = $pdo->prepare("
             INSERT INTO users (role_id, email, password_hash, first_name, last_name, is_active, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+            VALUES (?, ?, ?, ?, ?, ?, NOW())
         ");
 
         if ($stmt->execute([1, 'admin@learnway.com', $hashedPassword, 'Admin', 'User', 1])) {
@@ -73,10 +76,12 @@ try {
     $userCount = $result['count'] ?? 0;
 
     echo "\n╔════════════════════════════════════════════╗\n";
-    echo "║  ✓ DATABASE SETUP COMPLETE                 ║\n";
+    echo "║  ✓ MYSQL SETUP COMPLETE                    ║\n";
     echo "╚════════════════════════════════════════════╝\n\n";
 
     echo "Database Statistics:\n";
+    echo "  • Database:  learnway_web\n";
+    echo "  • Host:      127.0.0.1\n";
     echo "  • Roles:     $roleCount\n";
     echo "  • Users:     $userCount\n";
     echo "\n";
@@ -92,11 +97,14 @@ try {
 
 } catch (PDOException $e) {
     echo "\n╔════════════════════════════════════════════╗\n";
-    echo "║  ✗ DATABASE ERROR                          ║\n";
+    echo "║  ✗ MYSQL ERROR                             ║\n";
     echo "╚════════════════════════════════════════════╝\n\n";
     echo "Error: " . $e->getMessage() . "\n";
-    echo "\nDatabase path: $dbPath\n";
-    echo "Database file exists: " . (file_exists($dbPath) ? "Yes" : "No") . "\n";
+    echo "\nDatabase connection details:\n";
+    echo "  Host:     127.0.0.1\n";
+    echo "  Database: learnway_web\n";
+    echo "  User:     root\n";
+    echo "\nMake sure MySQL is running and the credentials are correct.\n\n";
     exit(1);
 } catch (Exception $e) {
     echo "\n✗ Error: " . $e->getMessage() . "\n";
@@ -105,3 +113,4 @@ try {
 
 echo "Done!\n\n";
 ?>
+

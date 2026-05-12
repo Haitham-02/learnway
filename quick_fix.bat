@@ -1,15 +1,45 @@
 @echo off
-REM Direct MySQL Fix - Execute the fix immediately
-
-mysql -u root -p2532001 learnway_web -e "ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture VARCHAR(255) DEFAULT NULL AFTER last_name;"
-mysql -u root -p2532001 learnway_web -e "ALTER TABLE users ADD COLUMN IF NOT EXISTS date_of_birth DATE DEFAULT NULL AFTER profile_picture;"
-mysql -u root -p2532001 learnway_web -e "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at DATETIME DEFAULT NULL AFTER is_active;"
+REM SQLite Database Setup Script for Learnway
+REM This script rebuilds the SQLite database with proper roles and admin account
 
 echo.
-echo Columns added successfully!
-echo Verifying table structure...
+echo ╔════════════════════════════════════════════╗
+echo ║    LEARNWAY DATABASE SETUP (SQLite)        ║
+echo ╚════════════════════════════════════════════╝
 echo.
 
-mysql -u root -p2532001 learnway_web -e "DESC users;"
+REM Delete old database if it exists
+if exist var\data.db (
+    echo [1/2] Removing old database...
+    del var\data.db
+    echo ✓ Old database removed
+) else (
+    echo [!] No existing database found (first setup)
+)
+
+echo.
+echo [2/2] Creating new database with roles and admin...
+php import_sqlite.php
+
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo ╔════════════════════════════════════════════╗
+    echo ║  ✗ DATABASE SETUP FAILED                   ║
+    echo ╚════════════════════════════════════════════╝
+    pause
+    exit /b 1
+)
+
+echo.
+echo ╔════════════════════════════════════════════╗
+echo ║  ✓ DATABASE SETUP COMPLETE                 ║
+echo ╚════════════════════════════════════════════╝
+echo.
+echo You can now access the application with:
+echo   Email:    admin@learnway.com
+echo   Password: Admin@123
+echo.
+echo URL: http://127.0.0.1:8000
+echo.
 
 pause
