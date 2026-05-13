@@ -16,6 +16,8 @@ ENV APP_DEBUG=0
 
 RUN a2enmod rewrite
 
+RUN echo '<Directory /var/www/html/public>\n    AllowOverride All\n</Directory>' > /etc/apache2/conf-available/symfony.conf && a2enconf symfony
+
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
