@@ -38,7 +38,11 @@ RUN php bin/console cache:warmup --env=prod || true
 # Then set all var permissions to allow Apache to write
 RUN chmod -R 777 var
 
-RUN php bin/console doctrine:migrations:migrate --no-interaction --env=prod || true
+# Copy entrypoint script
+COPY docker-entrypoint.sh /var/www/html/
+RUN chmod +x /var/www/html/docker-entrypoint.sh
+
+ENTRYPOINT ["/var/www/html/docker-entrypoint.sh"]
 
 RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' \
     /etc/apache2/sites-available/*.conf
