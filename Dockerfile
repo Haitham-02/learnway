@@ -19,7 +19,7 @@ WORKDIR /var/www/html
 
 COPY . .
 
-RUN if [ ! -f .env ]; then cp .env.production .env; fi
+RUN cp .env.production .env 2>/dev/null || echo "Using defaults"
 
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
