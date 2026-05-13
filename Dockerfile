@@ -45,6 +45,9 @@ RUN php bin/console cache:warmup --env=prod || true
 # Then set all var permissions to allow Apache to write
 RUN chmod -R 777 var
 
+# Pre-create cache directory structure
+RUN mkdir -p var/cache/prod/doctrine/orm/Proxies && chmod -R 777 var/cache
+
 # Copy entrypoint script
 COPY docker-entrypoint.sh /var/www/html/
 RUN chmod +x /var/www/html/docker-entrypoint.sh
