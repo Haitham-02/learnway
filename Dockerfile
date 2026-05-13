@@ -22,8 +22,11 @@ WORKDIR /var/www/html
 
 COPY . .
 
-# Ensure .env is set to production defaults (the copy from .env.production overrides dev .env)
-RUN cp .env.production .env && echo "✓ .env configured for production"
+# Remove .env to force Symfony to use only runtime environment variables from Render
+RUN rm -f .env .env.local
+
+# Create dummy .env for Symfony's Dotenv check (won't be used if APP_ENV is set in runtime)
+RUN touch .env
 
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
