@@ -3,6 +3,7 @@ FROM php:8.2-apache
 RUN apt-get update && apt-get install -y \
     git unzip zip libicu-dev libzip-dev libonig-dev \
     libxml2-dev libjpeg62-turbo-dev libpng-dev libfreetype6-dev \
+    nodejs npm \
     && rm -rf /var/lib/apt/lists/*
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -29,6 +30,9 @@ RUN rm -f .env .env.local
 
 # Create dummy .env for Symfony's Dotenv check (won't be used if APP_ENV is set in runtime)
 RUN touch .env
+
+# Install npm dependencies
+RUN npm install --legacy-peer-deps || true
 
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
