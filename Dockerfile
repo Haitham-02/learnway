@@ -32,6 +32,9 @@ RUN touch .env
 
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
+# Install importmap assets
+RUN php bin/console importmap:install --no-interaction --env=prod || true
+
 # Pre-warm the cache during build to avoid runtime permission issues
 RUN php bin/console cache:warmup --env=prod || true
 
