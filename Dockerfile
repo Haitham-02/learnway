@@ -9,9 +9,7 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j"$(nproc)" \
     pdo pdo_mysql intl zip mbstring gd
 
-RUN docker-php-ext-install -j1 dom
-
-RUN docker-php-ext-install -j1 xml xmlreader xmlwriter simplexml
+RUN docker-php-ext-install -j1 dom xml
 
 RUN a2enmod rewrite
 
