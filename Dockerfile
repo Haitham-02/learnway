@@ -6,8 +6,7 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j"$(nproc)" \
     pdo pdo_mysql intl zip mbstring gd \
-    && docker-php-ext-install -j1 dom xml \
-    && docker-php-ext-install -j1 xmlreader xmlwriter simplexml \
+    && docker-php-ext-install -j1 dom xml xmlreader xmlwriter simplexml \
     && rm -rf /var/lib/apt/lists/*
 
 RUN a2enmod rewrite
