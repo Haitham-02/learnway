@@ -4,8 +4,10 @@ RUN apt-get update && apt-get install -y \
     git unzip zip libicu-dev libzip-dev libonig-dev \
     libxml2-dev libjpeg62-turbo-dev libpng-dev libfreetype6-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install \
-    pdo pdo_mysql intl zip mbstring gd dom simplexml xml xmlreader xmlwriter \
+    && docker-php-ext-install -j"$(nproc)" \
+    pdo pdo_mysql intl zip mbstring gd \
+    && docker-php-ext-install -j1 dom xml \
+    && docker-php-ext-install -j1 xmlreader xmlwriter simplexml \
     && rm -rf /var/lib/apt/lists/*
 
 RUN a2enmod rewrite
