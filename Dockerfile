@@ -30,11 +30,8 @@ RUN touch .env
 
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# Create var directory and ensure it's writable by Apache (www-data user)
-RUN mkdir -p var/cache var/log && chown -R www-data:www-data var && chmod -R 755 var
-
-# Ensure all app files are owned by www-data
-RUN chown -R www-data:www-data /var/www/html
+# Create var directory with world-writable permissions for Apache
+RUN mkdir -p var/cache var/log && chmod -R 777 var
 
 RUN php bin/console cache:clear --env=prod || true
 RUN php bin/console doctrine:migrations:migrate --no-interaction --env=prod || true
