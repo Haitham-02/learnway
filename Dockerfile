@@ -17,9 +17,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-COPY .env .env
-
 COPY . .
+
+RUN if [ ! -f .env ]; then cp .env.production .env; fi
 
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
