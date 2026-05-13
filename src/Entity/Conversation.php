@@ -126,7 +126,7 @@ class Conversation
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'conversation')]
+    #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'conversation', cascade: ['persist', 'remove'])]
     private Collection $messages;
 
     public function __construct()

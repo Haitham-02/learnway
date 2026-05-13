@@ -452,6 +452,7 @@
 </style>
 
 <script>
+(function() {
     const slots60 = {{ slots60|map(s => {id: s.id, range: s.getRange})|json_encode|raw }};
     const slots90 = {{ slots90|map(s => {id: s.id, range: s.getRange})|json_encode|raw }};
     const slots120 = {{ slots120|map(s => {id: s.id, range: s.getRange})|json_encode|raw }};
@@ -469,13 +470,13 @@
         if (currentMode) renderGrid();
     }
 
-    function selectMode(mode) {
+    window.selectMode = function(mode) {
         currentMode = mode;
-        goToStep(2);
+        window.goToStep(2);
         renderGrid();
-    }
+    };
 
-    function goToStep(step) {
+    window.goToStep = function(step) {
         document.querySelectorAll('.wizard-content').forEach(el => el.style.display = 'none');
         document.getElementById('step-content-' + step).style.display = 'block';
         
@@ -484,7 +485,7 @@
         });
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    };
 
     function renderGrid() {
         let slots = [];
@@ -514,7 +515,7 @@
                                 <div class="slot-subject">${occupied.subject}</div>
                                 <div class="slot-teacher">${occupied.teacher}</div>
                             </div>
-                            <button class="delete-btn" onclick="deleteSlot(event, ${occupied.id})">
+                            <button class="delete-btn" onclick="window.deleteSlot(event, ${occupied.id})">
                                 <span class="material-symbols-rounded" style="font-size: 1.1rem;">delete</span>
                             </button>
                         </div>
@@ -564,12 +565,12 @@
         setTimeout(() => dialogue.style.transform = 'scale(1)', 10);
     }
 
-    function closeCustomModal() {
+    window.closeCustomModal = function() {
         const overlay = document.getElementById('custom-modal-overlay');
         const dialogue = overlay.querySelector('.dialogue-card');
         dialogue.style.transform = 'scale(0.9)';
         setTimeout(() => overlay.style.display = 'none', 200);
-    }
+    };
 
     document.getElementById('modal-subject').onchange = (e) => {
         const sid = e.target.value;
@@ -628,21 +629,22 @@
 
         const result = await res.json();
         if (result.success) {
-            closeCustomModal();
+            window.closeCustomModal();
             loadSchedule();
         } else {
             showError(result.errors.join('<br>'));
         }
     };
 
-    async function deleteSlot(event, id) {
+    window.deleteSlot = async function(event, id) {
         event.stopPropagation();
         if (!confirm('Remove this assignment?')) return;
         
         await fetch(`/admin/schedule/api/delete-slot/${id}`, { method: 'DELETE' });
         loadSchedule();
-    }
+    };
 
     loadSchedule();
+})();
 </script>
 {% endblock %}

@@ -124,7 +124,7 @@ class Subject
     }
 
     #[ORM\ManyToOne(targetEntity: Term::class)]
-    #[ORM\JoinColumn(name: 'term_id', referencedColumnName: 'id', nullable: true)]
+    #[ORM\JoinColumn(name: 'term_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?Term $term = null;
 
     public function getTerm(): ?Term

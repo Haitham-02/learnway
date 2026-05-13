@@ -30,7 +30,7 @@ class Message
     }
 
     #[ORM\ManyToOne(targetEntity: Conversation::class, inversedBy: 'messages')]
-    #[ORM\JoinColumn(name: 'conversation_id', referencedColumnName: 'id')]
+    #[ORM\JoinColumn(name: 'conversation_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private ?Conversation $conversation = null;
 
     public function getConversation(): ?Conversation

@@ -1,6 +1,6 @@
 {% set forceTheirs = forceTheirs|default(false) %}
 {% set isMine = not forceTheirs and app.user and message.user.id == app.user.id %}
-{% set isGroup = message.conversation.type == 'group' %}
+{% set isGroup = message.conversation.type|lower == 'group' %}
 
 <div class="message-wrapper {% if isMine %}message-mine{% else %}message-theirs{% endif %}" 
      data-message-id="{{ message.id }}"

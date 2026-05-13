@@ -19,10 +19,10 @@ final class Version20260426110000 extends AbstractMigration
         $schemaManager = $this->connection->createSchemaManager();
         $tables = $schemaManager->listTableNames();
         $platform = $this->connection->getDatabasePlatform();
-        $platformName = $platform->getName();
+        $isSqlite = str_contains(strtolower(get_class($platform)), 'sqlite');
 
         // Generated columns are MySQL-specific, skip for SQLite
-        if ($platformName === 'sqlite') {
+        if ($isSqlite) {
             // Just create indexes without generated columns for SQLite
             if (in_array('terms', $tables, true)) {
                 $indexes = array_keys($schemaManager->listTableIndexes('terms'));
