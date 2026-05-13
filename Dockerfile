@@ -30,8 +30,8 @@ RUN touch .env
 
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# Create var directory with world-writable permissions for Apache
-RUN mkdir -p var/cache var/log && chmod -R 777 var
+# Remove and recreate var directory with full permissions for Apache
+RUN rm -rf var && mkdir -p var/cache var/log && chmod -R 777 var
 
 RUN php bin/console cache:clear --env=prod || true
 RUN php bin/console doctrine:migrations:migrate --no-interaction --env=prod || true
