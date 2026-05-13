@@ -1,0 +1,215 @@
+<style>
+    .lw-notification-root { position: relative; }
+    .lw-notification-toggle {
+        border: 1px solid var(--m3-outline);
+        background: var(--m3-surface);
+        color: var(--m3-on-surface);
+        border-radius: 9999px;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+    .lw-notification-badge {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 9999px;
+        padding: 0 5px;
+        font-size: 11px;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: var(--m3-error);
+        color: #fff;
+        border: 2px solid var(--m3-surface);
+    }
+    .lw-notification-panel {
+        position: absolute;
+        right: 0;
+        top: calc(100% + 8px);
+        width: 360px;
+        max-width: min(360px, 90vw);
+        max-height: 460px;
+        overflow: auto;
+        background: var(--m3-surface);
+        border: 1px solid var(--m3-outline);
+        border-radius: 16px;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+        z-index: 200;
+        display: none;
+    }
+    .lw-notification-panel.open { display: block; }
+    .lw-notification-header {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--m3-outline);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .lw-notification-header a,
+    .lw-notification-header button {
+        border: 0;
+        background: transparent;
+        color: var(--m3-primary);
+        cursor: pointer;
+        font-size: 13px;
+        text-decoration: none;
+    }
+    .lw-notification-list {
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .notification-item {
+        border: 1px solid var(--m3-outline-variant);
+        border-radius: 12px;
+        padding: 10px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .notification-item.unread {
+        background: color-mix(in srgb, var(--m3-primary-container) 35%, var(--m3-surface));
+    }
+    .notification-title { font-weight: 600; margin-bottom: 4px; color: var(--m3-on-surface); }
+    .notification-message { font-size: 13px; color: var(--m3-on-surface-variant); }
+    .notification-time { font-size: 12px; color: var(--m3-outline); margin-top: 6px; }
+    .unread-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 9999px;
+        margin-top: 4px;
+        background: var(--m3-primary);
+        flex-shrink: 0;
+    }
+    .no-notifications {
+        border: 1px dashed var(--m3-outline);
+        border-radius: 12px;
+        padding: 18px 10px;
+        text-align: center;
+        color: var(--m3-on-surface-variant);
+    }
+</style>
+
+<div
+    class="lw-notification-root"
+    data-controller="notification-socket"
+    data-notification-socket-url-value="http://localhost:3001"
+    data-notification-socket-user-id-value="{{ app.user.id }}"
+>
+    <button type="button" class="lw-notification-toggle js-notification-toggle" aria-label="Notifications">
+        <span class="material-symbols-rounded">notifications</span>
+        <span
+            class="lw-notification-badge js-notification-badge"
+            hx-get="{{ path('notifications_unread_count') }}"
+            hx-trigger="load, refreshNotifications from:body"
+            hx-swap="innerHTML"
+            hx-on::after-request="
+                const count = parseInt(event.target.textContent.trim() || '0', 10);
+                event.target.style.display = count > 0 ? 'inline-flex' : 'none';
+            "
+        ></span>
+    </button>
+
+    <div class="lw-notification-panel js-notification-panel">
+        <div class="lw-notification-header">
+            <strong>Notifications</strong>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <button type="button" onclick="markAllNotificationsRead()">Mark all read</button>
+                <a href="{{ path('notifications_index') }}">View all</a>
+            </div>
+        </div>
+        <div
+            class="lw-notification-list js-notification-list"
+            hx-get="{{ path('notifications_latest') }}"
+            hx-trigger="load, refreshNotifications from:body"
+            hx-swap="innerHTML"
+        ></div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        function bindNotificationDropdowns() {
+            document.querySelectorAll('.lw-notification-root').forEach(function (root) {
+                if (root.dataset.bound === '1') {
+                    return;
+                }
+
+                const toggle = root.querySelector('.js-notification-toggle');
+                const panel = root.querySelector('.js-notification-panel');
+                if (!toggle || !panel) {
+                    return;
+                }
+
+                toggle.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    panel.classList.toggle('open');
+                });
+
+                root.dataset.bound = '1';
+            });
+        }
+
+        if (!window.learnwayNotificationsDropdownGlobalBound) {
+            window.learnwayNotificationsDropdownGlobalBound = true;
+            document.addEventListener('click', function (event) {
+                document.querySelectorAll('.lw-notification-root').forEach(function (root) {
+                    const toggle = root.querySelector('.js-notification-toggle');
+                    const panel = root.querySelector('.js-notification-panel');
+                    if (!toggle || !panel) {
+                        return;
+                    }
+                    if (!panel.contains(event.target) && !toggle.contains(event.target)) {
+                        panel.classList.remove('open');
+                    }
+                });
+            });
+        }
+
+        if (!window.learnwayNotificationsApiBound) {
+            window.learnwayNotificationsApiBound = true;
+
+            async function post(url) {
+                await fetch(url, {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                htmx.trigger(document.body, 'refreshNotifications');
+            }
+
+            window.markAsRead = async function (el, id, link) {
+                const urlTemplate = {{ path('notifications_mark_as_read', {'id': '__ID__'})|json_encode|raw }};
+                await post(urlTemplate.replace('__ID__', id));
+                if (el) {
+                    el.classList.remove('unread');
+                    const dot = el.querySelector('.unread-dot');
+                    if (dot) {
+                        dot.remove();
+                    }
+                }
+                if (link) {
+                    window.location.href = link;
+                }
+            };
+
+            window.markAllNotificationsRead = async function () {
+                await post({{ path('notifications_mark_all_read')|json_encode|raw }});
+            };
+        }
+
+        bindNotificationDropdowns();
+        if (!window.learnwayNotificationsTurboBound) {
+            window.learnwayNotificationsTurboBound = true;
+            document.addEventListener('turbo:load', bindNotificationDropdowns);
+        }
+    })();
+</script>

@@ -11,6 +11,7 @@ use App\Repository\MessageRepository;
 use App\Repository\UserRepository;
 use App\Repository\StudentEnrollmentRepository;
 use App\Repository\TeacherAssignmentRepository;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Predis\Client as RedisClient;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
@@ -24,6 +25,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class MessageController extends AbstractController
 {
+    public function __construct(
+        private NotificationService $notificationService
+    ) {}
+
     #[Route('', name: 'index')]
     public function index(ConversationRepository $conversationRepo): Response
     {
@@ -116,6 +121,9 @@ class MessageController extends AbstractController
         error_log("Redis connection: host={$redisHost}");
         
         $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('Authentication required.');
+        }
         
         // Ensure user is a member
         $isMember = false;
@@ -152,6 +160,8 @@ class MessageController extends AbstractController
 
                 $em->persist($message);
                 $em->flush();
+                $notifiedUsers = $this->notifyConversationRecipients($conversation, $user, $content);
+                $this->publishNotificationRefreshUsers($notifiedUsers);
                 
                 error_log("✓ Message saved to DB: ID=" . $message->getId());
 
@@ -276,8 +286,15 @@ class MessageController extends AbstractController
         $newMsg->setIsForwarded(true);
         $newMsg->setStatus('SENT');
 
+        $sender = $this->getUser();
+        if (!$sender instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
         $em->persist($newMsg);
         $em->flush();
+        $notifiedUsers = $this->notifyConversationRecipients($targetConv, $sender, $newMsg->getContent() ?? '');
+        $this->publishNotificationRefreshUsers($notifiedUsers);
 
         return $this->redirectToRoute('app_messages_show', ['id' => $targetConv->getId()]);
     }
@@ -506,5 +523,79 @@ class MessageController extends AbstractController
     private function isUserRole(User $user, string $role): bool
     {
         return in_array($role, $user->getRoles());
+    }
+
+    /**
+     * @return User[]
+     */
+    private function notifyConversationRecipients(Conversation $conversation, User $sender, string $content): array
+    {
+        $recipients = [];
+        foreach ($conversation->getMembers() as $member) {
+            $recipient = $member->getUser();
+            if (!$recipient || $recipient === $sender || $recipient->getId() === null) {
+                continue;
+            }
+            $recipients[$recipient->getId()] = $recipient;
+        }
+
+        if ($recipients === []) {
+            return [];
+        }
+
+        $senderName = trim(($sender->getFirstName() ?? '') . ' ' . ($sender->getLastName() ?? ''));
+        if ($senderName === '') {
+            $senderName = $sender->getUserIdentifier();
+        }
+
+        $preview = trim($content);
+        if ($preview === '') {
+            $preview = 'Sent you a new message.';
+        } else {
+            $preview = mb_strimwidth($preview, 0, 140, '…');
+        }
+
+        $this->notificationService->sendToUsers(
+            array_values($recipients),
+            sprintf('New message from %s', $senderName),
+            $preview,
+            $this->generateUrl('app_messages_show', ['id' => $conversation->getId()])
+        );
+
+        return array_values($recipients);
+    }
+
+    /**
+     * @param User[] $users
+     */
+    private function publishNotificationRefreshUsers(array $users): void
+    {
+        if ($users === []) {
+            return;
+        }
+
+        $redisHost = $_ENV['REDIS_HOST'] ?? 'localhost';
+        $redis = new RedisClient(['host' => $redisHost]);
+
+        try {
+            $uniqueUserIds = [];
+            foreach ($users as $user) {
+                $userId = $user->getId();
+                if ($userId !== null) {
+                    $uniqueUserIds[$userId] = true;
+                }
+            }
+
+            foreach (array_keys($uniqueUserIds) as $userId) {
+                $redis->publish('notifications', json_encode([
+                    'room' => 'notifications_' . $userId,
+                    'userId' => $userId,
+                ]));
+            }
+        } catch (\Throwable $e) {
+            error_log('Notification socket publish failed: ' . $e->getMessage());
+        } finally {
+            $redis->disconnect();
+        }
     }
 }

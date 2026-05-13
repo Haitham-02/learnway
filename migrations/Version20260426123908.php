@@ -7,18 +7,16 @@ namespace DoctrineMigrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-/**
- * Auto-generated Migration: Please modify to your needs!
- */
 final class Version20260426123908 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Superseded by Version20260426162553; intentionally no-op to avoid duplicate schema operations.';
     }
 
     public function up(Schema $schema): void
     {
+<<<<<<< HEAD
         // Skip this migration for SQLite - it uses MySQL-specific syntax
         $platform = $this->connection->getDatabasePlatform();
         if ($platform->getName() === 'sqlite') {
@@ -162,10 +160,14 @@ final class Version20260426123908 extends AbstractMigration
         $this->addSql('ALTER TABLE message_reads ADD CONSTRAINT FK_37E6935AA76ED395 FOREIGN KEY (user_id) REFERENCES users (id)');
         $this->addSql('ALTER TABLE message_reads ADD CONSTRAINT FK_37E6935A537A1329 FOREIGN KEY (message_id) REFERENCES messages (id)');
         $this->addSql('ALTER TABLE message_reads RENAME INDEX user_id TO IDX_37E6935AA76ED395');
+=======
+        // Intentionally left blank.
+>>>>>>> a68a05d89020c09f6487d63477940c12fd0e8657
     }
 
     public function down(Schema $schema): void
     {
+<<<<<<< HEAD
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE announcements DROP FOREIGN KEY FK_F422A9DAE36D154');
         $this->addSql('ALTER TABLE announcements RENAME INDEX idx_f422a9dae36d154 TO posted_by');
@@ -304,5 +306,8 @@ final class Version20260426123908 extends AbstractMigration
         $this->addSql('CREATE INDEX idx_users_email ON users (email)');
         $this->addSql('CREATE INDEX idx_users_selector ON users (role_id, is_active, last_name, first_name)');
         $this->addSql('ALTER TABLE users RENAME INDEX idx_1483a5e9d60322ac TO idx_users_role');
+=======
+        // Intentionally left blank.
+>>>>>>> a68a05d89020c09f6487d63477940c12fd0e8657
     }
 }

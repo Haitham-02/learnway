@@ -43,6 +43,7 @@ redis.on('error', (err) => {
 // Subscribe to Redis channels for real-time updates
 redis.subscribe(
   "chat-messages",           // Messages module
+  "notifications",          // Notification updates
   "livestream-chat",         // Livestream chat
   "livestream-qa",           // Livestream Q&A
   "livestream-qa-answer",    // Livestream Q&A answers
@@ -64,7 +65,11 @@ redis.on("message", (channel, message) => {
       // Handle regular message module chat
       console.log(`📨 Broadcasting message to room ${data.room}`);
       io.to(data.room).emit("new-message", data.html);
-    } 
+    }
+    else if (channel === "notifications") {
+      console.log(`🔔 Broadcasting notification refresh to room ${data.room}`);
+      io.to(data.room).emit("notification-refresh", data);
+    }
     else if (channel === "livestream-chat") {
       // Handle livestream chat
       console.log(`💬 Broadcasting livestream chat to room ${data.room}`);

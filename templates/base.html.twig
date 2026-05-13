@@ -54,9 +54,10 @@
 {% set isProfileRoute = currentRoute starts with 'app_profile_' %}
 {% set isMessageRoute = currentRoute starts with 'app_messages_' %}
 {% set isLivestreamRoute = currentRoute starts with 'app_livestream_' %}
-{% set isAdminRoute = currentRoute starts with 'admin_' or (currentRoute == 'app_dashboard' and is_granted('ROLE_ADMIN')) or (isForumRoute and is_granted('ROLE_ADMIN')) or (isMessageRoute and is_granted('ROLE_ADMIN')) or (isProfileRoute and is_granted('ROLE_ADMIN')) or (currentRoute == 'app_schedule_view' and is_granted('ROLE_ADMIN')) %}
-{% set isTeacherRoute = (not isAdminRoute) and (currentRoute starts with 'teacher_' or (currentRoute == 'app_dashboard' and is_granted('ROLE_TEACHER')) or (isForumRoute and is_granted('ROLE_TEACHER')) or (isMessageRoute and is_granted('ROLE_TEACHER')) or (isLivestreamRoute and is_granted('ROLE_TEACHER')) or (isProfileRoute and is_granted('ROLE_TEACHER')) or (currentRoute == 'app_schedule_view' and is_granted('ROLE_TEACHER'))) %}
-{% set isStudentRoute = (not isAdminRoute) and (not isTeacherRoute) and (currentRoute starts with 'student_' or (currentRoute == 'app_dashboard' and is_granted('ROLE_STUDENT')) or (isForumRoute and is_granted('ROLE_STUDENT')) or (isMessageRoute and is_granted('ROLE_STUDENT')) or (isLivestreamRoute and is_granted('ROLE_STUDENT')) or (isProfileRoute and is_granted('ROLE_STUDENT')) or (currentRoute == 'app_schedule_view' and is_granted('ROLE_STUDENT'))) %}
+{% set isNotificationsRoute = currentRoute starts with 'notifications_' %}
+{% set isAdminRoute = currentRoute starts with 'admin_' or (currentRoute == 'app_dashboard' and is_granted('ROLE_ADMIN')) or (isForumRoute and is_granted('ROLE_ADMIN')) or (isMessageRoute and is_granted('ROLE_ADMIN')) or (isProfileRoute and is_granted('ROLE_ADMIN')) or (currentRoute == 'app_schedule_view' and is_granted('ROLE_ADMIN')) or (isNotificationsRoute and is_granted('ROLE_ADMIN')) %}
+{% set isTeacherRoute = (not isAdminRoute) and (currentRoute starts with 'teacher_' or (currentRoute == 'app_dashboard' and is_granted('ROLE_TEACHER')) or (isForumRoute and is_granted('ROLE_TEACHER')) or (isMessageRoute and is_granted('ROLE_TEACHER')) or (isLivestreamRoute and is_granted('ROLE_TEACHER')) or (isProfileRoute and is_granted('ROLE_TEACHER')) or (currentRoute == 'app_schedule_view' and is_granted('ROLE_TEACHER')) or (isNotificationsRoute and is_granted('ROLE_TEACHER'))) %}
+{% set isStudentRoute = (not isAdminRoute) and (not isTeacherRoute) and (currentRoute starts with 'student_' or (currentRoute == 'app_dashboard' and is_granted('ROLE_STUDENT')) or (isForumRoute and is_granted('ROLE_STUDENT')) or (isMessageRoute and is_granted('ROLE_STUDENT')) or (isLivestreamRoute and is_granted('ROLE_STUDENT')) or (isProfileRoute and is_granted('ROLE_STUDENT')) or (currentRoute == 'app_schedule_view' and is_granted('ROLE_STUDENT')) or (isNotificationsRoute and is_granted('ROLE_STUDENT'))) %}
 {% set themeClass = isAdminRoute ? 'theme-admin' : (isTeacherRoute ? 'theme-teacher' : (isStudentRoute ? 'theme-student' : '')) %}
 <body class="{{ themeClass }}" style="margin: 0; {% if isAdminRoute or isTeacherRoute or isStudentRoute %}display: flex; min-height: 100vh;{% endif %}">
 {# ── ADMIN SIDEBAR ── #}
@@ -150,6 +151,7 @@
             <span style="font-weight: 500; color: var(--m3-on-surface);">{{ currentRoute|replace({'admin_': '', '_': ' '})|title }}</span>
         </div>
         <div style="display: flex; align-items: center; gap: 1rem;">
+            {% include 'notification/_dropdown.html.twig' %}
             <span style="font-size: 0.875rem; color: var(--m3-on-surface-variant);">{{ app.user.userIdentifier }}</span>
             <a href="{{ path('app_logout') }}" class="m3-button m3-button-outlined" style="height: 36px; padding: 0 16px; border-color: var(--m3-error); color: var(--m3-error);">Sign out</a>
         </div>
@@ -188,6 +190,7 @@
             <span style="font-weight: 500; color: var(--m3-on-surface);">{{ currentRoute|replace({'teacher_': '', 'app_livestream_': '', '_': ' '})|title }}</span>
         </div>
         <div style="display: flex; align-items: center; gap: 1rem;">
+            {% include 'notification/_dropdown.html.twig' %}
             <span style="font-size: 0.875rem; color: var(--m3-on-surface-variant);">{{ app.user.firstName }} {{ app.user.lastName }}</span>
             <a href="{{ path('app_logout') }}" class="m3-button m3-button-outlined" style="height: 36px; padding: 0 16px; border-color: var(--m3-error); color: var(--m3-error);">Sign out</a>
         </div>
@@ -226,6 +229,7 @@
             <span style="font-weight: 500; color: var(--m3-on-surface);">{{ currentRoute|replace({'student_': '', 'app_livestream_': '', '_': ' '})|title }}</span>
         </div>
         <div style="display: flex; align-items: center; gap: 1rem;">
+            {% include 'notification/_dropdown.html.twig' %}
             <span style="font-size: 0.875rem; color: var(--m3-on-surface-variant);">{{ app.user.firstName }} {{ app.user.lastName }}</span>
             <a href="{{ path('app_logout') }}" class="m3-button m3-button-outlined" style="height: 36px; padding: 0 16px; border-color: var(--m3-error); color: var(--m3-error);">Sign out</a>
         </div>

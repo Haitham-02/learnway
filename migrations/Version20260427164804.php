@@ -14,18 +14,25 @@ final class Version20260427164804 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Adds announcements.target_value; other schema changes are intentionally skipped for legacy compatibility.';
     }
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE announcements ADD target_value VARCHAR(255) DEFAULT NULL');
-        $this->addSql('ALTER TABLE chapter_items CHANGE url url LONGTEXT DEFAULT NULL');
-        $this->addSql('ALTER TABLE messages RENAME INDEX fk_db021e969ac0396 TO IDX_DB021E969AC0396');
-        $this->addSql('ALTER TABLE submissions DROP FOREIGN KEY `FK_3F6169F7D19302F8`');
-        $this->addSql('ALTER TABLE submissions ADD CONSTRAINT FK_3F6169F7D19302F8 FOREIGN KEY (assignment_id) REFERENCES assignments (id) ON DELETE CASCADE');
-        $this->addSql('ALTER TABLE submissions RENAME INDEX idx_submission_assignment TO IDX_3F6169F7D19302F8');
+        $schemaManager = $this->connection->createSchemaManager();
+        $tables = $schemaManager->listTableNames();
+
+        if (in_array('announcements', $tables, true)) {
+            $columns = array_map(
+                static fn($column): string => $column->getName(),
+                $schemaManager->listTableColumns('announcements'),
+            );
+            if (!in_array('target_value', $columns, true)) {
+                $this->addSql('ALTER TABLE announcements ADD target_value VARCHAR(255) DEFAULT NULL');
+            }
+        }
+
+        // Remaining auto-generated statements were superseded and are skipped.
     }
 
     public function down(Schema $schema): void

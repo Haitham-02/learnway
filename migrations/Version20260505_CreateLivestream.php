@@ -17,7 +17,7 @@ final class Version20260505_CreateLivestream extends AbstractMigration
     public function up(Schema $schema): void
     {
         // Create livestreams table
-        $this->addSql('CREATE TABLE livestreams (
+        $this->addSql('CREATE TABLE IF NOT EXISTS livestreams (
             id BIGINT AUTO_INCREMENT NOT NULL,
             teacher_id BIGINT DEFAULT NULL,
             class_id INT DEFAULT NULL,
@@ -39,7 +39,7 @@ final class Version20260505_CreateLivestream extends AbstractMigration
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci');
 
         // Create livestream_participants table
-        $this->addSql('CREATE TABLE livestream_participants (
+        $this->addSql('CREATE TABLE IF NOT EXISTS livestream_participants (
             id BIGINT AUTO_INCREMENT NOT NULL,
             livestream_id BIGINT DEFAULT NULL,
             user_id BIGINT DEFAULT NULL,
@@ -56,7 +56,7 @@ final class Version20260505_CreateLivestream extends AbstractMigration
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci');
 
         // Create livestream_qa table
-        $this->addSql('CREATE TABLE livestream_qa (
+        $this->addSql('CREATE TABLE IF NOT EXISTS livestream_qa (
             id BIGINT AUTO_INCREMENT NOT NULL,
             livestream_id BIGINT DEFAULT NULL,
             student_id BIGINT DEFAULT NULL,
@@ -75,7 +75,7 @@ final class Version20260505_CreateLivestream extends AbstractMigration
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci');
 
         // Create facial_analysis table
-        $this->addSql('CREATE TABLE facial_analysis (
+        $this->addSql('CREATE TABLE IF NOT EXISTS facial_analysis (
             id BIGINT AUTO_INCREMENT NOT NULL,
             livestream_id BIGINT DEFAULT NULL,
             student_id BIGINT DEFAULT NULL,
@@ -92,7 +92,7 @@ final class Version20260505_CreateLivestream extends AbstractMigration
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci');
 
         // Create livestream_chats table
-        $this->addSql('CREATE TABLE livestream_chats (
+        $this->addSql('CREATE TABLE IF NOT EXISTS livestream_chats (
             id BIGINT AUTO_INCREMENT NOT NULL,
             livestream_id BIGINT DEFAULT NULL,
             user_id BIGINT DEFAULT NULL,
@@ -108,10 +108,10 @@ final class Version20260505_CreateLivestream extends AbstractMigration
 
     public function down(Schema $schema): void
     {
-        $this->addSql('DROP TABLE livestream_chats');
-        $this->addSql('DROP TABLE facial_analysis');
-        $this->addSql('DROP TABLE livestream_qa');
-        $this->addSql('DROP TABLE livestream_participants');
-        $this->addSql('DROP TABLE livestreams');
+        $this->addSql('DROP TABLE IF EXISTS livestream_chats');
+        $this->addSql('DROP TABLE IF EXISTS facial_analysis');
+        $this->addSql('DROP TABLE IF EXISTS livestream_qa');
+        $this->addSql('DROP TABLE IF EXISTS livestream_participants');
+        $this->addSql('DROP TABLE IF EXISTS livestreams');
     }
 }

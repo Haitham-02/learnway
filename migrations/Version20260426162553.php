@@ -19,12 +19,26 @@ final class Version20260426162553 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
+<<<<<<< HEAD
         // Skip for SQLite - contains MySQL-specific ALTER TABLE CHANGE syntax
         $platform = $this->connection->getDatabasePlatform();
         if ($platform->getName() === 'sqlite') {
             return;
         }
 
+=======
+        $schemaManager = $this->connection->createSchemaManager();
+        if (!$schemaManager->tablesExist(['announcements'])) {
+            return;
+        }
+
+        foreach ($schemaManager->listTableForeignKeys('announcements') as $foreignKey) {
+            if (strtoupper($foreignKey->getName()) === 'FK_F422A9DAE36D154') {
+                return;
+            }
+        }
+
+>>>>>>> a68a05d89020c09f6487d63477940c12fd0e8657
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE announcements CHANGE posted_by posted_by BIGINT DEFAULT NULL');
         $this->addSql('ALTER TABLE announcements ADD CONSTRAINT FK_F422A9DAE36D154 FOREIGN KEY (posted_by) REFERENCES users (id)');

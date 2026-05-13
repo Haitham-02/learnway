@@ -145,14 +145,18 @@
                 <label style="display: block; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--m3-on-surface-variant); margin-bottom: 10px; padding-left: 4px;">Academic Subject</label>
                 <div class="position-relative">
                     <select id="modal-subject" style="width: 100%; border-radius: 16px; border: 1px solid var(--m3-outline-variant); font-size: 1.05rem; padding: 14px 20px; background: white; color: var(--m3-on-surface); cursor: pointer; appearance: none;">
-                        <option value="">-- Select Subject --</option>
-                        {% set subjects = [] %}
-                        {% for ta in assignments %}
-                            {% if ta.subject.id not in subjects %}
-                                <option value="{{ ta.subject.id }}">{{ ta.subject.name }}</option>
-                                {% set subjects = subjects|merge([ta.subject.id]) %}
-                            {% endif %}
-                        {% endfor %}
+                        {% if assignments|length == 0 %}
+                            <option value="" disabled>No teachers assigned to subjects for this class</option>
+                        {% else %}
+                            <option value="">-- Select Subject --</option>
+                            {% set subjects = [] %}
+                            {% for ta in assignments %}
+                                {% if ta.subject.id not in subjects %}
+                                    <option value="{{ ta.subject.id }}">{{ ta.subject.name }}</option>
+                                    {% set subjects = subjects|merge([ta.subject.id]) %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
                     </select>
                     <span class="material-symbols-rounded" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: 0.5;">expand_more</span>
                 </div>

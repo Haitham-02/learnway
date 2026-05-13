@@ -159,20 +159,53 @@
 
                 <div style="display: flex; flex-direction: column; gap: 12px;">
                     {% for file in chapter.chapterFiles %}
-                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--m3-surface); border-radius: var(--m3-radius-small); border: 1px solid var(--m3-outline-variant);">
-                            <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
-                                <div style="font-size: 1.25rem;">📄</div>
-                                <div style="min-width: 0;">
-                                    <div style="font-size: 0.875rem; font-weight: 500; color: var(--m3-on-surface); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ file.fileName }}">
-                                        {{ file.fileName }}
+                        {% set mime = file.fileType|default('') %}
+                        {% set previewable = mime starts with 'image/' or mime == 'application/pdf' or mime starts with 'video/' or mime starts with 'audio/' or mime starts with 'text/' %}
+                        <div style="padding: 12px; background: var(--m3-surface); border-radius: var(--m3-radius-small); border: 1px solid var(--m3-outline-variant);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                                <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+                                    <div style="font-size: 1.25rem;">📄</div>
+                                    <div style="min-width: 0;">
+                                        <div style="font-size: 0.875rem; font-weight: 500; color: var(--m3-on-surface); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ file.fileName }}">
+                                            {{ file.fileName }}
+                                        </div>
+                                        <div style="font-size: 0.75rem; color: var(--m3-on-surface-variant);">{{ (file.fileSize / 1024)|number_format(1) }} KB</div>
                                     </div>
-                                    <div style="font-size: 0.75rem; color: var(--m3-on-surface-variant);">{{ (file.fileSize / 1024)|number_format(1) }} KB</div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <a href="{{ file.filePath }}" target="_blank" class="m3-button m3-button-tonal" style="height: 30px; min-width: 56px; padding: 0 10px; font-size: 0.75rem;">View</a>
+                                    <a href="{{ file.filePath }}" download class="m3-button m3-button-outlined" style="height: 30px; min-width: 74px; padding: 0 10px; font-size: 0.75rem;">Download</a>
+                                    <form method="post" action="{{ path('teacher_chapter_file_delete', {chapterId: chapter.id, fileId: file.id}) }}" onsubmit="return confirm('Delete this file?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_file_' ~ file.id) }}">
+                                        <button type="submit" style="background: none; border: none; color: var(--m3-error); padding: 4px; cursor: pointer; font-size: 1rem;">×</button>
+                                    </form>
                                 </div>
                             </div>
-                            <form method="post" action="{{ path('teacher_chapter_file_delete', {chapterId: chapter.id, fileId: file.id}) }}" onsubmit="return confirm('Delete this file?');">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete_file_' ~ file.id) }}">
-                                <button type="submit" style="background: none; border: none; color: var(--m3-error); padding: 4px; cursor: pointer; font-size: 1rem;">×</button>
-                            </form>
+
+                            {% if previewable %}
+                                <details style="margin-top: 10px;">
+                                    <summary style="cursor: pointer; color: var(--m3-primary); font-size: 0.8125rem; font-weight: 500;">Preview in page</summary>
+                                    <div style="margin-top: 8px; border: 1px solid var(--m3-outline-variant); border-radius: 10px; overflow: hidden;">
+                                        {% if mime starts with 'image/' %}
+                                            <img src="{{ file.filePath }}" alt="{{ file.fileName }}" style="width: 100%; display: block;">
+                                        {% elseif mime == 'application/pdf' %}
+                                            <iframe src="{{ file.filePath }}" title="{{ file.fileName }}" style="width: 100%; height: min(80vh, 920px); min-height: 620px; border: 0;"></iframe>
+                                        {% elseif mime starts with 'video/' %}
+                                            <video controls style="width: 100%; max-height: min(80vh, 920px); min-height: 500px;">
+                                                <source src="{{ file.filePath }}" type="{{ mime }}">
+                                            </video>
+                                        {% elseif mime starts with 'audio/' %}
+                                            <div style="padding: 12px;">
+                                                <audio controls style="width: 100%;">
+                                                    <source src="{{ file.filePath }}" type="{{ mime }}">
+                                                </audio>
+                                            </div>
+                                        {% else %}
+                                            <iframe src="{{ file.filePath }}" title="{{ file.fileName }}" style="width: 100%; height: min(74vh, 860px); min-height: 560px; border: 0;"></iframe>
+                                        {% endif %}
+                                    </div>
+                                </details>
+                            {% endif %}
                         </div>
                     {% else %}
                         <p style="text-align: center; color: var(--m3-on-surface-variant); font-size: 0.875rem; margin: 20px 0;">No files uploaded.</p>
