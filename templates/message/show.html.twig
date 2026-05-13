@@ -14,8 +14,8 @@
             <div style="width: 40px; height: 40px; background: var(--m3-primary-container); color: var(--m3-on-primary-container); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; overflow: hidden; border: 1px solid var(--m3-outline-variant);">
                 {% if conversation.type == 'GROUP' %}
                     <span class="material-symbols-rounded">group</span>
-                {% elseif recipient and recipient.profile_picture %}
-                    <img src="{{ asset('uploads/profiles/' ~ recipient.profile_picture) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                {% elseif recipient and recipient.profilePicture %}
+                    <img src="{{ asset('uploads/profiles/' ~ recipient.profilePicture) }}" style="width: 100%; height: 100%; object-fit: cover;">
                 {% else %}
                     {{ recipient ? recipient.firstName|first|upper : '?' }}
                 {% endif %}
@@ -34,11 +34,16 @@
             </div>
         </div>
 
-        {% if conversation.type == 'GROUP' %}
-            <button onclick="openGroupInfoModal()" class="m3-button m3-button-tonal" style="height: 36px; padding: 0 16px; border-radius: 12px; display: flex; align-items: center; gap: 8px; background: #e0e2ec; color: #191c20; border: none; cursor: pointer; font-size: 0.8125rem;">
-                <span class="material-symbols-rounded" style="font-size: 1.125rem;">info</span> Group Info
+        <div style="display: flex; gap: 8px; align-items: center;">
+            {% if conversation.type == 'GROUP' %}
+                <button onclick="openGroupInfoModal()" class="m3-button m3-button-tonal" style="height: 36px; padding: 0 16px; border-radius: 12px; display: flex; align-items: center; gap: 8px; background: #e0e2ec; color: #191c20; border: none; cursor: pointer; font-size: 0.8125rem;">
+                    <span class="material-symbols-rounded" style="font-size: 1.125rem;">info</span> Group Info
+                </button>
+            {% endif %}
+            <button type="button" onclick="openDeleteConversationModal()" class="m3-button m3-button-tonal" style="height: 36px; padding: 0 16px; border-radius: 12px; display: flex; align-items: center; gap: 8px; background: #ffebee; color: #b3261e; border: none; cursor: pointer; font-size: 0.8125rem;">
+                <span class="material-symbols-rounded" style="font-size: 1.125rem;">delete</span> Delete
             </button>
-        {% endif %}
+        </div>
     </div>
 
     {# ── MESSAGES LIST ── #}
@@ -63,13 +68,13 @@
               hx-post="{{ path('app_messages_show', {id: conversation.id}) }}" 
               hx-target="#message-container" 
               hx-swap="beforeend"
-              hx-on::after-request="
-                var input = document.getElementById('message-form').querySelector('input[name=content]');
-                if(input) input.value = '';
+              hx-on::after-settle="
                 var container = document.getElementById('message-container');
-                if(container) container.scrollTop = container.scrollHeight;
-                var emojiContainer = document.getElementById('emoji-picker-container');
-                if(emojiContainer) emojiContainer.style.display = 'none';
+                if(container) {
+                  container.scrollTop = container.scrollHeight;
+                  var emojiContainer = document.getElementById('emoji-picker-container');
+                  if(emojiContainer) emojiContainer.style.display = 'none';
+                }
               "
               hx-on::response-error="console.error('HTMX Error:', event.detail.xhr.status, event.detail.xhr.responseText)"
               style="display: flex; gap: 16px; align-items: center; position: relative;">
@@ -116,7 +121,7 @@
                 }
             })();
 
-            // Ensure form works reliably
+            // OPTIMISTIC UPDATE: Show message immediately when sent
             function initMessageForm() {
                 const form = document.getElementById('message-form');
                 if(!form) {
@@ -125,48 +130,82 @@
                     return;
                 }
                 
-                console.log('✓ Initializing message form');
+                const input = form.querySelector('input[name=content]');
+                const container = document.getElementById('message-container');
+                
+                // Intercept HTMX before sending
+                form.addEventListener('htmx:beforeRequest', function(e) {
+                    const messageText = input.value.trim();
+                    if (!messageText) return;
+                    
+                    // IMMEDIATELY show the message while it's being sent
+                    const now = new Date();
+                    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+                    
+                    const messageHtml = `
+                        <div class="message-wrapper message-mine" data-message-id="pending-${Date.now()}" data-sender-id="{{ app.user.id }}" style="display: flex; gap: 8px; align-items: flex-end; margin-bottom: 8px; flex-direction: row-reverse; max-width: 85%;">
+                            <div style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; overflow: hidden; background: var(--m3-surface-container-high); border: 1px solid var(--m3-outline-variant); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--m3-primary);">
+                                {% if app.user.profilePicture %}
+                                    <img src="{{ asset('uploads/profiles/' ~ app.user.profilePicture) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    {{ app.user.firstName|slice(0, 1)|upper }}{{ app.user.lastName|slice(0, 1)|upper }}
+                                {% endif %}
+                            </div>
+                            <div style="display: flex; flex-direction: column; align-items: flex-end; min-width: 0;">
+                                <div style="position: relative; max-width: 100%;">
+                                    <div class="message-content" style="padding: 10px 16px; border-radius: 18px; font-size: 0.9375rem; line-height: 1.45; background: var(--m3-primary); color: white; border-bottom-right-radius: 4px;">
+                                        ${escapeHtml(messageText)}
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 4px; margin-top: 4px; justify-content: flex-end; padding: 0 4px;">
+                                        <span style="font-size: 0.65rem; color: var(--m3-on-surface-variant); opacity: 0.8;">
+                                            ${timeStr}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    container.insertAdjacentHTML('beforeend', messageHtml);
+                    input.value = '';
+                    
+                    // Close emoji picker if open
+                    const emojiContainer = document.getElementById('emoji-picker-container');
+                    if(emojiContainer) emojiContainer.style.display = 'none';
+                    
+                    console.log('✓ Optimistic message displayed immediately');
+                });
+                
+                // Handle HTMX response
+                form.addEventListener('htmx:afterSettle', function(e) {
+                    const container = document.getElementById('message-container');
+                    
+                    // Remove any pending messages (since real message was just inserted)
+                    const pendingMessages = container.querySelectorAll('[data-message-id^="pending-"]');
+                    pendingMessages.forEach(msg => msg.remove());
+                    
+                    if(container) {
+                        container.scrollTop = container.scrollHeight;
+                    }
+                    console.log('✓ Server message received and inserted');
+                });
                 
                 // Process form with HTMX
                 if(window.htmx) {
                     htmx.process(form);
-                    console.log('✓ HTMX processed form');
                 }
-                
-                // Log all form submissions
-                form.addEventListener('htmx:xhr:sendstart', function(e) {
-                    console.log('✓ HTMX sending request to:', e.detail.requestConfig.path);
-                });
-                
-                form.addEventListener('htmx:beforeRequest', function(e) {
-                    console.log('✓ HTMX before request, method:', e.detail.requestConfig.verb, 'data:', e.detail.xhr.body);
-                });
-                
-                form.addEventListener('htmx:afterRequest', function(e) {
-                    console.log('✓ HTMX after request, status:', e.detail.xhr.status, 'response length:', e.detail.xhr.response.length);
-                });
-                
-                form.addEventListener('htmx:responseError', function(e) {
-                    console.error('✗ HTMX error:', e.detail.xhr.status, e.detail.xhr.responseText);
-                });
-                
-                // Allow Enter key to submit
-                const input = form.querySelector('input[name=content]');
-                if(input) {
-                    input.addEventListener('keypress', function(e) {
-                        if(e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            console.log('✓ Enter key pressed, submitting form');
-                            htmx.ajax('POST', form.getAttribute('hx-post'), {
-                                source: form,
-                                target: '#message-container',
-                                swap: 'beforeend',
-                                values: {content: input.value}
-                            });
-                            input.value = '';
-                        }
-                    });
-                }
+            }
+            
+            // Helper to escape HTML
+            function escapeHtml(text) {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, m => map[m]);
             }
             
             // Start initialization
@@ -289,6 +328,30 @@
                 <button onclick="openGroupInfoModal()" class="m3-button m3-button-text">Back</button>
             </div>
         </div>
+
+        {# Delete Conversation Modal #}
+        <div id="delete-conversation-modal" class="m3-card m3-card-elevated" style="display: none; width: 100%; max-width: 400px; background: white; border-radius: 28px; padding: 32px; flex-direction: column; gap: 24px;">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <h2 style="margin: 0; font-size: 1.5rem; font-weight: 500; color: var(--m3-error);">Delete Conversation?</h2>
+                <p style="margin: 0; font-size: 0.9375rem; color: var(--m3-on-surface-variant); line-height: 1.5;">
+                    {% if conversation.type == 'GROUP' %}
+                        You will be removed from this group. Other members will still have access to it.
+                    {% else %}
+                        This will delete all messages in this conversation. The other person will still have their copy of the messages.
+                    {% endif %}
+                </p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button type="button" onclick="closeChatModals()" class="m3-button m3-button-outlined" style="flex: 1; height: 44px; border-radius: 12px; border: 1px solid var(--m3-outline); background: white; color: var(--m3-on-surface); cursor: pointer; font-weight: 600;">
+                    Cancel
+                </button>
+                <form action="{{ path('app_messages_delete_conversation', {id: conversation.id}) }}" method="POST" style="flex: 1;">
+                    <button type="submit" class="m3-button m3-button-filled" style="width: 100%; height: 44px; border-radius: 12px; background: var(--m3-error); color: white; border: none; cursor: pointer; font-weight: 600;">
+                        Delete
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -384,6 +447,17 @@
 
         function closeChatModals() {
             document.getElementById('chat-modal-container').style.display = 'none';
+        }
+
+        function openDeleteConversationModal() {
+            const modal = document.getElementById('delete-conversation-modal');
+            document.getElementById('chat-modal-container').style.display = 'flex';
+            modal.style.display = 'flex';
+            document.getElementById('edit-message-modal').style.display = 'none';
+            document.getElementById('forward-message-modal').style.display = 'none';
+            document.getElementById('rename-group-modal').style.display = 'none';
+            document.getElementById('group-info-modal').style.display = 'none';
+            document.getElementById('add-member-modal').style.display = 'none';
         }
 
         async function deleteMessage(id) {

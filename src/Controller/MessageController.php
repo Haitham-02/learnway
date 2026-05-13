@@ -33,6 +33,10 @@ class MessageController extends AbstractController
     public function index(ConversationRepository $conversationRepo): Response
     {
         $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('Authentication required.');
+        }
+
         $conversations = $conversationRepo->findConversationsForUser($user->getId());
 
         return $this->render('message/index.html.twig', [
@@ -49,6 +53,9 @@ class MessageController extends AbstractController
         TeacherAssignmentRepository $taRepo
     ): Response {
         $currentUser = $this->getUser();
+        if (!$currentUser instanceof User) {
+            throw $this->createAccessDeniedException('Authentication required.');
+        }
 
         if ($currentUser === $recipient) {
             $this->addFlash('error', 'You cannot message yourself.');
@@ -71,10 +78,10 @@ class MessageController extends AbstractController
             $conversation->setType('DIRECT');
             $conversation->setCreatedAt(new \DateTime());
             
-            // Create hash for peer-to-peer
+            // Create hash for peer-to-peer to match JavaFX app
             $ids = [$currentUser->getId(), $recipient->getId()];
             sort($ids);
-            $conversation->setPairHash(md5(implode('_', $ids)));
+            $conversation->setPairHash('direct_' . implode('_', $ids));
 
             // Add members
             $member1 = new ConversationMember();
@@ -155,30 +162,16 @@ class MessageController extends AbstractController
                 $message->setConversation($conversation);
                 $message->setUser($user);
                 $message->setContent($content);
-                $message->setSentAt(new \DateTime());
+                $message->setSentAt(new \DateTime('now'));
                 $message->setStatus('SENT');
 
                 $em->persist($message);
                 $em->flush();
                 $notifiedUsers = $this->notifyConversationRecipients($conversation, $user, $content);
                 $this->publishNotificationRefreshUsers($notifiedUsers);
+                $this->publishConversationMessage($message);
                 
                 error_log("✓ Message saved to DB: ID=" . $message->getId());
-
-                // Publish to Redis for real-time update
-                try {
-                    $messageData = json_encode([
-                        'room' => 'conversation_' . $conversation->getId(),
-                        'html' => $this->renderView('message/_message.html.twig', [
-                            'message' => $message,
-                            'forceTheirs' => true,
-                        ])
-                    ]);
-                    $redis->publish('chat-messages', $messageData);
-                    error_log("✓ Message published to Redis for conversation {$conversation->getId()}");
-                } catch (\Exception $e) {
-                    error_log("✗ Redis publish failed: " . $e->getMessage());
-                }
 
                 if ($request->headers->has('HX-Request')) {
                     error_log("✓ HTMX request detected, returning partial response");
@@ -194,7 +187,7 @@ class MessageController extends AbstractController
             }
         }
 
-        $messages = $messageRepo->findBy(['conversation' => $conversation], ['sent_at' => 'ASC']);
+        $messages = $messageRepo->findByConversationSorted($conversation);
 
         // Find recipient for header
         $recipient = null;
@@ -227,8 +220,9 @@ class MessageController extends AbstractController
         $content = trim($request->request->get('content', ''));
         if ($content !== '') {
             $message->setContent($content);
-            $message->setEditedAt(new \DateTime());
+            $message->setEditedAt(new \DateTime('now'));
             $em->flush();
+            $this->publishConversationMessage($message);
 
             // Notify via Redis (optional for now, but good practice)
         }
@@ -249,6 +243,7 @@ class MessageController extends AbstractController
 
         $message->setIsDeleted(true);
         $em->flush();
+        $this->publishConversationMessage($message);
 
         if ($request->headers->has('HX-Request')) {
             return $this->render('message/_message.html.twig', ['message' => $message]);
@@ -282,7 +277,7 @@ class MessageController extends AbstractController
         $newMsg->setConversation($targetConv);
         $newMsg->setUser($this->getUser());
         $newMsg->setContent($message->getContent());
-        $newMsg->setSentAt(new \DateTime());
+        $newMsg->setSentAt(new \DateTime('now'));
         $newMsg->setIsForwarded(true);
         $newMsg->setStatus('SENT');
 
@@ -295,6 +290,7 @@ class MessageController extends AbstractController
         $em->flush();
         $notifiedUsers = $this->notifyConversationRecipients($targetConv, $sender, $newMsg->getContent() ?? '');
         $this->publishNotificationRefreshUsers($notifiedUsers);
+        $this->publishConversationMessage($newMsg);
 
         return $this->redirectToRoute('app_messages_show', ['id' => $targetConv->getId()]);
     }
@@ -419,6 +415,46 @@ class MessageController extends AbstractController
         // Actually Conversation entity has cascade: ['remove'] on members
         $em->remove($conversation);
         $em->flush();
+
+        return $this->redirectToRoute('app_messages_index');
+    }
+
+    #[Route('/{id}/delete-conversation', name: 'delete_conversation', methods: ['POST'])]
+    public function deleteConversation(Conversation $conversation, EntityManagerInterface $em): Response
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('Authentication required.');
+        }
+
+        // Check if user is a member
+        $isMember = false;
+        $memberToRemove = null;
+        foreach ($conversation->getMembers() as $member) {
+            if ($member->getUser() === $user) {
+                $isMember = true;
+                $memberToRemove = $member;
+                break;
+            }
+        }
+
+        if (!$isMember) {
+            throw $this->createAccessDeniedException('You are not a member of this conversation.');
+        }
+
+        // For direct messages: delete entire conversation
+        // For groups: remove the user from the group
+        if ($conversation->getType() === 'DIRECT') {
+            // Delete the entire direct conversation for this user
+            $em->remove($conversation);
+            $em->flush();
+        } else {
+            // For groups: just remove the user from the group
+            if ($memberToRemove) {
+                $conversation->removeMember($memberToRemove);
+                $em->flush();
+            }
+        }
 
         return $this->redirectToRoute('app_messages_index');
     }
@@ -594,6 +630,31 @@ class MessageController extends AbstractController
             }
         } catch (\Throwable $e) {
             error_log('Notification socket publish failed: ' . $e->getMessage());
+        } finally {
+            $redis->disconnect();
+        }
+    }
+
+    private function publishConversationMessage(Message $message): void
+    {
+        $conversation = $message->getConversation();
+        if (!$conversation) {
+            return;
+        }
+
+        $redisHost = $_ENV['REDIS_HOST'] ?? 'localhost';
+        $redis = new RedisClient(['host' => $redisHost]);
+
+        try {
+            $redis->publish('chat-messages', json_encode([
+                'room' => 'conversation_' . $conversation->getId(),
+                'html' => $this->renderView('message/_message.html.twig', [
+                    'message' => $message,
+                    'forceTheirs' => true,
+                ]),
+            ]));
+        } catch (\Throwable $e) {
+            error_log('Message socket publish failed: ' . $e->getMessage());
         } finally {
             $redis->disconnect();
         }

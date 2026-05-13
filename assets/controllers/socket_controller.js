@@ -33,12 +33,16 @@ export default class extends Controller {
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = html;
             const messageWrapper = tempDiv.firstElementChild;
+            if (!messageWrapper) {
+                return;
+            }
+
             const messageId = messageWrapper.dataset.messageId;
             const senderId = messageWrapper.dataset.senderId;
 
             // CRITICAL: If this message is from the current user, SKIP IT
             // HTMX already inserted it immediately, so don't insert again via Socket.IO
-            if (senderId === this.currentUserIdValue) {
+            if (String(senderId) === String(this.currentUserIdValue)) {
                 console.log('SocketController: Skipping own message (ID:', messageId, ') - HTMX already inserted');
                 return;
             }
@@ -46,7 +50,8 @@ export default class extends Controller {
             // For other users' messages, check if already in DOM
             const existingMessage = document.querySelector(`[data-message-id="${messageId}"]`);
             if (existingMessage) {
-                console.log('SocketController: Message already in DOM, skipping duplicate (ID:', messageId, ')');
+                console.log('SocketController: Message already in DOM, replacing updated version (ID:', messageId, ')');
+                existingMessage.outerHTML = messageWrapper.outerHTML;
                 return;
             }
 
@@ -59,6 +64,38 @@ export default class extends Controller {
             this.element.insertAdjacentHTML('beforeend', messageWrapper.outerHTML);
             this.element.scrollTop = this.element.scrollHeight;
         });
+
+        this.socket.on('conversation-refresh', () => {
+            this.refreshConversation();
+        });
+    }
+
+    async refreshConversation() {
+        try {
+            const response = await fetch(window.location.href, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) {
+                return;
+            }
+
+            const html = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const freshContainer = doc.querySelector('#message-container');
+
+            if (!freshContainer) {
+                return;
+            }
+
+            this.element.innerHTML = freshContainer.innerHTML;
+            this.element.scrollTop = this.element.scrollHeight;
+        } catch (error) {
+            console.error('SocketController: Conversation refresh failed', error);
+        }
     }
 
     disconnect() {

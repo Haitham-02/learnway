@@ -70,6 +70,12 @@ export default class extends Controller {
         try {
             const url = `${this.historyUrlValue}?chatId=${this.chatId}`;
             const response = await fetch(url);
+            if (!response.ok) {
+                if (response.status === 404) {
+                    this.clearStaleChatSession();
+                }
+                return;
+            }
             const data = await response.json();
 
             if (data.messages && data.messages.length > 0) {
@@ -222,63 +228,86 @@ export default class extends Controller {
         this.showTypingIndicator(true);
 
         try {
-            const response = await fetch(this.chatUrlValue, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message, chatId: this.chatId })
-            });
+            const response = await this.postMessage(message, this.chatId);
 
-            const data = await response.json();
-            this.showTypingIndicator(false);
+            if (!response.ok) {
+                const payload = await response.json().catch(() => ({}));
 
-            if (data.response) {
-                this.chatId = data.chatId;
-                this.saveState();
-                let responseText = data.response;
-                
-                // Check for [AUTO_SCHEDULE] tag
-                if (responseText.includes('[AUTO_SCHEDULE]')) {
-                    responseText = responseText.replace('[AUTO_SCHEDULE]', '').trim();
-                    if (responseText) {
-                        this.appendMessage(responseText, 'assistant');
-                    }
-                    this.triggerAutoSchedule();
+                if (response.status === 404 && this.chatId && (payload.error || '').toLowerCase().includes('chat not found')) {
+                    this.clearStaleChatSession();
+                    const retryResponse = await this.postMessage(message, null);
+                    await this.handleMessageResponse(retryResponse);
                     return;
                 }
 
-                // Check for [SCHEDULE_CHANGE_REQUEST] tag
-                const requestMatch = responseText.match(/\[SCHEDULE_CHANGE_REQUEST:([^\]]+)\]/);
-                if (requestMatch) {
-                    const requestData = JSON.parse(requestMatch[1]);
-                    responseText = responseText.replace(requestMatch[0], '').trim();
-                    if (responseText) {
-                        this.appendMessage(responseText, 'assistant');
-                    }
-                    this.submitScheduleChangeRequest(requestData);
-                    return;
-                }
-
-                // Check for [REDIRECT:/path] tag
-                const redirectMatch = responseText.match(/\[REDIRECT:([^\]]+)\]/);
-                if (redirectMatch) {
-                    const redirectPath = redirectMatch[1].trim();
-                    responseText = responseText.replace(redirectMatch[0], '').trim();
-                    
-                    if (responseText) {
-                        this.appendMessage(responseText, 'assistant');
-                    }
-                    setTimeout(() => { window.location.href = redirectPath; }, 1500);
-                } else {
-                    this.appendMessage(responseText, 'assistant');
-                }
-            } else {
-                this.appendMessage('[ICON:warning] ' + (data.error || 'Something went wrong.'), 'error');
+                this.showTypingIndicator(false);
+                this.appendMessage('[ICON:warning] ' + (payload.error || 'Something went wrong.'), 'error');
+                return;
             }
+
+            await this.handleMessageResponse(response);
         } catch (err) {
             this.showTypingIndicator(false);
             this.appendMessage('[ICON:warning] Unable to reach Learnway AI. Please check your connection.', 'error');
         } finally {
             this.isTyping = false;
+        }
+    }
+
+    async postMessage(message, chatId) {
+        return fetch(this.chatUrlValue, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message, chatId })
+        });
+    }
+
+    async handleMessageResponse(response) {
+        const data = await response.json();
+        this.showTypingIndicator(false);
+
+        if (data.response) {
+            this.chatId = data.chatId;
+            this.saveState();
+            let responseText = data.response;
+            
+            // Check for [AUTO_SCHEDULE] tag
+            if (responseText.includes('[AUTO_SCHEDULE]')) {
+                responseText = responseText.replace('[AUTO_SCHEDULE]', '').trim();
+                if (responseText) {
+                    this.appendMessage(responseText, 'assistant');
+                }
+                this.triggerAutoSchedule();
+                return;
+            }
+
+            // Check for [SCHEDULE_CHANGE_REQUEST] tag
+            const requestMatch = responseText.match(/\[SCHEDULE_CHANGE_REQUEST:([^\]]+)\]/);
+            if (requestMatch) {
+                const requestData = JSON.parse(requestMatch[1]);
+                responseText = responseText.replace(requestMatch[0], '').trim();
+                if (responseText) {
+                    this.appendMessage(responseText, 'assistant');
+                }
+                this.submitScheduleChangeRequest(requestData);
+                return;
+            }
+
+            // Check for [REDIRECT:/path] tag
+            const redirectMatch = responseText.match(/\[REDIRECT:([^\]]+)\]/);
+            if (redirectMatch) {
+                const redirectPath = redirectMatch[1].trim();
+                responseText = responseText.replace(redirectMatch[0], '').trim();
+                
+                if (responseText) {
+                    this.appendMessage(responseText, 'assistant');
+                }
+                setTimeout(() => { window.location.href = redirectPath; }, 1500);
+            } else {
+                this.appendMessage(responseText, 'assistant');
+            }
+        } else {
+            this.appendMessage('[ICON:warning] ' + (data.error || 'Something went wrong.'), 'error');
         }
     }
 
@@ -462,5 +491,10 @@ export default class extends Controller {
         this.suggestionsTarget.style.opacity = '1';
         this.renderSuggestions();
         this.appendMessage("Chat cleared! How can I help you?", 'assistant');
+    }
+
+    clearStaleChatSession() {
+        this.chatId = null;
+        localStorage.removeItem('learnway_ai_chat_id');
     }
 }
