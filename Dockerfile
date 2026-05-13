@@ -2,8 +2,11 @@ FROM php:8.2-apache
 
 RUN apt-get update && apt-get install -y \
     git unzip zip libicu-dev libzip-dev libonig-dev \
+    libxml2-dev libjpeg62-turbo-dev libpng-dev libfreetype6-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
-    pdo pdo_mysql intl zip mbstring
+    pdo pdo_mysql intl zip mbstring gd dom simplexml xml xmlreader xmlwriter \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN a2enmod rewrite
 
