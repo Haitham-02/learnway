@@ -7,9 +7,11 @@ echo "Starting LearnWay application..."
 if [ ! -z "$DATABASE_URL" ]; then
     echo "Running database migrations..."
     php bin/console doctrine:migrations:migrate --no-interaction --env=prod || true
-else
-    echo "WARNING: DATABASE_URL not set, skipping migrations"
 fi
+
+# Install importmap assets if needed
+echo "Ensuring importmap assets are installed..."
+php bin/console importmap:install --no-interaction --env=prod 2>&1 || true
 
 # Start Apache in foreground
 echo "Starting Apache..."

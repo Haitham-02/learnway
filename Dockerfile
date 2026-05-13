@@ -36,8 +36,8 @@ RUN npm install --legacy-peer-deps || true
 
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# Install importmap assets
-RUN php bin/console importmap:install --no-interaction --env=prod || true
+# Install importmap assets from CDN
+RUN php bin/console importmap:install --no-interaction --env=prod 2>&1 || echo "Importmap install non-critical"
 
 # Pre-warm the cache during build to avoid runtime permission issues
 RUN php bin/console cache:warmup --env=prod || true
