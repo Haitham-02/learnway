@@ -30,10 +30,12 @@ RUN touch .env
 
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# Remove and recreate var directory with full permissions for Apache
-RUN rm -rf var && mkdir -p var/cache var/log && chmod -R 777 var
+# Pre-warm the cache during build to avoid runtime permission issues
+RUN php bin/console cache:warmup --env=prod || true
 
-RUN php bin/console cache:clear --env=prod || true
+# Then set all var permissions to allow Apache to write
+RUN chmod -R 777 var
+
 RUN php bin/console doctrine:migrations:migrate --no-interaction --env=prod || true
 
 RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' \
